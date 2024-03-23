@@ -5,7 +5,7 @@ using System.Data.Entity.SqlServer;
 
 namespace Database;
 
-public static class Initialization
+public static class ConnectionStringManager
 {
     public record Details
     (
@@ -46,12 +46,12 @@ public static class Initialization
         return connection_override ?? GetConnectionDetailsFromEnvironment();
     }
 
-    public static string GenerateDBConnectionString()
+    public static string GetConnectionString()
     {
         return GenerateDBConnectionString(SelectConnectionDetails());
     }
 
-    public static string GenerateDBConnectionString(Details conn)
+    private static string GenerateDBConnectionString(Details conn)
     {
         return $"Host={conn.host}; Database={conn.db}; Username={conn.user};Password={conn.password}";
     }

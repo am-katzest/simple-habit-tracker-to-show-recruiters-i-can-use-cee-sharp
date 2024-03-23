@@ -32,7 +32,7 @@ namespace Database.Tests
         public void OverrideDefault(string db_name)
         {
             var port = container.GetMappedPublicPort(POSTGRESS_PORT);
-            Database.Initialization.OverrideConnectionDetails(port, "postgres", pgpassword, db_name);
+            Database.ConnectionStringManager.OverrideConnectionDetails(port, "postgres", pgpassword, db_name);
         }
     }
 }
