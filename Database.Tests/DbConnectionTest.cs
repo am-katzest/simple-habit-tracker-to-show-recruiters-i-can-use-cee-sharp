@@ -5,17 +5,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Database.Tests;
 
-public sealed class DbConnectionTest : IDisposable
+public sealed class DbConnectionTest
 {
-    private readonly DBContainerFixture db;
     public DbConnectionTest()
     {
-        db = new DBContainerFixture();
-    }
-
-    public void Dispose()
-    {
-        db.Dispose();
+        DbFixture.Instance.UseUniqueDatabase();
     }
 
     [Fact]

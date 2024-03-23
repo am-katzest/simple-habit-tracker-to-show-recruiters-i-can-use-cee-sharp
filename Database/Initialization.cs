@@ -8,18 +8,12 @@ namespace Database;
 public static class Initialization
 {
     public record Details
-    {
-        public string host;
-        public string user;
-        public string password;
-
-        public Details(string host, string user, string password)
-        {
-            this.host = host;
-            this.user = user;
-            this.password = password;
-        }
-    }
+    (
+        string host,
+        string user,
+        string password,
+        string db
+    );
 
     private static string GetEnv(string v)
     {
@@ -37,21 +31,14 @@ public static class Initialization
         string host = GetEnv("SHT_DB_HOST");
         string user = GetEnv("SHT_DB_USER");
         string password = GetEnv("SHT_DB_PASSWORD");
-        return new Details(host, user, password);
+        return new Details(host, user, password, "NHT");
     }
 
     private static Details? connection_override = null; // global, but only changed for testing, and only once
 
-    public static void OverrideConnectionDetails(int port, string user, string password)
+    public static void OverrideConnectionDetails(int port, string user, string password, string db)
     {
-        if (connection_override is null)
-        {
-            connection_override = new Details($"localhost:{port}", user, password);
-        }
-        else
-        {
-            throw new System.Exception("connection was overriden before (testing broke)");
-        }
+        connection_override = new Details($"localhost:{port}", user, password, db);
     }
 
     private static Details SelectConnectionDetails()
@@ -59,13 +46,13 @@ public static class Initialization
         return connection_override ?? GetConnectionDetailsFromEnvironment();
     }
 
-    public static string GenerateDBConnectionString(string db)
+    public static string GenerateDBConnectionString()
     {
-        return GenerateDBConnectionString(db, SelectConnectionDetails());
+        return GenerateDBConnectionString(SelectConnectionDetails());
     }
 
-    static string GenerateDBConnectionString(string db, Details conn)
+    public static string GenerateDBConnectionString(Details conn)
     {
-        return $"Host={conn.host}; Database={db}; Username={conn.user};Password={conn.password}";
+        return $"Host={conn.host}; Database={conn.db}; Username={conn.user};Password={conn.password}";
     }
 }

@@ -3,16 +3,15 @@ using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
 namespace Database.Tests
 {
-    public sealed class DBContainerFixture : IDisposable
+    public sealed class DbContainer
     {
         private const int POSTGRESS_PORT = 5432;
         private readonly IContainer container;
         private readonly string pgpassword = "awawa";
-        public DBContainerFixture()
+        public DbContainer()
         {
             container = MakeContainer();
             Start();
-            OverrideDefault();
         }
 
         private IContainer MakeContainer()
@@ -30,20 +29,10 @@ namespace Database.Tests
             Task.Run(() => container.StartAsync()).Wait();
         }
 
-        public void Stop()
-        {
-            Task.Run(() => container.StopAsync()).Wait();
-        }
-
-        public void OverrideDefault()
+        public void OverrideDefault(string db_name)
         {
             var port = container.GetMappedPublicPort(POSTGRESS_PORT);
-            Database.Initialization.OverrideConnectionDetails(port, "postgres", pgpassword);
-        }
-
-        public void Dispose()
-        {
-            Stop();
+            Database.Initialization.OverrideConnectionDetails(port, "postgres", pgpassword, db_name);
         }
     }
 }

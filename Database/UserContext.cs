@@ -11,5 +11,5 @@ public class UserContext : DbContext
     public DbSet<Kitty> Kitties { get; set; } = null!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder options)
-        => options.UseNpgsql(Initialization.GenerateDBConnectionString("kitty"));
+        => options.UseNpgsql(Initialization.GenerateDBConnectionString());
 }
