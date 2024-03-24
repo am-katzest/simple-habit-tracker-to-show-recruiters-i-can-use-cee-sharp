@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
@@ -43,8 +43,7 @@ public class LoginPassword : UserAuth
     {
         //  from https://stackoverflow.com/questions/16999361/obtain-sha-256-string-of-a-string
         byte[] input = Encoding.UTF8.GetBytes(val + Salt);
-        using var hash = SHA256.Create();
-        var byteArray = hash.ComputeHash(input);
+        var byteArray = System.Security.Cryptography.SHA256.HashData(input);
         return Convert.ToHexString(byteArray);
     }
 

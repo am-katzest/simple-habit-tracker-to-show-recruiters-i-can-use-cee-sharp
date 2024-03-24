@@ -7,14 +7,11 @@ namespace Database.Tests;
 public class ContainerHolder
 {
     private static ContainerHolder? _instance;
-    private static readonly Object _init_lock = new();
     public static ContainerHolder Instance
     {
         get
         {
-
-            if (_instance == null)
-                _instance = new ContainerHolder();
+            _instance ??= new ContainerHolder();
             return _instance;
         }
         set { _instance = value; }
@@ -33,7 +30,7 @@ public class ContainerHolder
 }
 
 
-public class UniqueDatabaseFixture : IDisposable
+public sealed class UniqueDatabaseFixture : IDisposable
 {
     public UniqueDatabaseFixture()
     {
