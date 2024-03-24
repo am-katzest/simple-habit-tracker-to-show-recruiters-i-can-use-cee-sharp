@@ -7,8 +7,8 @@ public sealed class DbConnectionTest
     public void DbStartsAndIsEmpty()
     {
         var ctx = new UserContext();
-        Assert.Throws<Npgsql.PostgresException>(() => ctx.Kitties.Count());
+        Assert.Throws<Npgsql.PostgresException>(() => ctx.Users.Count());
         ctx.Database.EnsureCreated();
-        Assert.Equal(0, ctx.Kitties.Count());
+        Assert.Equal(0, ctx.Users.Count());
     }
 }
