@@ -1,17 +1,8 @@
-using System.Drawing.Printing;
-using System.Threading.Channels;
-using System.Threading.Tasks.Dataflow;
-using Microsoft.EntityFrameworkCore;
-
 namespace Database.Tests;
 
+[Collection("unique database")]
 public sealed class DbConnectionTest
 {
-    public DbConnectionTest()
-    {
-        DbFixture.Instance.UseUniqueDatabase();
-    }
-
     [Fact]
     public void DbStartsAndIsEmpty()
     {
@@ -20,5 +11,4 @@ public sealed class DbConnectionTest
         ctx.Database.EnsureCreated();
         Assert.Equal(0, ctx.Kitties.Count());
     }
-
 }
