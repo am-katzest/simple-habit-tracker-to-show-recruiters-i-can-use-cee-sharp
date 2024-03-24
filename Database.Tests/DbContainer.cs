@@ -21,6 +21,7 @@ namespace Database.Tests
             .WithPortBinding(POSTGRESS_PORT, true)
             .WithEnvironment("POSTGRES_PASSWORD", pgpassword)
             .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(POSTGRESS_PORT))
+            .WithReuse(true)
             .Build();
         }
 
