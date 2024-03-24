@@ -1,4 +1,3 @@
-using Docker.DotNet.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Database.Tests;
@@ -21,11 +20,26 @@ public class UserManagementTest
     public void CanInsertUser()
     {
         reset();
-        var u = new User { DisplayName = "u1", Auth = new LoginPassword { Username = "awawa", Password = "", Salt = "" } };
+        var u = new User { DisplayName = "u1", Auth = new LoginPassword { Username = "awawa", Password = "" } };
         _ctx.Users.Add(u);
         _ctx.SaveChanges();
         Assert.Equal(1, Diff);
     }
+
+    [Fact]
+    public void InsertedUserIsntChanged()
+    {
+        var auth = new LoginPassword { Username = "uniq1", Password = "some password" };
+        var u = new User { DisplayName = "u2", Auth = auth };
+        _ctx.Users.Add(u);
+        _ctx.SaveChanges();
+        var returned = _ctx.Users.Single(u => u.DisplayName == "u2");
+        auth = (LoginPassword)returned.Auth;
+        Assert.True(auth.Username.Equals("uniq1"));
+        Assert.False(auth.Password.Equals("nope, wrong"));
+        Assert.True(auth.Password.Equals("some password"));
+    }
+
     [Fact]
     public void CannotInsertInvalidUser()
     {
