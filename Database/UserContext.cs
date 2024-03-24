@@ -24,6 +24,7 @@ public class LoginPassword : UserAuth
     private string Salt { get; set; } = null!;
 
     // >:3
+    // i don't know where joke stops and encapsulation begins
     [NotMapped]
     public required IEquatable<string> Password
     {
@@ -43,13 +44,12 @@ public class LoginPassword : UserAuth
     {
         //  from https://stackoverflow.com/questions/16999361/obtain-sha-256-string-of-a-string
         byte[] input = Encoding.UTF8.GetBytes(val + Salt);
-        var byteArray = System.Security.Cryptography.SHA256.HashData(input);
-        return Convert.ToHexString(byteArray);
+        return Convert.ToHexString(SHA256.HashData(input));
     }
 
     private void storePassword(IEquatable<string> value)
     {
-        Salt = System.Guid.NewGuid().ToString();
+        Salt = RandomNumberGenerator.GetHexString(40);
         Hash = CalculateHash((string)value);
     }
 }
