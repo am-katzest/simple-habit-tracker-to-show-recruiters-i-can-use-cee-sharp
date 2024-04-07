@@ -25,7 +25,8 @@ public class ContainerHolder
     public void UseUniqueDatabase()
     {
         string rand = System.Guid.NewGuid().ToString();
-        _container.OverrideDefault(rand);
+        string date = System.DateTime.Now.ToString("o");
+        _container.OverrideDefault(date + rand);
     }
 }
 

@@ -1,7 +1,10 @@
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace Database;
 
@@ -17,11 +20,18 @@ public abstract class UserAuth
     public int Id { get; set; }
 } // i plan on adding oauth2
 
+public class DebugAuth : UserAuth
+{
+    public required int Key { get; set; }  // to identify users during tests
+}
+
 public class LoginPassword : UserAuth
 {
     public required string Username { get; init; }
-    private string Hash { get; set; } = null!;
-    private string Salt { get; set; } = null!;
+    [StringLength(64)]
+    public string Hash { get; private set; } = null!;
+    [StringLength(40)]
+    public string Salt { get; private set; } = null!;
 
     // >:3
     // i don't know where joke stops and encapsulation begins
@@ -55,15 +65,26 @@ public class LoginPassword : UserAuth
 }
 
 
+// only way to guarantee strict 1:1 user - userAuth relationship with polymorphism (which i know of)
 public class UserContext : DbContext
 {
     public DbSet<User> Users { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<User>(uu =>
+        {
+            uu.ToTable("Users");
+            uu.HasOne(u => u.Auth).WithOne()
+            .HasForeignKey<UserAuth>(ua => ua.Id);
+            uu.Navigation(u => u.Auth).IsRequired();
+        });
+
         modelBuilder.Entity<UserAuth>()
+            .ToTable("Users")
             .HasDiscriminator<string>("auth_type")
-            .HasValue<LoginPassword>("login_password");
+            .HasValue<LoginPassword>("login_password")
+            .HasValue<DebugAuth>("debug_disabled");
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder options)

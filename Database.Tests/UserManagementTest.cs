@@ -1,3 +1,4 @@
+using DotNet.Testcontainers.Configurations;
 using Microsoft.EntityFrameworkCore;
 
 namespace Database.Tests;
@@ -27,17 +28,27 @@ public class UserManagementTest
     }
 
     [Fact]
+    public void PasswordSaltingWorks()
+    {
+        var a1 = new LoginPassword { Username = "uniq1", Password = "some password" };
+        var a2 = new LoginPassword { Username = "uniq2", Password = "some password" };
+        Assert.NotEqual(a1.Hash, a2.Hash);
+        Assert.NotEqual(a1.Salt, a2.Salt);
+    }
+    [Fact]
     public void InsertedUserIsntChanged()
     {
+
         var auth = new LoginPassword { Username = "uniq1", Password = "some password" };
         var u = new User { DisplayName = "u2", Auth = auth };
         _ctx.Users.Add(u);
         _ctx.SaveChanges();
-        var returned = _ctx.Users.Single(u => u.DisplayName == "u2");
-        auth = (LoginPassword)returned.Auth;
-        Assert.True(auth.Username.Equals("uniq1"));
-        Assert.False(auth.Password.Equals("nope, wrong"));
-        Assert.True(auth.Password.Equals("some password"));
+        User returned = _ctx.Users.Single(u => u.DisplayName == "u2");
+        var auth2 = (LoginPassword)returned.Auth;
+        Assert.True(auth2.Username.Equals("uniq1"));
+        Assert.False(auth2.Password.Equals("nope, wrong"));
+        Assert.True(auth2.Password.Equals("some password"));
+
     }
 
     [Fact]
