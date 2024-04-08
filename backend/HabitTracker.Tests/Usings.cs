@@ -1,2 +1,2 @@
-global using Database;
+global using HabitTracker.Models;
 global using Xunit;

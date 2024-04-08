@@ -1,15 +1,15 @@
-using DotNet.Testcontainers.Configurations;
+using HabitTracker.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace Database.Tests;
+namespace HabitTracker.Tests;
 
 [Collection("unique database")]
 public class UserManagementTest
 {
-    private UserContext _ctx;
+    private HabitTrackerContext _ctx;
     public UserManagementTest()
     {
-        _ctx = new UserContext();
+        _ctx = new HabitTrackerContext();
         _ctx.Database.EnsureCreated();
     }
     private int _saved = 0;

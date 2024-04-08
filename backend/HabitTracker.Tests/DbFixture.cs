@@ -1,7 +1,7 @@
 // isolate tests by giving them different databases on the same postgres container
 // this will backfire terribly if more than one test runs at the same time !!!
 
-namespace Database.Tests;
+namespace HabitTracker.Tests;
 
 
 public class ContainerHolder

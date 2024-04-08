@@ -3,7 +3,7 @@ using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.SqlServer;
 
-namespace Database;
+namespace HabitTracker;
 
 public static class ConnectionStringManager
 {

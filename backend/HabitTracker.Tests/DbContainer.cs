@@ -1,7 +1,6 @@
-using Database;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
-namespace Database.Tests
+namespace HabitTracker.Tests
 {
     public sealed class DbContainer
     {
@@ -33,7 +32,7 @@ namespace Database.Tests
         public void OverrideDefault(string db_name)
         {
             var port = container.GetMappedPublicPort(POSTGRESS_PORT);
-            Database.ConnectionStringManager.OverrideConnectionDetails(port, "postgres", pgpassword, db_name);
+            ConnectionStringManager.OverrideConnectionDetails(port, "postgres", pgpassword, db_name);
         }
     }
 }
