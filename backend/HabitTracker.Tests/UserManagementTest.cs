@@ -1,20 +1,22 @@
-using HabitTracker.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace HabitTracker.Tests;
-
-[Collection("unique database")]
-public class UserManagementTest
+public class UserManagementTest : IClassFixture<UniqueDatabaseFixture>
 {
-    private HabitTrackerContext _ctx;
-    public UserManagementTest()
+    private readonly HabitTrackerContext _ctx;
+
+    public UserManagementTest(UniqueDatabaseFixture fixture)
     {
-        _ctx = new HabitTrackerContext();
+        _ctx = fixture.MakeContext();
         _ctx.Database.EnsureCreated();
     }
-    private int _saved = 0;
-    private void reset() => _saved = _ctx.Users.Count();
-    private int Diff { get { return _ctx.Users.Count() - _saved; } }
+    private int _saved;
+    private void reset()
+    {
+        _saved = _ctx.Users.Count();
+    }
+
+    private int Diff => _ctx.Users.Count() - _saved;
 
     // should catch model being generated in a different way than i think it does
     [Fact]
@@ -43,7 +45,7 @@ public class UserManagementTest
         var u = new User { DisplayName = "u2", Auth = auth };
         _ctx.Users.Add(u);
         _ctx.SaveChanges();
-        User returned = _ctx.Users.Single(u => u.DisplayName == "u2");
+        var returned = _ctx.Users.Single(u => u.DisplayName == "u2");
         var auth2 = (LoginPassword)returned.Auth;
         Assert.True(auth2.Username.Equals("uniq1"));
         Assert.False(auth2.Password.Equals("nope, wrong"));

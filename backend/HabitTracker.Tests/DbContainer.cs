@@ -29,10 +29,6 @@ namespace HabitTracker.Tests
             Task.Run(() => container.StartAsync()).Wait();
         }
 
-        public void OverrideDefault(string db_name)
-        {
-            var port = container.GetMappedPublicPort(POSTGRESS_PORT);
-            ConnectionStringManager.OverrideConnectionDetails(port, "postgres", pgpassword, db_name);
-        }
+        public Helpers.ConnectionDetails RawDetails { get => new($"localhost:{container.GetMappedPublicPort(POSTGRESS_PORT)}", "postgres", pgpassword, null!); }
     }
 }

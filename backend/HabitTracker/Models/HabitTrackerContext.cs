@@ -2,13 +2,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HabitTracker.Models;
 
-public class HabitTrackerContext : DbContext
+public class HabitTrackerContext(String connectionString) : DbContext
 {
     public DbSet<User> Users { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-    // only way to guarantee strict 1:1 user - userAuth relationship with polymorphism (which i know of)
+        // only way to guarantee strict 1:1 user - userAuth relationship with polymorphism (which i know of)
         modelBuilder.Entity<User>(uu =>
         {
             uu.ToTable("Users");
@@ -25,5 +25,5 @@ public class HabitTrackerContext : DbContext
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder options)
-        => options.UseNpgsql(ConnectionStringManager.GetConnectionString());
+        => options.UseNpgsql(connectionString);
 }
