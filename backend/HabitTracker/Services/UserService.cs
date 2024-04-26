@@ -3,6 +3,7 @@
 // yet i don't care :3 (it's not like anyone but me will ever use it)
 
 using HabitTracker.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace HabitTracker.Services;
 
@@ -21,9 +22,18 @@ public class UserService(HabitTrackerContext Context) : IUserService
     {
         var auth = new LoginPassword { Username = username, Password = password };
         var u = new User { DisplayName = username, Auth = auth};
-        Context.Add(u);
-        Context.SaveChanges();
-        return u;
+        Context.Database.BeginTransaction();
+        // c# doesn't let me do this correctly ;-;
+        var existing = Context.Users.Include(u => u.Auth).Count(u => (u.Auth is LoginPassword) && ((LoginPassword)u.Auth).Username == username);
+        if (existing == 0) {
+            Context.Add(u);
+            Context.SaveChanges();
+            Context.Database.CommitTransaction();
+            return u;
+        } else {
+            Context.Database.RollbackTransaction();
+            throw new DuplicateUsernameException();
+        }
     }
 
     string IUserService.createToken(string username, string password)

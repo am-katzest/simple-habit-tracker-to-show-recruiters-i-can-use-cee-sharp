@@ -21,4 +21,10 @@ public class UserServiceTest(CreatedDatabaseFixture Fixture) : IClassFixture<Cre
         Assert.IsType<LoginPassword>(a);
         }
     }
+
+    [Fact]
+    public void InsertingDuplicateUser() {
+        MakeService().createPasswordUser("awawa", "passwd");
+        Assert.Throws<DuplicateUsernameException>(() => MakeService().createPasswordUser("awawa", "passwd"));
+    }
 }
