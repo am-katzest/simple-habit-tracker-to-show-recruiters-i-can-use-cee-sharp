@@ -23,9 +23,9 @@ public class ContainerHolder
 }
 
 
-public sealed class UniqueDatabaseFixture : IDisposable
+public class UniqueDatabaseFixture : IDisposable
 {
-    private string _conn_string;
+    private readonly string _conn_string;
     public UniqueDatabaseFixture()
     {
         string rand = System.Guid.NewGuid().ToString();
@@ -38,4 +38,12 @@ public sealed class UniqueDatabaseFixture : IDisposable
 
     public HabitTrackerContext MakeContext() => new(_conn_string);
     public void Dispose() { }
+}
+
+public class CreatedDatabaseFixture : UniqueDatabaseFixture
+{
+    public CreatedDatabaseFixture() : base()
+    {
+        MakeContext().Database.EnsureCreated();
+    }
 }
