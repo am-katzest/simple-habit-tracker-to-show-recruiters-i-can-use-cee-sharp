@@ -19,7 +19,11 @@ public class UserService(HabitTrackerContext Context) : IUserService
 {
     public User createPasswordUser(string username, string password)
     {
-        throw new NotImplementedException();
+        var auth = new LoginPassword { Username = username, Password = password };
+        var u = new User { DisplayName = username, Auth = auth};
+        Context.Add(u);
+        Context.SaveChanges();
+        return u;
     }
 
     string IUserService.createToken(string username, string password)
