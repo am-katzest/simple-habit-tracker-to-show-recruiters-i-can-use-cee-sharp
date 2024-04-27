@@ -6,6 +6,8 @@ public class HabitTrackerContext(String connectionString) : DbContext
 {
     public DbSet<User> Users { get; set; } = null!;
 
+    public DbSet<Token> Tokens { get; set; } = null!;
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // only way to guarantee strict 1:1 user - userAuth relationship with polymorphism (which i know of)
@@ -22,6 +24,10 @@ public class HabitTrackerContext(String connectionString) : DbContext
             .HasDiscriminator<string>("auth_type")
             .HasValue<LoginPassword>("login_password")
             .HasValue<DebugAuth>("debug_disabled");
+
+        modelBuilder.Entity<Token>()
+            .HasDiscriminator<string>("type")
+            .HasValue<SessionToken>("session");
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder options)
