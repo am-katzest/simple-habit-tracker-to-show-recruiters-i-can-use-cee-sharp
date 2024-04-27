@@ -30,36 +30,44 @@ public class UserServiceTest(CreatedDatabaseFixture Fixture) : IClassFixture<Cre
     public void InsertingDuplicateUser()
     {
         MakeService().createPasswordUser("awawa", "passwd");
+        var count = Fixture.MakeContext().Users.Count();
         Assert.Throws<DuplicateUsernameException>(() => MakeService().createPasswordUser("awawa", "passwd"));
+        var after = Fixture.MakeContext().Users.Count();
+        Assert.Equal(count, after);
     }
 
     [Fact]
     public void TokenCreationTest()
     {
-        var t1 = MakeService().createToken("kitty", "password");
-        var t2 = MakeService().createToken("kitty", "password");
+        MakeService().createPasswordUser("e", "f");
+        var t1 = MakeService().createToken("e", "f");
+        var t2 = MakeService().createToken("e", "f");
         Assert.NotEqual(t1, t2);
     }
 
     [Fact]
     public void TokenCreationInvalid()
     {
-        Assert.Throws<InvalidUsernameOrPasswordException>(() => MakeService().createToken("awawa", "blah"));
-        Assert.Throws<InvalidUsernameOrPasswordException>(() => MakeService().createToken("kitty", "blah"));
+        MakeService().createPasswordUser("f", "g");
+        Assert.Throws<InvalidUsernameOrPasswordException>(() => MakeService().createToken("f", "blah"));
+        Assert.Throws<InvalidUsernameOrPasswordException>(() => MakeService().createToken("not", "blah"));
     }
 
     [Fact]
     public void TokenValidationPositive()
     {
-        var t1 = MakeService().createToken("kitty", "password");
+
+        MakeService().createPasswordUser("d", "e");
+        var t1 = MakeService().createToken("d", "e");
         var u = MakeService().validateToken(t1);
-        Assert.Equal("kitty", u.DisplayName);
+        Assert.Equal("d", u.DisplayName);
     }
 
     [Fact]
     public void TokenValidationNegative()
     {
-        var t1 = MakeService().createToken("kitty", "password");
+        MakeService().createPasswordUser("c", "d");
+        var t1 = MakeService().createToken("c", "d");
         Assert.Throws<InvalidTokenException>(() => MakeService().validateToken(""));
         Assert.Throws<InvalidTokenException>(() => MakeService().validateToken(t1 + "a"));
         Assert.Throws<InvalidTokenException>(() => MakeService(new ConstantClock(DateTime.Now.AddYears(1))).validateToken(t1));
