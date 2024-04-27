@@ -64,4 +64,15 @@ public class UserServiceTest(CreatedDatabaseFixture Fixture) : IClassFixture<Cre
         Assert.Throws<InvalidTokenException>(() => MakeService().validateToken(t1 + "a"));
         Assert.Throws<InvalidTokenException>(() => MakeService(new ConstantClock(DateTime.Now.AddYears(1))).validateToken(t1));
     }
+
+    [Fact]
+    public void TokenDeletionTest()
+    {
+        MakeService().createPasswordUser("kittyy", "password");
+        var t1 = MakeService().createToken("kittyy", "password");
+        var t2 = MakeService().createToken("kittyy", "password");
+        MakeService().removeToken(t2);
+        Assert.NotNull(MakeService().validateToken(t1));
+        Assert.Throws<InvalidTokenException>(() => MakeService().validateToken(t2));
+    }
 }

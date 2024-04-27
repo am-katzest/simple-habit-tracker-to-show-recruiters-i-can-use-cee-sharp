@@ -69,7 +69,7 @@ public class UserService(HabitTrackerContext Context, IClock Clock) : IUserServi
 
     void IUserService.removeToken(string token)
     {
-        throw new NotImplementedException();
+        Context.Tokens.Where(t => t.Id == token).ExecuteDelete();
     }
 
     private bool IsValid(Token t) => t.ExpirationDate > Clock.Now;
