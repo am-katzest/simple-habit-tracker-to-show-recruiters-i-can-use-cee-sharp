@@ -6,3 +6,4 @@ namespace HabitTracker.Services;
 public class UserVisibleException : Exception;
 public class DuplicateUsernameException : UserVisibleException;
 public class InvalidUsernameOrPasswordException : UserVisibleException;
+public class InvalidTokenException : UserVisibleException;

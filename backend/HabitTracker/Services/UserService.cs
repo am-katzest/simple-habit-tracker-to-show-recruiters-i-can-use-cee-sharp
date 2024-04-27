@@ -72,8 +72,22 @@ public class UserService(HabitTrackerContext Context, IClock Clock) : IUserServi
         throw new NotImplementedException();
     }
 
+    private bool IsValid(Token t) => t.ExpirationDate > Clock.Now;
     User IUserService.validateToken(string token)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var t = Context.Tokens.Single(t => t.Id == token);
+            if (IsValid(t) && t is SessionToken st)
+            {
+                Context.Entry(st).Reference(st => st.User).Load(); // another roundtrip for no good reason, on the hottest of paths
+                return st.User;
+            }
+            throw new InvalidTokenException();
+        }
+        catch (Exception)
+        {
+            throw new InvalidTokenException();
+        }
     }
 }

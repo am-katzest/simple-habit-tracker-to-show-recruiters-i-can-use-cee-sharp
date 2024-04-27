@@ -4,7 +4,8 @@ using Microsoft.EntityFrameworkCore;
 
 public class UserServiceTest(CreatedDatabaseFixture Fixture) : IClassFixture<CreatedDatabaseFixture>
 {
-    private IUserService MakeService() => new UserService(Fixture.MakeContext(), new RealClock());
+    private IUserService MakeService() => MakeService(new RealClock());
+    private IUserService MakeService(IClock clock) => new UserService(Fixture.MakeContext(), clock);
 
     [Fact]
     public void UserCreationWorks()
@@ -45,5 +46,22 @@ public class UserServiceTest(CreatedDatabaseFixture Fixture) : IClassFixture<Cre
     {
         Assert.Throws<InvalidUsernameOrPasswordException>(() => MakeService().createToken("awawa", "blah"));
         Assert.Throws<InvalidUsernameOrPasswordException>(() => MakeService().createToken("kitty", "blah"));
+    }
+
+    [Fact]
+    public void TokenValidationPositive()
+    {
+        var t1 = MakeService().createToken("kitty", "password");
+        var u = MakeService().validateToken(t1);
+        Assert.Equal("kitty", u.DisplayName);
+    }
+
+    [Fact]
+    public void TokenValidationNegative()
+    {
+        var t1 = MakeService().createToken("kitty", "password");
+        Assert.Throws<InvalidTokenException>(() => MakeService().validateToken(""));
+        Assert.Throws<InvalidTokenException>(() => MakeService().validateToken(t1 + "a"));
+        Assert.Throws<InvalidTokenException>(() => MakeService(new ConstantClock(DateTime.Now.AddYears(1))).validateToken(t1));
     }
 }
