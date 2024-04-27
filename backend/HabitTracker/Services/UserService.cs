@@ -13,7 +13,7 @@ public interface IUserService
     User createPasswordUser(string username, string password);
     string createToken(string username, string password);
     void removeToken(string token);
-    void deleteUser(string username);
+    void deleteUser(string token);
     User validateToken(string token);
 };
 
@@ -22,7 +22,7 @@ public class UserService(HabitTrackerContext Context) : IUserService
     public User createPasswordUser(string username, string password)
     {
         var auth = new LoginPassword { Username = username, Password = password };
-        var u = new User { DisplayName = username, Auth = auth};
+        var u = new User { DisplayName = username, Auth = auth };
         Context.Database.BeginTransaction();
         if (Context.GetUserByUsername(username) is null)
         {
@@ -30,7 +30,9 @@ public class UserService(HabitTrackerContext Context) : IUserService
             Context.SaveChanges();
             Context.Database.CommitTransaction();
             return u;
-        } else {
+        }
+        else
+        {
             Context.Database.RollbackTransaction();
             throw new DuplicateUsernameException();
         }
