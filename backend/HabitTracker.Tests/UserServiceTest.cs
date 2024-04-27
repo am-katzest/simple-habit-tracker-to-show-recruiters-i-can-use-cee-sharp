@@ -31,4 +31,19 @@ public class UserServiceTest(CreatedDatabaseFixture Fixture) : IClassFixture<Cre
         MakeService().createPasswordUser("awawa", "passwd");
         Assert.Throws<DuplicateUsernameException>(() => MakeService().createPasswordUser("awawa", "passwd"));
     }
+
+    [Fact]
+    public void TokenCreationTest()
+    {
+        var t1 = MakeService().createToken("kitty", "password");
+        var t2 = MakeService().createToken("kitty", "password");
+        Assert.NotEqual(t1, t2);
+    }
+
+    [Fact]
+    public void TokenCreationInvalid()
+    {
+        Assert.Throws<InvalidUsernameOrPasswordException>(() => MakeService().createToken("awawa", "blah"));
+        Assert.Throws<InvalidUsernameOrPasswordException>(() => MakeService().createToken("kitty", "blah"));
+    }
 }

@@ -38,9 +38,28 @@ public class UserService(HabitTrackerContext Context, IClock Clock) : IUserServi
         }
     }
 
+    private string CreateToken(User User)
+    {
+        var t = new SessionToken { ExpirationDate = Clock.Now.AddMinutes(20), User = User };
+        Context.Add(t);
+        Context.SaveChanges();
+        return t.Id;
+    }
+
     string IUserService.createToken(string username, string password)
     {
-        throw new NotImplementedException();
+        var user = Context.GetUserByUsername(username);
+        if (user is not null)
+        {
+            if (user.Auth is LoginPassword lp)
+            {
+                if (lp.Password.Equals(password))
+                {
+                    return CreateToken(user);
+                }
+            }
+        }
+        throw new InvalidUsernameOrPasswordException();
     }
 
     void IUserService.deleteUser(string username)
