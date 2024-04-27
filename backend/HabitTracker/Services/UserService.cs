@@ -13,7 +13,7 @@ public interface IUserService
     User createPasswordUser(string username, string password);
     string createToken(string username, string password);
     void removeToken(string token);
-    void deleteUser(string token);
+    void deleteUser(User user);
     User validateToken(string token);
 };
 
@@ -62,9 +62,10 @@ public class UserService(HabitTrackerContext Context, IClock Clock) : IUserServi
         throw new InvalidUsernameOrPasswordException();
     }
 
-    void IUserService.deleteUser(string username)
+    void IUserService.deleteUser(User user)
     {
-        throw new NotImplementedException();
+        Context.Remove(user);
+        Context.SaveChanges();
     }
 
     void IUserService.removeToken(string token)

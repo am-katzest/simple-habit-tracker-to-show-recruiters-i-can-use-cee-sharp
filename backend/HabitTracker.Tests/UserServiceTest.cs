@@ -75,4 +75,16 @@ public class UserServiceTest(CreatedDatabaseFixture Fixture) : IClassFixture<Cre
         Assert.NotNull(MakeService().validateToken(t1));
         Assert.Throws<InvalidTokenException>(() => MakeService().validateToken(t2));
     }
+
+    [Fact]
+    public void UserDeletionTest()
+    {
+        var s = MakeService();
+        s.createPasswordUser("a", "b");
+        var t = s.createToken("a", "b");
+        var t2 = s.createToken("a", "b");
+        s.deleteUser(s.validateToken(t));
+        Assert.Throws<InvalidTokenException>(() => s.validateToken(t));
+        Assert.Throws<InvalidTokenException>(() => s.validateToken(t2));
+    }
 }
