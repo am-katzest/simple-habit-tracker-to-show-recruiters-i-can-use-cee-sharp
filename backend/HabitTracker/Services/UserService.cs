@@ -15,6 +15,7 @@ public interface IUserService
     void removeToken(string token);
     void deleteUser(User user);
     User validateToken(string token);
+    void clearExpiredTokens();
 };
 
 public class UserService(HabitTrackerContext Context, IClock Clock) : IUserService
@@ -90,5 +91,10 @@ public class UserService(HabitTrackerContext Context, IClock Clock) : IUserServi
         {
             throw new InvalidTokenException();
         }
+    }
+
+    void IUserService.clearExpiredTokens()
+    {
+        Context.Tokens.Where(x => x.ExpirationDate > Clock.Now).ExecuteDelete();
     }
 }

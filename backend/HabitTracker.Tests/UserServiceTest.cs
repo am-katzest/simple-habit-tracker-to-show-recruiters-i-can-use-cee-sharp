@@ -87,4 +87,22 @@ public class UserServiceTest(CreatedDatabaseFixture Fixture) : IClassFixture<Cre
         Assert.Throws<InvalidTokenException>(() => s.validateToken(t));
         Assert.Throws<InvalidTokenException>(() => s.validateToken(t2));
     }
+
+    [Fact]
+    public void TokenClearingTest()
+    {
+        var time1 = new ConstantClock(DateTime.Now.AddDays(531));
+        var time11 = new ConstantClock(DateTime.Now.AddMinutes(5));
+        var time2 = new ConstantClock(DateTime.Now.AddDays(532));
+
+        MakeService(time1).clearExpiredTokens();
+        // from other tests
+        var leftovers = Fixture.MakeContext().Tokens.Count();
+        MakeService(time1).createPasswordUser("b", "c");
+        var t1 = MakeService(time1).createToken("b", "c");
+        var t11 = MakeService(time11).createToken("b", "c");
+        var t2 = MakeService(time2).createToken("b", "c");
+        MakeService(time2).clearExpiredTokens();
+        Assert.Equal(2, Fixture.MakeContext().Tokens.Count() - leftovers);
+    }
 }
