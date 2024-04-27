@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 public class UserServiceTest(CreatedDatabaseFixture Fixture) : IClassFixture<CreatedDatabaseFixture>
 {
-    private IUserService MakeService() => new UserService(Fixture.MakeContext());
+    private IUserService MakeService() => new UserService(Fixture.MakeContext(), new RealClock());
 
     [Fact]
     public void UserCreationWorks()

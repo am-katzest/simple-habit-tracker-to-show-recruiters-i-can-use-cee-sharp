@@ -17,7 +17,7 @@ public interface IUserService
     User validateToken(string token);
 };
 
-public class UserService(HabitTrackerContext Context) : IUserService
+public class UserService(HabitTrackerContext Context, IClock Clock) : IUserService
 {
     public User createPasswordUser(string username, string password)
     {
