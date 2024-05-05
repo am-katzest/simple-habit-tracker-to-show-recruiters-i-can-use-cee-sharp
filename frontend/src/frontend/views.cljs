@@ -3,6 +3,7 @@
    [re-frame.core :as re-frame]
    [re-com.core :as re-com :refer [at]]
    [reagent.core :as r]
+   [frontend.localization :refer [tr]]
    [frontend.styles :as styles]
    [frontend.subs :as subs]))
 
@@ -20,22 +21,22 @@
       [re-com/v-box
        :children
        [[re-com/title :label
-         (if @new-account "create new account" "login")]
+         (if @new-account (tr :login/create-new-account) (tr :login/login))]
         [re-com/v-box
          :children
-         [[re-com/label :label "username"]
+         [[re-com/label :label (tr :login/username)]
           [re-com/input-text
            :change-on-blur? false
            :model username
            :status (status (> (count @username) 2))
            :on-change #(reset! username %)]
-          [re-com/label :label "password"]
+          [re-com/label :label (tr :login/password)]
           [re-com/input-password
            :change-on-blur? false
            :model password
            :status (status (> (count @password) 8))
            :on-change #(reset! password %)]
-          [re-com/label :label "repeat"]
+          [re-com/label :label (tr :login/repeat)]
           [re-com/input-password
            :change-on-blur? false
            :model password2
