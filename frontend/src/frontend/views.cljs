@@ -2,14 +2,51 @@
   (:require
    [re-frame.core :as re-frame]
    [re-com.core :as re-com :refer [at]]
+   [reagent.core :as r]
    [frontend.styles :as styles]
    [frontend.subs :as subs]))
 
+(def <sub re-frame.core/subscribe)
+(def >evt re-frame.core/dispatch)
+
+(defn status [x] (if x :success :warning))
+
+(defn login-register-form []
+  (let [username (r/atom "")
+        password (r/atom "")
+        password2 (r/atom "")
+        new-account (r/atom false)]
+    (fn []
+      [re-com/v-box
+       :children
+       [[re-com/title :label
+         (if @new-account "create new account" "login")]
+        [re-com/v-box
+         :children
+         [[re-com/label :label "username"]
+          [re-com/input-text
+           :change-on-blur? false
+           :model username
+           :status (status (> (count @username) 2))
+           :on-change #(reset! username %)]
+          [re-com/label :label "password"]
+          [re-com/input-password
+           :change-on-blur? false
+           :model password
+           :status (status (> (count @password) 8))
+           :on-change #(reset! password %)]
+          [re-com/label :label "repeat"]
+          [re-com/input-password
+           :change-on-blur? false
+           :model password2
+           :status (status (and (> (count @password2) 8) (= @password @password2)))
+           :on-change #(reset! password2 %)]]]]])))
+
 (defn title []
-  (let [name (re-frame/subscribe [::subs/name])]
+  (let [name (<sub [::subs/name])]
     [re-com/title
      :src   (at)
-     :label (str "Hello from " @name)
+     :label (str "Hello from :3" @name)
      :level :level1
      :class (styles/level1)]))
 
@@ -17,4 +54,4 @@
   [re-com/v-box
    :src      (at)
    :height   "100%"
-   :children [[title]]])
+   :children [[login-register-form]]])
