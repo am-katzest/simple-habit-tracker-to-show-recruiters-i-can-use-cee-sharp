@@ -1,5 +1,5 @@
 #!/usr/bin/bb
-(ns tests.basic
+(ns frontend-test.basic
   (:require [clojure.test :refer [deftest testing is are]]
             [helpers.setup :as s :refer-macros true]
             [etaoin.api :as e]))

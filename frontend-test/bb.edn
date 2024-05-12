@@ -1,2 +1,0 @@
-{:paths ["" "tests" "helpers"]
- :deps {etaoin/etaoin {:git/url "https://github.com/clj-commons/etaoin" :sha "676e08d7f4241d31a3e91f842d4c9ae82b7c53ba"}}}
