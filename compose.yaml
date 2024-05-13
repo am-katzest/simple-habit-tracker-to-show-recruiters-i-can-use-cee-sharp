@@ -1,0 +1,31 @@
+services:
+  nginx:
+    image: "nginx:1.25.5-alpine"
+    ports:
+      - "8580:80"
+    networks:
+      - outer
+      - inner
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - compiled-frontend:/var/www/mnt
+  frontend:
+    build: ./frontend
+    volumes:
+      - compiled-frontend:/opt/build/resources/public
+  # backend:
+  #   ports:
+  #     - "8000:5000"
+  db: # without persistance for now
+    image: "postgres:16.2"
+    ports:
+      - "15432:5432"
+    environment:
+      - "POSTGRES_PASSWORD=pgpassword"
+
+networks:
+  outer:
+  inner:
+
+volumes:
+  compiled-frontend:
