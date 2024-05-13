@@ -13,15 +13,25 @@ services:
     build: ./frontend
     volumes:
       - compiled-frontend:/opt/build/resources/public
-  # backend:
-  #   ports:
-  #     - "8000:5000"
+  backend:
+    build: ./backend
+    environment:
+      - "SHT_DB_HOST=db:15432"
+      - "SHT_DB_USER=postgres"
+      - "SHT_DB_PASSWORD=pgpassword"
+      - "ASPNETCORE_URLS=http://+:8680"
+    ports:
+      - "8680"
+    networks:
+      - inner
   db: # without persistance for now
     image: "postgres:16.2"
     ports:
       - "15432:5432"
     environment:
       - "POSTGRES_PASSWORD=pgpassword"
+    networks:
+      - inner
 
 networks:
   outer:
