@@ -17,12 +17,14 @@ public class HostFixture : CreatedDatabaseFixture
                     .ConfigureServices(services =>
                     {
 
-                        services.AddControllers().AddApplicationPart(typeof(HabitTracker.Models.HabitTrackerContext).Assembly);
+                        services.AddControllersAndBinders();
                         services.RegisterServices(MakeContext, new RealClock());
+                        services.AddAuth();
                     }).Configure(x =>
                     {
                         x.UseAuthentication();
                         x.UseRouting();
+                        x.UseAuthorization();
                         x.UseEndpoints(e => e.MapControllers());
                     });
             })

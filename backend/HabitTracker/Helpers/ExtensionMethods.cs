@@ -8,11 +8,12 @@ public static class SetupExtensionMethods
 {
     public static void AddControllersAndBinders(this IServiceCollection services)
     {
-        services.AddControllers(options =>
+         services.AddControllers(options =>
      {
          // add user binder
          options.ModelBinderProviders.Insert(0, new Controllers.UserModelBinderProvider());
-     });
+    // necessery to make it work when called from other (test) assembly
+     }).AddApplicationPart(typeof(HabitTrackerContext).Assembly);;
     }
     public static void RegisterServices(this IServiceCollection services, Func<HabitTrackerContext> db, IClock clock)
     {
