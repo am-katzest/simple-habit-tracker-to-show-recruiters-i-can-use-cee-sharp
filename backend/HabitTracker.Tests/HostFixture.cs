@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.TestHost;
 
 namespace HabitTracker.Tests;
 
-public class HostFixture : UniqueDatabaseFixture
+public class HostFixture : CreatedDatabaseFixture
 {
     // doing all the setup takes ~10ms
     public IHost makeHost()
