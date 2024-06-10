@@ -1,9 +1,8 @@
 //authentication puts user into context.Items
 using HabitTracker.DTOs;
-using HabitTracker.Models;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
-namespace HabitTracker.Controllers;
+namespace HabitTracker.Auth;
 
 public class UserModelBinder : IModelBinder
 {
