@@ -5,7 +5,7 @@ using HabitTracker.Auth;
 
 namespace HabitTracker.Helpers;
 
-public static class SetupExtensionMethods
+public static class StartupExtensionMethods
 {
     public static void AddControllersAndBinders(this IServiceCollection services)
     {
