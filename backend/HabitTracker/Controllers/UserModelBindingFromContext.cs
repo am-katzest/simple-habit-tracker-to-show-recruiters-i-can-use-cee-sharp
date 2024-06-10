@@ -1,4 +1,5 @@
 //authentication puts user into context.Items
+using HabitTracker.DTOs;
 using HabitTracker.Models;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
@@ -10,9 +11,10 @@ public class UserModelBinder : IModelBinder
     {
         bindingContext.Result = bindingContext.HttpContext.Items["user"] switch
         {
-            User user => ModelBindingResult.Success(user),
+            UserIdOnly user_id => ModelBindingResult.Success(user_id),
             _ => ModelBindingResult.Failed(),
         };
+        // bindingContext.Result = ModelBindingResult.Success(null!);
         return Task.CompletedTask;
     }
 }
@@ -20,5 +22,5 @@ public class UserModelBinder : IModelBinder
 public class UserModelBinderProvider : IModelBinderProvider
 {
     public IModelBinder? GetBinder(ModelBinderProviderContext context) =>
-        context.Metadata.ModelType == typeof(User) ? new UserModelBinder() : null;
+        context.Metadata.ModelType == typeof(UserIdOnly) ? new UserModelBinder() : null;
 }

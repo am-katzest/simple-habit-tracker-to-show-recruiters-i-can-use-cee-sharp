@@ -1,6 +1,7 @@
 
 using System.Net.Http.Headers;
 using HabitTracker.Authentication;
+using HabitTracker.DTOs;
 using HabitTracker.Services;
 using HabitTracker.Tests;
 using Microsoft.AspNetCore.Builder;
@@ -43,8 +44,8 @@ public class AuthenticationTest(CreatedDatabaseFixture Fixture) : IClassFixture<
                             {
                                 var uname = c.Items["user"] switch
                                 {
-                                    User u => u.DisplayName,
-                                    _ => "guh"
+                                    UserIdOnly u => "something",
+                                    _ => "nothing"
                                 };
                                 await c.Response.WriteAsync(uname);
                             }).RequireAuthorization();
@@ -81,6 +82,6 @@ public class AuthenticationTest(CreatedDatabaseFixture Fixture) : IClassFixture<
         c.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(t);
         var correct = await c.GetAsync("/auth");
         Assert.Equal(System.Net.HttpStatusCode.OK, correct.StatusCode);
-        Assert.Equal("meow", await correct.Content.ReadAsStringAsync());
+        Assert.Equal("something", await correct.Content.ReadAsStringAsync());
     }
 }

@@ -10,10 +10,10 @@ namespace HabitTracker.Controllers;
 public class UserController(IUserService Service) : ControllerBase
 {
     [HttpPost("Create")]
-    public ActionResult<string> CreateUserLoginPassword(UserLoginPassword lp)
+    public ActionResult<int> CreateUserLoginPassword(UserLoginPassword lp)
     {
-        Service.createPasswordUser(lp.Login, lp.Password);
-        return new(Service.createToken(lp.Login, lp.Password));
+        var u = Service.createPasswordUser(lp.Login, lp.Password);
+        return new(u.Id);
     }
 
     [HttpGet("AuthToken")]
