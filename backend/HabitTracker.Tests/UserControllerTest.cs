@@ -1,5 +1,5 @@
 using System.Net.Http.Headers;
-using HabitTracker.DTOs;
+using HabitTracker.DTOs.User;
 using Microsoft.AspNetCore.TestHost;
 using static System.Net.HttpStatusCode;
 
@@ -11,7 +11,7 @@ public class UserControllerTest(HostFixture fixture) : IClassFixture<HostFixture
     {
         using var h = fixture.makeHost();
         using var c = h.GetTestClient();
-        var lp = new UserLoginPassword() { Login = "kitty", Password = "cat" };
+        var lp = new Credentials("kitty", "cat");
         var ans1 = await c.PostAsJsonAsync("api/user/create", lp);
         Assert.Equal(OK, ans1.StatusCode);
     }
@@ -30,15 +30,13 @@ public class UserControllerTest(HostFixture fixture) : IClassFixture<HostFixture
     {
         using var h = fixture.makeHost();
         using var c = h.GetTestClient();
-        var lp = new UserLoginPassword() { Login = "user1", Password = "cat" };
+        var lp = new Credentials("user1", "cat");
         var ans1 = await c.PostAsJsonAsync("api/user/create", lp);
         Assert.Equal(OK, ans1.StatusCode);
         Assert.True(await c.AuthenticateUser(lp));
-        var ans2 = await c.GetAsync("api/user/id");
-        Assert.Equal(OK, ans2.StatusCode);
+        var ans2 = await c.GetFromJsonAsync<AccountDetails>("api/user/me");
         var id1 = await ans1.Content.ReadAsStringAsync();
-        var id2 = await ans2.Content.ReadAsStringAsync();
-        Assert.Equal(id1, id2);
-        Assert.NotEqual("", id2);
+        Assert.NotNull(ans2);
+        Assert.Equal(id1, ans2!.Id.ToString());
     }
 }

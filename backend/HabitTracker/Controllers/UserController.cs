@@ -1,4 +1,4 @@
-using HabitTracker.DTOs;
+using HabitTracker.DTOs.User;
 using HabitTracker.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,22 +10,21 @@ namespace HabitTracker.Controllers;
 public class UserController(IUserService Service) : ControllerBase
 {
     [HttpPost("Create")]
-    public ActionResult<int> CreateUserLoginPassword(UserLoginPassword lp)
+    public ActionResult<int> CreateUserLoginPassword(Credentials cred)
     {
-        var u = Service.createPasswordUser(lp.Login, lp.Password);
-        return new(u.Id);
+        return new(Service.createPasswordUser(cred).Id);
     }
 
     [HttpPost("CreateToken")]
-    public ActionResult<string> GetAuthToken(UserLoginPassword lp)
+    public ActionResult<string> GetAuthToken(Credentials cred)
     {
-        return new(Service.createToken(lp.Login, lp.Password));
+        return new(Service.createToken(cred));
     }
-    // mostly for testing
+    
     [Authorize]
-    [HttpGet("id")]
-    public ActionResult<int> GetUserId([ModelBinder] UserIdOnly user)
+    [HttpGet("me")]
+    public ActionResult<AccountDetails> GetUserData([ModelBinder] IdOnly user)
     {
-        return new(user.id);
+        return new(Service.GetAccountDetails(user));
     }
 }

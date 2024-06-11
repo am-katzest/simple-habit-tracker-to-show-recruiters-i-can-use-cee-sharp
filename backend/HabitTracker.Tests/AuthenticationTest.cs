@@ -1,16 +1,9 @@
 
 using System.Net.Http.Headers;
 using HabitTracker.Authentication;
-using HabitTracker.DTOs;
 using HabitTracker.Services;
 using HabitTracker.Tests;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 
 public class AuthenticationTest(CreatedDatabaseFixture Fixture) : IClassFixture<CreatedDatabaseFixture>
 {
@@ -44,7 +37,7 @@ public class AuthenticationTest(CreatedDatabaseFixture Fixture) : IClassFixture<
                             {
                                 var uname = c.Items["user"] switch
                                 {
-                                    UserIdOnly u => "something",
+                                    HabitTracker.DTOs.User.IdOnly u => "something",
                                     _ => "nothing"
                                 };
                                 await c.Response.WriteAsync(uname);
@@ -60,8 +53,8 @@ public class AuthenticationTest(CreatedDatabaseFixture Fixture) : IClassFixture<
     [Fact]
     public async void Negative()
     {
-        MakeService().createPasswordUser("a", "b");
-        var t = MakeService().createToken("a", "b");
+        MakeService().createPasswordUser(new("a", "b"));
+        var t = MakeService().createToken(new("a", "b"));
         Assert.NotNull(MakeService().validateToken(t));
         using var h = makeHost();
         var c = h.GetTestClient();
@@ -74,8 +67,8 @@ public class AuthenticationTest(CreatedDatabaseFixture Fixture) : IClassFixture<
     [Fact]
     public async void Positive()
     {
-        MakeService().createPasswordUser("meow", "b");
-        var t = MakeService().createToken("meow", "b");
+        MakeService().createPasswordUser(new("meow", "b"));
+        var t = MakeService().createToken(new("meow", "b"));
         Assert.NotNull(MakeService().validateToken(t));
         using var h = makeHost();
         var c = h.GetTestClient();
