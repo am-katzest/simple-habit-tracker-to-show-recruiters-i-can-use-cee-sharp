@@ -1,11 +1,10 @@
 using System.Net.Http.Headers;
-using HabitTracker.DTOs;
 
 namespace HabitTracker.Tests;
 
 public static class HttpClientExtensionMethods
 {
-    public static async Task<bool> AuthenticateUser(this HttpClient c, UserLoginPassword credentials) {
+    public static async Task<bool> AuthenticateUser(this HttpClient c, DTOs.User.Credentials credentials) {
         var ans = await c.PostAsJsonAsync("api/user/createtoken", credentials);
         if (!ans.IsSuccessStatusCode) {
             return false;

@@ -1,17 +1,18 @@
 using HabitTracker.Authentication;
 using HabitTracker.Models;
 using HabitTracker.Services;
+using HabitTracker.Auth;
 
 namespace HabitTracker.Helpers;
 
-public static class SetupExtensionMethods
+public static class StartupExtensionMethods
 {
     public static void AddControllersAndBinders(this IServiceCollection services)
     {
          services.AddControllers(options =>
      {
          // add user binder
-         options.ModelBinderProviders.Insert(0, new Controllers.UserModelBinderProvider());
+         options.ModelBinderProviders.Insert(0, new UserModelBinderProvider());
     // necessery to make it work when called from other (test) assembly
      }).AddApplicationPart(typeof(HabitTrackerContext).Assembly);;
     }
