@@ -5,8 +5,7 @@
    [frontend.events :as events]
    [frontend.views :as views]
    [frontend.config :as config]
-   ))
-
+   [day8.re-frame.http-fx]))
 
 (defn dev-setup []
   (when config/debug?
