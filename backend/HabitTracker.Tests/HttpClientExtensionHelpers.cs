@@ -13,4 +13,11 @@ public static class HttpClientExtensionMethods
         c.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(token);
         return true;
     }
+    public static async Task<bool> RegisterUser(this HttpClient c, DTOs.User.Credentials credentials) {
+        var ans = await c.PostAsJsonAsync("api/user/create", credentials);
+        if (!ans.IsSuccessStatusCode) {
+            return false;
+        }
+        return await c.AuthenticateUser(credentials);
+    }
 }
