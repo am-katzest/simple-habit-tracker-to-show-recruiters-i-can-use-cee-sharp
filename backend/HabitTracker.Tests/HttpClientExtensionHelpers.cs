@@ -5,7 +5,7 @@ namespace HabitTracker.Tests;
 public static class HttpClientExtensionMethods
 {
     public static async Task<bool> AuthenticateUser(this HttpClient c, DTOs.User.Credentials credentials) {
-        var ans = await c.PostAsJsonAsync("api/user/createtoken", credentials);
+        var ans = await c.PostAsJsonAsync("api/users/createtoken", credentials);
         if (!ans.IsSuccessStatusCode) {
             return false;
         }
@@ -14,7 +14,7 @@ public static class HttpClientExtensionMethods
         return true;
     }
     public static async Task<bool> RegisterUser(this HttpClient c, DTOs.User.Credentials credentials) {
-        var ans = await c.PostAsJsonAsync("api/user/create", credentials);
+        var ans = await c.PostAsJsonAsync("api/users", credentials);
         if (!ans.IsSuccessStatusCode) {
             return false;
         }

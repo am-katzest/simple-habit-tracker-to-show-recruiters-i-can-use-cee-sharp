@@ -7,9 +7,9 @@ namespace HabitTracker.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class UserController(IUserService Service) : ControllerBase
+public class UsersController(IUserService Service) : ControllerBase
 {
-    [HttpPost("Create")]
+    [HttpPost("")]
     public ActionResult<int> CreateUserLoginPassword(Credentials cred)
     {
         return new(Service.createPasswordUser(cred).Id);

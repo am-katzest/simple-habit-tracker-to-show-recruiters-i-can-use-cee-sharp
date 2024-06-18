@@ -12,7 +12,7 @@ public class UserControllerTest(HostFixture fixture) : IClassFixture<HostFixture
         using var h = fixture.makeHost();
         using var c = h.GetTestClient();
         var lp = new Credentials("kitty", "cat");
-        var ans1 = await c.PostAsJsonAsync("api/user/create", lp);
+        var ans1 = await c.PostAsJsonAsync("api/users", lp);
         Assert.Equal(OK, ans1.StatusCode);
     }
 
@@ -22,7 +22,7 @@ public class UserControllerTest(HostFixture fixture) : IClassFixture<HostFixture
         using var h = fixture.makeHost();
         using var c = h.GetTestClient();
         c.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("awawa");
-        var ans1 = await c.GetAsync("api/user/displayname");
+        var ans1 = await c.GetAsync("api/users/me");
         Assert.NotEqual(OK, ans1.StatusCode);
     }
     [Fact]
@@ -31,10 +31,10 @@ public class UserControllerTest(HostFixture fixture) : IClassFixture<HostFixture
         using var h = fixture.makeHost();
         using var c = h.GetTestClient();
         var lp = new Credentials("user1", "cat");
-        var ans1 = await c.PostAsJsonAsync("api/user/create", lp);
+        var ans1 = await c.PostAsJsonAsync("api/users", lp);
         Assert.Equal(OK, ans1.StatusCode);
         Assert.True(await c.AuthenticateUser(lp));
-        var ans2 = await c.GetFromJsonAsync<AccountDetails>("api/user/me");
+        var ans2 = await c.GetFromJsonAsync<AccountDetails>("api/users/me");
         var id1 = await ans1.Content.ReadAsStringAsync();
         Assert.NotNull(ans2);
         Assert.Equal(id1, ans2!.Id.ToString());
@@ -46,7 +46,7 @@ public class UserControllerTest(HostFixture fixture) : IClassFixture<HostFixture
         using var c = h.GetTestClient();
         var lp = new Credentials("user2", "cat");
         Assert.True(await c.RegisterUser(lp));
-        var ans = await c.DeleteAsync("/api/user/me");
+        var ans = await c.DeleteAsync("/api/users/me");
         Assert.True(ans.IsSuccessStatusCode);
         Assert.False((await c.GetAsync("/api/users/me")).IsSuccessStatusCode);
         //Assert.False(await c.AuthenticateUser(lp)); TODO
