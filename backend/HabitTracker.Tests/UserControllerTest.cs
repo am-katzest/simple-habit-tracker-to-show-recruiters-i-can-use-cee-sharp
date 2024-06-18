@@ -39,4 +39,16 @@ public class UserControllerTest(HostFixture fixture) : IClassFixture<HostFixture
         Assert.NotNull(ans2);
         Assert.Equal(id1, ans2!.Id.ToString());
     }
+    [Fact]
+    public async void DeletionPositive()
+    {
+        using var h = fixture.makeHost();
+        using var c = h.GetTestClient();
+        var lp = new Credentials("user2", "cat");
+        Assert.True(await c.RegisterUser(lp));
+        var ans = await c.DeleteAsync("/api/user/me");
+        Assert.True(ans.IsSuccessStatusCode);
+        Assert.False((await c.GetAsync("/api/users/me")).IsSuccessStatusCode);
+        //Assert.False(await c.AuthenticateUser(lp)); TODO
+    }
 }

@@ -20,11 +20,18 @@ public class UserController(IUserService Service) : ControllerBase
     {
         return new(Service.createToken(cred));
     }
-    
+
     [Authorize]
     [HttpGet("me")]
     public ActionResult<AccountDetails> GetUserData([ModelBinder] IdOnly user)
     {
         return new(Service.GetAccountDetails(user));
+    }
+    [Authorize]
+    [HttpDelete("me")]
+    public ActionResult<bool> DeleteUser([ModelBinder] IdOnly user)
+    {
+        Service.deleteUser(user);
+        return new(true);
     }
 }
