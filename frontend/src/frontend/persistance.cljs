@@ -1,4 +1,4 @@
-(ns frontend.panel)
+(ns frontend.persistance)
 
 (defn sstr->map [sstr]
   (try (->>
@@ -32,3 +32,8 @@
 
 (defn set-panel! [panel]
   (store-url-info! {:panel panel}))
+
+(def sync-url
+  {:id      :sync-url
+   :after   (fn [context]
+              (set-panel! (-> context :effects :db :panel)))})

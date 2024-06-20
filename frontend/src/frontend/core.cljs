@@ -5,7 +5,7 @@
    [frontend.events :as events]
    [frontend.views :as views]
    [frontend.config :as config]
-   [frontend.panel :as p]
+   [frontend.persistance :as p]
    [day8.re-frame.http-fx]))
 
 (defn dev-setup []
