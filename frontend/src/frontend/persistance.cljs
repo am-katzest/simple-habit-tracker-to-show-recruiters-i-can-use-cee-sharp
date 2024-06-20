@@ -23,13 +23,12 @@
 (defn store-url-info! [m]
   (set! (.. js/window -location -search) (map->sstr m)))
 
-(defn initialize-to-login-if-no-found! []
+(defn initialize-to-login-if-no-found! [default]
   (let [current (get-url-info)]
     (when-not current
-      (store-url-info! {:panel :login}))))
+      (store-url-info! {:panel default}))))
 
 (defn get-panel! []
-  (initialize-to-login-if-no-found!)
   (:panel (get-url-info)))
 
 (defn set-panel! [panel]
