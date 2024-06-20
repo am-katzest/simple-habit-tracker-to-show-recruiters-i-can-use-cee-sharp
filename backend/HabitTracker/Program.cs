@@ -11,7 +11,9 @@ var ctx = builder.Services.BuildServiceProvider().GetRequiredService<HabitTracke
 ctx.Database.EnsureCreated(); // temporary
 
 var app = builder.Build();
+app.UseAuthentication();
 app.UseRouting();
+app.UseAuthorization();
 app.UseHttpsRedirection();
 app.UseEndpoints(e => e.MapControllers());
 app.Run();
