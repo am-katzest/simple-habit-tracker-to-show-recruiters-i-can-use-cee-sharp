@@ -5,8 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddControllers();
+builder.Services.AddControllersAndBinders();
 builder.Services.RegisterServicesProduction();
+builder.Services.AddAuth();
 var ctx = builder.Services.BuildServiceProvider().GetRequiredService<HabitTrackerContext>();
 ctx.Database.EnsureCreated(); // temporary
 
