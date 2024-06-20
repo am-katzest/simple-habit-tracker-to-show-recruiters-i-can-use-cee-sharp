@@ -1,5 +1,7 @@
 (ns frontend.persistance)
 
+;; url
+
 (defn sstr->map [sstr]
   (try (->>
         (-> sstr (.substring 1) (.split "&"))
@@ -37,3 +39,11 @@
   {:id      :sync-url
    :after   (fn [context]
               (set-panel! (-> context :effects :db :panel)))})
+
+;; local storage
+
+(defn get-token []
+  (.getItem (.-localStorage js/window) "token"))
+
+(defn set-token! [token]
+  (.setItem (.-localStorage js/window) "token" token))
