@@ -2,7 +2,8 @@
   (:require
    [re-frame.core :as re-frame]
    [frontend.db :as db]
-   [ajax.core :as ajax]))
+   [ajax.core :as ajax]
+   [frontend.persistance :as p]))
 
 (defn request [method path on-success on-failure & keywords]
   (apply assoc
@@ -28,8 +29,33 @@
  (fn [_ [_ username password]]
    (let [body {:login username
                :password password}]
-     ;; (js/alert (str [username password]))
-     {:http-xhrio (request :post "/users/" [:show] [:show] :params body)})))
+     {:http-xhrio (request :post "/users/" [::ask-for-token username password] [:show] :params body)})))
+
+(re-frame/reg-event-fx
+ ::ask-for-token
+ (fn [_ [_ username password]]
+   (let [body {:login username
+               :password password}]
+     {:http-xhrio (request :post "/users/createtoken" [::receive-token] [:show] :params body)})))
+
+(re-frame/reg-event-fx
+ ::receive-token
+ (fn [{:keys [db]} [_ token]]
+   (let [panel (if (= :login (:panel db))
+                 :home
+                 (:panel db))
+         db (assoc db :token token :panel panel)]
+     (cond->
+      {:db db
+       :store-token token
+       :set-panel panel}
+       (nil? (:user db))
+       (assoc :http-xhrio (request-auth db :get "/users/me" [::receive-user] [:show]))))))
+
+(re-frame/reg-event-db
+ ::receive-user
+ (fn [db [_ user]]
+   (assoc db :user user)))
 
 (re-frame/reg-event-fx
  :show
