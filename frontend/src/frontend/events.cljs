@@ -13,6 +13,11 @@
           :on-success      on-success
           :on-failure      on-failure} keywords))
 
+(defn request-auth [db & other]
+  (assoc-in (apply request other)
+            [:headers "Authorization"]
+            (str "SessionToken " (:token db))))
+
 (re-frame/reg-event-db
  ::initialize-db
  (fn [_ [_ panel]]
