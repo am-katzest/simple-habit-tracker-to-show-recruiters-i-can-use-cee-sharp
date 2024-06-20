@@ -19,11 +19,16 @@ public class LocalAuthenticationHandler(
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
     {
         var a = Request.Headers.Authorization;
-        var token = a.FirstOrDefault("");
-        if (token is null or "")
+        var auth = a.FirstOrDefault("");
+        if (auth is null or "")
         {
             return AuthenticateResult.NoResult();
         }
+        var words = auth.Split(" ");
+        if (words is null || words.Length != 2 || words[0] != "SessionToken") {
+            return AuthenticateResult.Fail("invalid authentication format");
+        }
+        var token = words[1];
         try
         {
             var user = service.validateToken(token);

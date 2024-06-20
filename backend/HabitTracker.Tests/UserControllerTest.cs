@@ -21,10 +21,11 @@ public class UserControllerTest(HostFixture fixture) : IClassFixture<HostFixture
     {
         using var h = fixture.makeHost();
         using var c = h.GetTestClient();
-        c.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("awawa");
+        c.UseToken("awawa");
         var ans1 = await c.GetAsync("api/users/me");
         Assert.NotEqual(OK, ans1.StatusCode);
     }
+
     [Fact]
     public async void AuthorizationPositive()
     {

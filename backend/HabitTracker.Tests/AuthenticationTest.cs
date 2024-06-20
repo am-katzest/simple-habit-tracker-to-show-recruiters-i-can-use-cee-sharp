@@ -62,6 +62,8 @@ public class AuthenticationTest(CreatedDatabaseFixture Fixture) : IClassFixture<
         Assert.Equal(System.Net.HttpStatusCode.Unauthorized, (await c.GetAsync("/auth")).StatusCode);
         c.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("meow!");
         Assert.Equal(System.Net.HttpStatusCode.Unauthorized, (await c.GetAsync("/auth")).StatusCode);
+        c.UseToken("meow!");
+        Assert.Equal(System.Net.HttpStatusCode.Unauthorized, (await c.GetAsync("/auth")).StatusCode);
     }
 
     [Fact]
@@ -72,7 +74,7 @@ public class AuthenticationTest(CreatedDatabaseFixture Fixture) : IClassFixture<
         Assert.NotNull(MakeService().validateToken(t));
         using var h = makeHost();
         var c = h.GetTestClient();
-        c.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(t);
+        c.UseToken(t);
         var correct = await c.GetAsync("/auth");
         Assert.Equal(System.Net.HttpStatusCode.OK, correct.StatusCode);
         Assert.Equal("something", await correct.Content.ReadAsStringAsync());

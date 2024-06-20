@@ -10,8 +10,12 @@ public static class HttpClientExtensionMethods
             return false;
         }
         var token = await ans.Content.ReadAsStringAsync();
-        c.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(token);
+        c.UseToken(token);
         return true;
+    }
+
+    public static void UseToken(this HttpClient c, string token) {
+        c.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("SessionToken", token);
     }
     public static async Task<bool> RegisterUser(this HttpClient c, DTOs.User.Credentials credentials) {
         var ans = await c.PostAsJsonAsync("api/users", credentials);
