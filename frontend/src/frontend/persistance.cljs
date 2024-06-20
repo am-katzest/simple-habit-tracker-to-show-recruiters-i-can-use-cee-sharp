@@ -20,8 +20,14 @@
 (defn get-url-info []
   (sstr->map (.. js/window -location -search)))
 
+(defn change-url-query "without reloading" [q]
+  (let [hist (.. js/window -history)
+        url (new js/URL (.. js/window -location -href))]
+    (set!  (.-search url) q)
+    (.pushState hist nil nil url)))
+
 (defn store-url-info! [m]
-  (set! (.. js/window -location -search) (map->sstr m)))
+  (change-url-query (map->sstr m)))
 
 (defn initialize-to-login-if-no-found! [default]
   (let [current (get-url-info)]
