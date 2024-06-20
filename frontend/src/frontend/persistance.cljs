@@ -1,4 +1,5 @@
-(ns frontend.persistance)
+(ns frontend.persistance
+  (:require [re-frame.core :as re-frame]))
 
 ;; url
 
@@ -40,10 +41,10 @@
 (defn set-panel! [panel]
   (store-url-info! {:panel panel}))
 
-(def sync-url
-  {:id      :sync-url
-   :after   (fn [context]
-              (set-panel! (-> context :effects :db :panel)))})
+(re-frame/reg-fx
+ :set-panel
+ (fn [value]
+   (set-panel! value)))
 
 ;; local storage
 
@@ -51,4 +52,9 @@
   (.getItem (.-localStorage js/window) "token"))
 
 (defn set-token! [token]
-  (.setItem (.-localStorage js/window) "token" token))
+  (.setItem (.-localStorage js/window) "token" (str token)))
+
+(re-frame/reg-fx
+ :store-token
+ (fn [value]
+   (set-token! value)))
