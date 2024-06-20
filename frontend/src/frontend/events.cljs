@@ -58,6 +58,13 @@
    (assoc db :user user)))
 
 (re-frame/reg-event-fx
+ ::logout
+ (fn [_ [_]]
+   {:db (assoc db/default-db :panel :login)
+    :store-token nil
+    :set-panel :login}))
+
+(re-frame/reg-event-fx
  :show
  (fn [_ & args]
    (js/alert (str args))))
