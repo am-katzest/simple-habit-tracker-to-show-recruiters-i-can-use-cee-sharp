@@ -12,4 +12,10 @@
             :login "login"
             :password "password"
             :repeat "repeat password"
-            :username "username"})})
+            :username "username"
+            :register-new-account "new account"
+            :login-old-account "login"}
+          #:nav
+           {:logout "logout"
+            :account "account"
+            :home "home"})})

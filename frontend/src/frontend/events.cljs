@@ -68,3 +68,13 @@
  :show
  (fn [_ & args]
    (js/alert (str args))))
+
+(re-frame/reg-event-db
+ ::account-panel
+ (fn [db & _]
+   (assoc db :panel :account)))
+
+(re-frame/reg-event-db
+ ::home-panel
+ (fn [db & _]
+   (assoc db :panel :home)))
