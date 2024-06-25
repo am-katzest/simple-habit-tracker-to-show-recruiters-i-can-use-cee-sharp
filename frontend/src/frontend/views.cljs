@@ -55,7 +55,7 @@
       (let [username-ok (> (count @username) 1)
             password-ok (> (count @password) 1)
             ready? (and username-ok password-ok)
-            submit (when ready? (fn [] (>evt [::e/ask-for-token @username @password])))]
+            submit (when ready? (fn [] (>evt [::e/ask-for-token-login @username @password])))]
         [re-com/v-box
          :children
          [[re-com/label :label (tr :login/username)]

@@ -18,4 +18,6 @@
           #:nav
            {:logout "logout"
             :account "account"
-            :home "home"})})
+            :home "home"}
+          #:error
+           {:wrong-cred "invalid username or password"})})

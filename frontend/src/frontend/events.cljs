@@ -40,6 +40,13 @@
      {:http-xhrio (request :post "/users/createtoken" [::receive-token] [:show] :params body)})))
 
 (re-frame/reg-event-fx
+ ::ask-for-token-login
+ (fn [_ [_ username password]]
+   (let [body {:login username
+               :password password}]
+     {:http-xhrio (request :post "/users/createtoken" [::receive-token] [::add-alert [:danger :body (tr :error/wrong-cred)]] :params body)})))
+
+(re-frame/reg-event-fx
  ::receive-token
  (fn [{:keys [db]} [_ token]]
    (let [panel (if (= :login (:panel db))
