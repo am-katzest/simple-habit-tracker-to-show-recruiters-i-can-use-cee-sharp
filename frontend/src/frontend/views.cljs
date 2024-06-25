@@ -144,10 +144,21 @@
              :home home-panel
              :account account-panel})
 
+(defn alerts []
+  (let [alerts (<sub [::subs/alerts])]
+    (when-not (empty? @alerts)
+      [:div.position-fixed.bottom-0.end-0.p-3
+       (re-com/v-box
+        :gap "20px"
+        :children (map
+                   (fn [a] (apply re-com/alert-box :closeable? true :on-close #(>evt [::e/close-alert (:id a)]) (apply concat a))) @alerts))])))
+
 (defn main-panel []
   (let [panel (or (panels @(<sub [::subs/panel])) title)]
     (if (= :login @(<sub [::subs/panel]))
-      [panel]
+      [:div [panel]
+       [alerts]]
       [:div
        [navbar]
-       [panel]])))
+       [panel]
+       [alerts]])))

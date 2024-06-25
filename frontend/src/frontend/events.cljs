@@ -2,6 +2,7 @@
   (:require
    [re-frame.core :as re-frame]
    [frontend.db :as db]
+   [frontend.localization :refer [tr]]
    [ajax.core :as ajax]
    [frontend.persistance :as p]))
 
@@ -78,3 +79,15 @@
  ::home-panel
  (fn [db & _]
    (assoc db :panel :home)))
+
+(re-frame/reg-event-db
+ ::close-alert
+ (fn [db [_ id]]
+   (update db :alerts (fn [a] (remove #(= id (:id %)) a)))))
+
+(re-frame/reg-event-db
+ ::add-alert
+ (fn [db [_ [type & keys] & _]]
+   (let [id (->> db :alerts (map :id) (reduce max 0) inc)
+         new-alert (apply assoc {:alert-type type :id id} keys)]
+     (update db :alerts conj new-alert))))

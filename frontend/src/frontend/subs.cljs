@@ -21,3 +21,8 @@
  ::user
  (fn [db]
    (:user db)))
+
+(re-frame/reg-sub
+ ::alerts
+ (fn [db]
+   (:alerts db)))
