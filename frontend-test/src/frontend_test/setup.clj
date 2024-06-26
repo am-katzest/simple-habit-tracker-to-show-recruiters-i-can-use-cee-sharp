@@ -11,16 +11,17 @@
 
 (def DRIVER (get {"FIREFOX" e/firefox} (System/getenv "FRONTEND_TEST_WEBDRIVER") e/firefox))
 (defn make-driver [] (DRIVER))
-(defmacro with-driver  [name & exprs]
-  `(let [~name (e/firefox)]
-     (try ~@exprs
-          (finally
-            (e/quit ~name)))))
+(def ^:dynamic *driver* nil)
+(defmacro with-driver  [& exprs]
+  `(let [name# (e/firefox)]
+     (binding [*driver* name#]
+       (try ~@exprs
+            (finally
+              (e/quit name#))))))
 
-(defmacro with-driver-no-clutter  [first & forms]
+(defmacro use-driver  [first & forms]
   (let [to-replace (namespace (symbol first))
-        u (gensym)
-        transform (fn [form] (println form)
+        transform (fn [form]
                     (if-not (and (seq? form) (> (count form) 0))
                       form
                       (let [[first & rest] form]
@@ -28,6 +29,9 @@
                          (and (symbol? first)
                               (= to-replace (namespace (symbol first))))
                           form
-                          (concat [first u] rest)))))
-        updated (postwalk transform forms)]
-    `(s/with-driver ~u ~@updated)))
+                          (concat [first `*driver*] rest)))))]
+    `(do ~@(postwalk transform forms))))
+
+(defmacro use-new-driver [& exprs]
+  `(with-driver
+     (use-driver ~@exprs)))
