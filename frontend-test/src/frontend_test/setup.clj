@@ -4,7 +4,7 @@
    [etaoin.api :as e]))
 
 (def ROOT (or (System/getenv "FRONTEND_TEST_URL")
-              "http://localhost:8280/"))
+              "http://localhost:8880/"))
 
 (def DRIVER (get {"FIREFOX" e/firefox} (System/getenv "FRONTEND_TEST_WEBDRIVER")
                  "http://localhost:8280/"))
