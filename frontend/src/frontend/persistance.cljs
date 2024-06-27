@@ -49,7 +49,8 @@
 ;; local storage
 
 (defn get-token []
-  (.getItem (.-localStorage js/window) "token"))
+  (let [t (.getItem (.-localStorage js/window) "token")]
+    (when (and (some? t) (not= "" t)) t)))
 
 (defn set-token! [token]
   (.setItem (.-localStorage js/window) "token" (str token)))
