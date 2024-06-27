@@ -20,7 +20,7 @@
 
 (defn init []
   (if (p/get-token)
-    (p/initialize-to-login-if-no-found! :home)
+    (p/set-panel-if-none-found! :home)
     (p/set-panel! :login))
   (re-frame/dispatch-sync [::events/initialize-db (p/get-panel!)])
   (dev-setup)
