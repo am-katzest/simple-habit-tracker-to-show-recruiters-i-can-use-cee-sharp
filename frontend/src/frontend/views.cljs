@@ -127,7 +127,7 @@
                  :attr {:data-testid :nav-account}
                  :on-click #(>evt [::e/account-panel])]
                 [re-com/button
-                 :attr {:data-testid :nav-logout}
+                 :attr {:data-testid :nav-home}
                  :label (tr :nav/home)
                  :class "btn-white"
                  :on-click #(>evt [::e/home-panel])]
