@@ -9,8 +9,7 @@ public class UserControllerTest(HostFixture fixture) : IClassFixture<HostFixture
     [Fact]
     public async void UserCreationPositive()
     {
-        using var h = fixture.makeHost();
-        using var c = h.GetTestClient();
+        using var c = fixture.Client;
         var lp = new Credentials("kitty", "cat");
         var ans1 = await c.PostAsJsonAsync("api/users", lp);
         Assert.Equal(OK, ans1.StatusCode);
@@ -19,8 +18,7 @@ public class UserControllerTest(HostFixture fixture) : IClassFixture<HostFixture
     [Fact]
     public async void AuthorizationNegative()
     {
-        using var h = fixture.makeHost();
-        using var c = h.GetTestClient();
+        using var c = fixture.Client;
         c.UseToken("awawa");
         var ans1 = await c.GetAsync("api/users/me");
         Assert.NotEqual(OK, ans1.StatusCode);
@@ -29,8 +27,7 @@ public class UserControllerTest(HostFixture fixture) : IClassFixture<HostFixture
     [Fact]
     public async void AuthorizationPositive()
     {
-        using var h = fixture.makeHost();
-        using var c = h.GetTestClient();
+        using var c = fixture.Client;
         var lp = new Credentials("user1", "cat");
         var ans1 = await c.PostAsJsonAsync("api/users", lp);
         Assert.Equal(OK, ans1.StatusCode);
@@ -43,8 +40,7 @@ public class UserControllerTest(HostFixture fixture) : IClassFixture<HostFixture
     [Fact]
     public async void DeletionPositive()
     {
-        using var h = fixture.makeHost();
-        using var c = h.GetTestClient();
+        using var c = fixture.Client;
         var lp = new Credentials("user2", "cat");
         Assert.True(await c.RegisterUser(lp));
         var ans = await c.DeleteAsync("/api/users/me");

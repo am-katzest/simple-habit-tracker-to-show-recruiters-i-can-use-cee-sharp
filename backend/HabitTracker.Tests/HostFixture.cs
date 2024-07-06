@@ -6,8 +6,15 @@ namespace HabitTracker.Tests;
 
 public class HostFixture : CreatedDatabaseFixture
 {
+    private IHost host;
+
+    public HostFixture()
+    {
+        host = makeHost();
+    }
+
     // doing all the setup takes ~10ms
-    public IHost makeHost()
+    private IHost makeHost()
     {
         return new HostBuilder()
             .ConfigureWebHost(webBuilder =>
@@ -29,6 +36,6 @@ public class HostFixture : CreatedDatabaseFixture
                     });
             })
             .Start();
-
     }
+    public HttpClient Client { get => host.GetTestClient(); }
 }
