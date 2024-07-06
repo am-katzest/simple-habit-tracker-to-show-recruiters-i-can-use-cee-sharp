@@ -19,7 +19,7 @@ namespace HabitTracker.Tests
             .WithImage("postgres:16.2")
             .WithPortBinding(POSTGRESS_PORT, true)
             .WithEnvironment("POSTGRES_PASSWORD", pgpassword)
-            .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(POSTGRESS_PORT))
+            .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(POSTGRESS_PORT).UntilCommandIsCompleted("pg_isready"))
             .WithReuse(true)
             .Build();
         }
