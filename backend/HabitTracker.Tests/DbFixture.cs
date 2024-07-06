@@ -6,20 +6,9 @@ namespace HabitTracker.Tests;
 
 public class ContainerHolder
 {
-    private static DbContainer? _instance;
-    private static readonly object _mutex = new();
-    public static DbContainer Container
-    {
-        get
-        {
-            lock (_mutex)
-            {
-                _instance ??= new DbContainer();
-                return _instance;
-            }
-        }
-        set { _instance = value; }
-    }
+    private static Lazy<DbContainer> _instance= new(() => new());
+    
+    public static DbContainer Container { get => _instance.Value; }
 }
 
 
