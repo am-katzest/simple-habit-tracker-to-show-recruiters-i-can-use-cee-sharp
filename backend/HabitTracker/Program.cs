@@ -16,5 +16,6 @@ app.UseAuthentication();
 app.UseRouting();
 app.UseAuthorization();
 app.UseHttpsRedirection();
+app.AddMiddleware();
 app.UseEndpoints(e => e.MapControllers());
 app.Run();

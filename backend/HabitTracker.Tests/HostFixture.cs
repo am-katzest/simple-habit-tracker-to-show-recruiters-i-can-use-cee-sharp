@@ -32,6 +32,7 @@ public class HostFixture : CreatedDatabaseFixture
                         x.UseAuthentication();
                         x.UseRouting();
                         x.UseAuthorization();
+                        x.AddMiddleware();
                         x.UseEndpoints(e => e.MapControllers());
                     });
             })

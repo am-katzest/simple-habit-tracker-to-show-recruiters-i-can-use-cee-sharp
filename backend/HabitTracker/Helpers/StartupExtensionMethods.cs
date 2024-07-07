@@ -1,7 +1,8 @@
+using HabitTracker.Auth;
 using HabitTracker.Authentication;
+using HabitTracker.Middleware;
 using HabitTracker.Models;
 using HabitTracker.Services;
-using HabitTracker.Auth;
 
 namespace HabitTracker.Helpers;
 
@@ -32,5 +33,9 @@ public static class StartupExtensionMethods
     {
         services.AddAuthentication("Local").AddScheme<LocalAuthenticationOptions, LocalAuthenticationHandler>("Local", null);
         services.AddAuthorization();
+    }
+    public static void AddMiddleware(this IApplicationBuilder builder)
+    {
+        builder.UseMiddleware<ErrorTranslation>();
     }
 }
