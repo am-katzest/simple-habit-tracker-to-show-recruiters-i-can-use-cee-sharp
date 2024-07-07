@@ -1,5 +1,6 @@
 using System.Net.Http.Headers;
 using HabitTracker.DTOs.User;
+using HabitTracker.Exceptions;
 using Microsoft.AspNetCore.TestHost;
 using static System.Net.HttpStatusCode;
 

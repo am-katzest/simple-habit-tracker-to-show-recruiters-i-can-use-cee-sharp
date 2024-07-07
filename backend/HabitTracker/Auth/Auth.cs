@@ -2,6 +2,7 @@ using System.Security.Claims;
 using System.Security.Principal;
 using System.Text.Encodings.Web;
 using HabitTracker.DTOs.User;
+using HabitTracker.Exceptions;
 using HabitTracker.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;

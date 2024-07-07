@@ -3,6 +3,7 @@
 // yet i don't care :3 (it's not like anyone but me will ever use it)
 
 using HabitTracker.DTOs.User;
+using HabitTracker.Exceptions;
 using HabitTracker.Helpers;
 using HabitTracker.Models;
 using Microsoft.EntityFrameworkCore;
