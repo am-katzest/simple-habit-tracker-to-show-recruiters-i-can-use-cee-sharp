@@ -15,6 +15,18 @@ public class UserControllerTest(HostFixture fixture) : IClassFixture<HostFixture
         var ans1 = await c.PostAsJsonAsync("api/users", lp);
         Assert.Equal(OK, ans1.StatusCode);
     }
+    [Fact]
+    public async void UserCreationNegative()
+    {
+        using var c = fixture.Client;
+        var lp = new Credentials("existing", "cat");
+        var ans1 = await c.PostAsJsonAsync("api/users", lp);
+        var ans2 = await c.PostAsJsonAsync("api/users", lp);
+        Assert.Equal(OK, ans1.StatusCode);
+        Assert.NotEqual(OK, ans2.StatusCode);
+        Assert.Equal(Conflict, ans2.StatusCode);
+        Assert.Equal(new DuplicateUsernameException().ErrorMessage, await ans2.Content.ReadAsStringAsync());
+    }
 
     [Fact]
     public async void AuthorizationNegative()
