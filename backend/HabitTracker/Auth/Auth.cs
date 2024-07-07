@@ -26,7 +26,8 @@ public class LocalAuthenticationHandler(
             return AuthenticateResult.NoResult();
         }
         var words = auth.Split(" ");
-        if (words is null || words.Length != 2 || words[0] != "SessionToken") {
+        if (words is null || words.Length != 2 || words[0] != "SessionToken")
+        {
             return AuthenticateResult.Fail("invalid authentication format");
         }
         var token = words[1];
