@@ -35,6 +35,16 @@ public class UserControllerTest(HostFixture fixture) : IClassFixture<HostFixture
         Assert.NotEqual(OK, ans1.StatusCode);
     }
 
+
+    [Fact]
+    public async void AuthenticationNegative()
+    {
+        using var c = fixture.Client;
+        var credentials = new Credentials("wrong_username", "password");
+        var ans = await c.PostAsJsonAsync("api/users/createtoken", credentials);
+        await AssertHelpers.ReturnedError<InvalidUsernameOrPasswordException>(ans);
+    }
+
     [Fact]
     public async void AuthorizationPositive()
     {
