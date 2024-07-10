@@ -67,6 +67,6 @@ public class UserControllerTest(HostFixture fixture) : IClassFixture<HostFixture
         var ans = await c.DeleteAsync("/api/users/me");
         Assert.True(ans.IsSuccessStatusCode);
         Assert.False((await c.GetAsync("/api/users/me")).IsSuccessStatusCode);
-        //Assert.False(await c.AuthenticateUser(lp)); TODO
+        Assert.False(await c.AuthenticateUser(lp));
     }
 }
