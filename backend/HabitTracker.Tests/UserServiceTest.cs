@@ -3,6 +3,8 @@ using HabitTracker.Services;
 using HabitTracker.Tests;
 using Microsoft.EntityFrameworkCore;
 
+namespace HabitTracker.Tests;
+
 public class UserServiceTest(CreatedDatabaseFixture Fixture) : IClassFixture<CreatedDatabaseFixture>
 {
     private IUserService MakeService() => MakeService(new RealClock());
