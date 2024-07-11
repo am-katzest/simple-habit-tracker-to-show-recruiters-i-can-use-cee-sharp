@@ -8,10 +8,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersAndBinders();
 builder.Services.RegisterServicesProduction();
 builder.Services.AddAuth();
-var ctx = builder.Services.BuildServiceProvider().GetRequiredService<HabitTrackerContext>();
-ctx.Database.EnsureCreated(); // temporary
 
 var app = builder.Build();
+{
+    var ctx = app.Services.GetRequiredService<HabitTrackerContext>();
+    ctx.Database.EnsureCreated(); // temporary
+}
 app.UseAuthentication();
 app.UseRouting();
 app.UseAuthorization();
