@@ -1,7 +1,5 @@
-using HabitTracker.Controllers;
 using HabitTracker.Helpers;
 using HabitTracker.Models;
-using Microsoft.AspNetCore.Mvc;
 
 
 var builder = WebApplication.CreateBuilder(args);

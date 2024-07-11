@@ -15,7 +15,7 @@ public class HabitServiceTest(UserFixture Fixture) : IClassFixture<UserFixture>
         Assert.Empty(MakeService().getHabits(u));
         var habit = new HabitNameDescription("habit", null);
         var hid = MakeService().addHabit(habit, u);
-        Assert.Equal(1, MakeService().getHabits(u).Count());
+        Assert.Single(MakeService().getHabits(u));
         Assert.Equal("habit", MakeService().getHabits(u).First()?.Name);
         Assert.Equal(hid.Id, MakeService().getHabits(u).First()?.Id);
     }

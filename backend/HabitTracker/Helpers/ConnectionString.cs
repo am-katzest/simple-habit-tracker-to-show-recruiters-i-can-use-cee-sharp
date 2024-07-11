@@ -1,8 +1,3 @@
-using System.Configuration;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
-using System.Data.Entity.SqlServer;
-
 namespace HabitTracker.Helpers;
 
 public record ConnectionDetails

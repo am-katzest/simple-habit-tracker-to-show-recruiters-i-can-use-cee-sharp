@@ -1,12 +1,6 @@
-
-
-using HabitTracker.DTOs;
 using HabitTracker.DTOs.Habit;
 using HabitTracker.DTOs.User;
-using HabitTracker.Exceptions;
-using HabitTracker.Helpers;
 using HabitTracker.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace HabitTracker.Services;
 

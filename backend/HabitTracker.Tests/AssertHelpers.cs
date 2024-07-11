@@ -1,4 +1,3 @@
-using System.Net.Http.Headers;
 using HabitTracker.Exceptions;
 
 namespace HabitTracker.Tests;

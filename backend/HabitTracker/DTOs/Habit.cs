@@ -1,4 +1,3 @@
-using HabitTracker.DTOs;
 namespace HabitTracker.DTOs.Habit;
 
 public record HabitNameDescription(string Name, string? Description);

@@ -1,6 +1,5 @@
 using HabitTracker.Exceptions;
 using HabitTracker.Services;
-using HabitTracker.Tests;
 using Microsoft.EntityFrameworkCore;
 
 namespace HabitTracker.Tests;
