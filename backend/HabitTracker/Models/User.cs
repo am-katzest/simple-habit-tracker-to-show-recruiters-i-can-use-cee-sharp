@@ -19,7 +19,6 @@ public abstract class UserAuth
 
 public class DebugAuth : UserAuth
 {
-    public required int Key { get; set; }  // to identify users during tests
 }
 
 public class LoginPassword : UserAuth

@@ -1,5 +1,4 @@
-using System.ComponentModel;
-using System.Security.Cryptography.X509Certificates;
+using HabitTracker.DTOs.User;
 
 namespace HabitTracker.Tests;
 
@@ -34,5 +33,17 @@ public class CreatedDatabaseFixture : UniqueDatabaseFixture
     public CreatedDatabaseFixture() : base()
     {
         MakeContext().Database.EnsureCreated();
+    }
+}
+
+public class UserFixture : CreatedDatabaseFixture
+{
+    public IdOnly MakeUser()
+    {
+        var c = MakeContext();
+        var u = new User() { DisplayName = "user", Auth = new DebugAuth() };
+        c.Users.Add(u);
+        c.SaveChanges();
+        return new(u.Id);
     }
 }
