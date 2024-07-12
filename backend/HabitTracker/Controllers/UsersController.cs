@@ -3,7 +3,7 @@ using HabitTracker.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace HabitTracker.Controllers;
+namespace HabitTracker.Controllers.UsersController;
 
 [ApiController]
 [Route("api/[controller]")]
