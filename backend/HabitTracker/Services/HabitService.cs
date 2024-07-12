@@ -48,11 +48,16 @@ public class HabitService(HabitTrackerContext Context, IClock _Clock) : IHabitSe
 
     void IHabitService.RemoveHabit(IdUser Habit)
     {
-        throw new NotImplementedException();
+        var h = FindHabit(Habit);
+        Context.Habits.Remove(h);
+        Context.SaveChanges();
     }
 
     void IHabitService.UpdateHabit(IdUser Habit, HabitNameDescription Replacement)
     {
-        throw new NotImplementedException();
+        var h = FindHabit(Habit);
+        h.Name = Replacement.Name;
+        h.Description = Replacement.Description;
+        Context.SaveChanges();
     }
 }

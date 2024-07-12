@@ -58,4 +58,29 @@ public class HabitServiceTest(UserFixture Fixture) : IClassFixture<UserFixture>
         var counterfeit = new IdUser(hid.Id, u2);
         Assert.Throws<NoSuchHabitException>(() => MakeService().getHabitDetails(counterfeit));
     }
+    [Fact]
+    public void DeletingHabit()
+    {
+        var u = Fixture.MakeUser();
+        var habit = new HabitNameDescription("habit", null);
+        var hid = MakeService().addHabit(habit, u);
+        var hid2 = MakeService().addHabit(new("habit2", null), u);
+        Assert.Equal(2, MakeService().getHabits(u).Count);
+        MakeService().RemoveHabit(hid);
+        Assert.Single(MakeService().getHabits(u));
+        MakeService().RemoveHabit(hid2);
+        Assert.Empty(MakeService().getHabits(u));
+    }
+    [Fact]
+    public void UpdatingHabit()
+    {
+        var u = Fixture.MakeUser();
+        var hid = MakeService().addHabit(new("name", null), u);
+        MakeService().UpdateHabit(hid, new("other", "meow"));
+        Assert.Single(MakeService().getHabits(u));
+        Assert.Equal("other", MakeService().getHabitDetails(hid).Name);
+        Assert.Equal("meow", MakeService().getHabitDetails(hid).Description);
+        MakeService().UpdateHabit(hid, new("other", null));
+        Assert.Null(MakeService().getHabitDetails(hid).Description);
+    }
 }
