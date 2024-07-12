@@ -1,7 +1,8 @@
 using HabitTracker.DTOs.Habit;
 using HabitTracker.DTOs.User;
+using HabitTracker.Exceptions;
 using HabitTracker.Models;
-
+using Microsoft.EntityFrameworkCore;
 namespace HabitTracker.Services;
 
 public interface IHabitService
@@ -9,7 +10,7 @@ public interface IHabitService
     IdUser addHabit(HabitNameDescription Habit, DTOs.User.IdOnly User);
     void UpdateHabit(IdUser Habit, HabitNameDescription Replacement);
     void RemoveHabit(IdUser Habit);
-    HabitNameDescriptionId getHabitDetails(IdUser Habit);
+    HabitNameDescriptionId? getHabitDetails(IdUser Habit);
     List<HabitNameId> getHabits(DTOs.User.IdOnly User);
 };
 public class HabitService(HabitTrackerContext Context, IClock Clock) : IHabitService
@@ -22,14 +23,27 @@ public class HabitService(HabitTrackerContext Context, IClock Clock) : IHabitSer
         return new(h.Id, User);
     }
 
+    private Habit FindHabit(IdUser Habit)
+    {
+        try
+        {
+            return Context.Habits.Single(h => h.Id == Habit.Id && h.UserId == Habit.User.Id);
+        }
+        catch (InvalidOperationException)
+        {
+            throw new NoSuchHabitException();
+        }
+    }
     HabitNameDescriptionId IHabitService.getHabitDetails(IdUser Habit)
     {
-        throw new NotImplementedException();
+        var h = FindHabit(Habit);
+        return new(h.Name, h.Id, h.Description);
     }
 
     List<HabitNameId> IHabitService.getHabits(IdOnly User)
     {
-        return Context.Habits.Where(h => h.Id == User.Id).Select(h => new HabitNameId(h.Name, h.Id)).ToList();
+        var u = Context.Users.Include(u => u.Habits).Single(u => u.Id == User.Id);
+        return u.Habits.AsEnumerable().Select(h => new HabitNameId(h.Name, h.Id)).ToList();
     }
 
     void IHabitService.RemoveHabit(IdUser Habit)

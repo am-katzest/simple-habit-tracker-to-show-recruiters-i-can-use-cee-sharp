@@ -14,3 +14,5 @@ public class DuplicateUsernameException() : UserVisibleException(Conflict, "dupl
 public class InvalidUsernameOrPasswordException() : UserVisibleException(Unauthorized, "invalid username or password");
 
 public class InvalidTokenException() : UserVisibleException(Unauthorized, "invalid token");
+
+public class NoSuchHabitException() : UserVisibleException(NotFound, "habit not found");
