@@ -7,6 +7,6 @@ public class Habit
     public required int UserId { get; set; }
     public required string Name { get; set; }
     public string? Description { get; set; }
-    public List<Completion> Completions { get; set; } = null!;
-    public List<CompletionType> CompletionTypes { get; set; } = null!;
+    public ICollection<Completion> Completions { get; } = new List<Completion>();
+    public ICollection<CompletionType> CompletionTypes { get; } = new List<CompletionType>();
 }
