@@ -21,6 +21,7 @@ public static class StartupExtensionMethods
     {
 
         services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IHabitService, HabitService>();
         services.AddScoped<HabitTrackerContext>((_) => db());
         services.AddSingleton(clock);
     }
