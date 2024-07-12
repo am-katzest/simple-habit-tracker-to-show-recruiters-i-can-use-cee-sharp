@@ -29,4 +29,11 @@ public static class HttpClientExtensionMethods
         }
         return await c.AuthenticateUser(credentials);
     }
+
+    static int idseq = 0;
+    public static async Task<bool> RegisterNewUniqueUser(this HttpClient c)
+    {
+        var u = Interlocked.Increment(ref idseq);
+        return await c.RegisterUser(new($"unique_user_{u}", "password123"));
+    }
 }
