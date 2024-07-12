@@ -10,10 +10,10 @@ public interface IHabitService
     IdUser addHabit(HabitNameDescription Habit, DTOs.User.IdOnly User);
     void UpdateHabit(IdUser Habit, HabitNameDescription Replacement);
     void RemoveHabit(IdUser Habit);
-    HabitNameDescriptionId? getHabitDetails(IdUser Habit);
+    HabitNameDescriptionId getHabitDetails(IdUser Habit);
     List<HabitNameId> getHabits(DTOs.User.IdOnly User);
 };
-public class HabitService(HabitTrackerContext Context, IClock Clock) : IHabitService
+public class HabitService(HabitTrackerContext Context, IClock _Clock) : IHabitService
 {
     IdUser IHabitService.addHabit(HabitNameDescription Habit, IdOnly User)
     {

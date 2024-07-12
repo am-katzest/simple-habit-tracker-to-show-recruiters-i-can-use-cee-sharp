@@ -44,7 +44,7 @@ public class HabitServiceTest(UserFixture Fixture) : IClassFixture<UserFixture>
             Assert.Equal("habit2", received.Name);
             Assert.Equal("desc", received.Description);
         }
-        Assert.Equal(2, MakeService().getHabits(u).Count());
+        Assert.Equal(2, MakeService().getHabits(u).Count);
     }
 
     [Fact]
