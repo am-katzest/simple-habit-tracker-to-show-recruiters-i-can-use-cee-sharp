@@ -6,7 +6,7 @@ namespace HabitTracker.Tests;
 public class HabitControllerTest(HostFixture fixture) : IClassFixture<HostFixture>
 {
     [Fact]
-    public async void HabitCreationAndGetting()
+    public async Task HabitCreationAndGetting()
     {
         using var c = fixture.Client;
         await c.RegisterNewUniqueUser();
@@ -24,6 +24,7 @@ public class HabitControllerTest(HostFixture fixture) : IClassFixture<HostFixtur
         Assert.Equal("desc", ret1.Description);
         Assert.Equal("habit", ret1.Name);
         var both = await c.GetFromJsonAsync<List<HabitNameId>>("api/habits/");
+        Assert.NotNull(both);
         Assert.Equal(2, both.Count);
         var first = both.Where(x => x.Id != id).Single();
         var second = both.Where(x => x.Id == id).Single();
@@ -32,23 +33,23 @@ public class HabitControllerTest(HostFixture fixture) : IClassFixture<HostFixtur
     }
 
     [Fact]
-    public async void HabitDeletion()
+    public async Task HabitDeletion()
     {
         using var c = fixture.Client;
         await c.RegisterNewUniqueUser();
         var ans1 = await c.PostAsJsonAsync("api/habits/", new HabitNameDescription("habit", "desc"));
         var bd1 = await ans1.Content.ReadAsStringAsync();
         Assert.Equal(OK, ans1.StatusCode);
-        Assert.Single(await c.GetFromJsonAsync<List<HabitNameId>>("api/habits/"));
+        Assert.Equal(1, (await c.GetFromJsonAsync<List<HabitNameId>>("api/habits/"))?.Count);
         await AssertHelpers.ReturnedError<NoSuchHabitException>(await c.DeleteAsync("api/habits/1561854"));
-        Assert.Single(await c.GetFromJsonAsync<List<HabitNameId>>("api/habits/"));
+        Assert.Equal(1, (await c.GetFromJsonAsync<List<HabitNameId>>("api/habits/"))?.Count);
         var ans2 = await c.DeleteAsync($"api/habits/{bd1}");
         Assert.True(ans2.IsSuccessStatusCode);
-        Assert.Empty(await c.GetFromJsonAsync<List<HabitNameId>>("api/habits/"));
+        Assert.Equal(0, (await c.GetFromJsonAsync<List<HabitNameId>>("api/habits/"))?.Count);
     }
 
     [Fact]
-    public async void HabitUpdate()
+    public async Task HabitUpdate()
     {
         using var c = fixture.Client;
         await c.RegisterNewUniqueUser();

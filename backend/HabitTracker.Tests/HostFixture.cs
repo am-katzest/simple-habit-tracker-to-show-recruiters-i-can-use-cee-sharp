@@ -6,7 +6,7 @@ namespace HabitTracker.Tests;
 
 public class HostFixture : CreatedDatabaseFixture
 {
-    private IHost host;
+    private readonly IHost host;
 
     public HostFixture()
     {

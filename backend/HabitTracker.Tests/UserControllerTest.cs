@@ -6,7 +6,7 @@ namespace HabitTracker.Tests;
 public class UserControllerTest(HostFixture fixture) : IClassFixture<HostFixture>
 {
     [Fact]
-    public async void UserCreationPositive()
+    public async Task UserCreationPositive()
     {
         using var c = fixture.Client;
         var lp = new Credentials("kitty", "cat");
@@ -14,7 +14,7 @@ public class UserControllerTest(HostFixture fixture) : IClassFixture<HostFixture
         Assert.Equal(OK, ans1.StatusCode);
     }
     [Fact]
-    public async void UserCreationNegative()
+    public async Task UserCreationNegative()
     {
         using var c = fixture.Client;
         var lp = new Credentials("existing", "cat");
@@ -25,7 +25,7 @@ public class UserControllerTest(HostFixture fixture) : IClassFixture<HostFixture
     }
 
     [Fact]
-    public async void AuthorizationNegative()
+    public async Task AuthorizationNegative()
     {
         using var c = fixture.Client;
         c.UseToken("awawa");
@@ -35,7 +35,7 @@ public class UserControllerTest(HostFixture fixture) : IClassFixture<HostFixture
 
 
     [Fact]
-    public async void AuthenticationNegative()
+    public async Task AuthenticationNegative()
     {
         using var c = fixture.Client;
         var credentials = new Credentials("wrong_username", "password");
@@ -44,7 +44,7 @@ public class UserControllerTest(HostFixture fixture) : IClassFixture<HostFixture
     }
 
     [Fact]
-    public async void AuthorizationPositive()
+    public async Task AuthorizationPositive()
     {
         using var c = fixture.Client;
         var lp = new Credentials("user1", "cat");
@@ -57,7 +57,7 @@ public class UserControllerTest(HostFixture fixture) : IClassFixture<HostFixture
         Assert.Equal(id1, ans2!.Id.ToString());
     }
     [Fact]
-    public async void DeletionPositive()
+    public async Task DeletionPositive()
     {
         using var c = fixture.Client;
         var lp = new Credentials("user2", "cat");

@@ -3,8 +3,9 @@ using System.Net.Http.Headers;
 using HabitTracker.Authentication;
 using HabitTracker.DTOs;
 using HabitTracker.Services;
-using HabitTracker.Tests;
 using Microsoft.AspNetCore.TestHost;
+
+namespace HabitTracker.Tests;
 
 public class AuthenticationTest(CreatedDatabaseFixture Fixture) : IClassFixture<CreatedDatabaseFixture>
 {
@@ -52,7 +53,7 @@ public class AuthenticationTest(CreatedDatabaseFixture Fixture) : IClassFixture<
     }
 
     [Fact]
-    public async void Negative()
+    public async Task Negative()
     {
         MakeService().createPasswordUser(new("a", "b"));
         var t = MakeService().createToken(new("a", "b"));
@@ -68,7 +69,7 @@ public class AuthenticationTest(CreatedDatabaseFixture Fixture) : IClassFixture<
     }
 
     [Fact]
-    public async void Positive()
+    public async Task Positive()
     {
         MakeService().createPasswordUser(new("meow", "b"));
         var t = MakeService().createToken(new("meow", "b"));
