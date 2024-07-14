@@ -1,5 +1,4 @@
-using HabitTracker.DTOs.Habit;
-using HabitTracker.DTOs.User;
+using HabitTracker.DTOs;
 using HabitTracker.Exceptions;
 using HabitTracker.Models;
 using Microsoft.EntityFrameworkCore;
@@ -7,15 +6,15 @@ namespace HabitTracker.Services;
 
 public interface IHabitService
 {
-    IdUser addHabit(HabitNameDescription Habit, DTOs.User.IdOnly User);
-    void UpdateHabit(IdUser Habit, HabitNameDescription Replacement);
-    void RemoveHabit(IdUser Habit);
-    HabitNameDescriptionId getHabitDetails(IdUser Habit);
-    List<HabitNameId> getHabits(DTOs.User.IdOnly User);
+    HabitId addHabit(HabitNameDescription Habit, UserId User);
+    void UpdateHabit(HabitId Habit, HabitNameDescription Replacement);
+    void RemoveHabit(HabitId Habit);
+    HabitNameDescriptionId getHabitDetails(HabitId Habit);
+    List<HabitNameId> getHabits(UserId User);
 };
 public class HabitService(HabitTrackerContext Context, IClock _Clock) : IHabitService
 {
-    IdUser IHabitService.addHabit(HabitNameDescription Habit, IdOnly User)
+    HabitId IHabitService.addHabit(HabitNameDescription Habit, UserId User)
     {
         Habit h = new() { UserId = User.Id, Name = Habit.Name, Description = Habit.Description };
         Context.Habits.Add(h);
@@ -23,7 +22,7 @@ public class HabitService(HabitTrackerContext Context, IClock _Clock) : IHabitSe
         return new(h.Id, User);
     }
 
-    private Habit FindHabit(IdUser Habit)
+    private Habit FindHabit(HabitId Habit)
     {
         try
         {
@@ -34,26 +33,26 @@ public class HabitService(HabitTrackerContext Context, IClock _Clock) : IHabitSe
             throw new NoSuchHabitException();
         }
     }
-    HabitNameDescriptionId IHabitService.getHabitDetails(IdUser Habit)
+    HabitNameDescriptionId IHabitService.getHabitDetails(HabitId Habit)
     {
         var h = FindHabit(Habit);
         return new(h.Name, h.Id, h.Description);
     }
 
-    List<HabitNameId> IHabitService.getHabits(IdOnly User)
+    List<HabitNameId> IHabitService.getHabits(UserId User)
     {
         var u = Context.Users.Include(u => u.Habits).Single(u => u.Id == User.Id);
         return u.Habits.AsEnumerable().Select(h => new HabitNameId(h.Name, h.Id)).ToList();
     }
 
-    void IHabitService.RemoveHabit(IdUser Habit)
+    void IHabitService.RemoveHabit(HabitId Habit)
     {
         var h = FindHabit(Habit);
         Context.Habits.Remove(h);
         Context.SaveChanges();
     }
 
-    void IHabitService.UpdateHabit(IdUser Habit, HabitNameDescription Replacement)
+    void IHabitService.UpdateHabit(HabitId Habit, HabitNameDescription Replacement)
     {
         var h = FindHabit(Habit);
         h.Name = Replacement.Name;

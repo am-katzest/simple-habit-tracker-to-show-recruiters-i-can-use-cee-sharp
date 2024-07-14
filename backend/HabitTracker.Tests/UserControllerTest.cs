@@ -1,4 +1,4 @@
-using HabitTracker.DTOs.User;
+using HabitTracker.DTOs;
 using HabitTracker.Exceptions;
 using static System.Net.HttpStatusCode;
 

@@ -2,7 +2,7 @@
 // i only introduce vurneabilities and that it's a bad idea
 // yet i don't care :3 (it's not like anyone but me will ever use it)
 
-using HabitTracker.DTOs.User;
+using HabitTracker.DTOs;
 using HabitTracker.Exceptions;
 using HabitTracker.Helpers;
 using HabitTracker.Models;
@@ -12,18 +12,18 @@ namespace HabitTracker.Services;
 
 public interface IUserService
 {
-    IdOnly createPasswordUser(Credentials lp);
+    UserId createPasswordUser(Credentials lp);
     string createToken(Credentials lp);
     void removeToken(string token);
-    void deleteUser(IdOnly user);
-    IdOnly validateToken(string token);
-    AccountDetails GetAccountDetails(IdOnly user);
+    void deleteUser(UserId user);
+    UserId validateToken(string token);
+    AccountDetails GetAccountDetails(UserId user);
     void clearExpiredTokens();
 };
 
 public class UserService(HabitTrackerContext Context, IClock Clock) : IUserService
 {
-    public IdOnly createPasswordUser(Credentials cred)
+    public UserId createPasswordUser(Credentials cred)
     {
         var auth = new LoginPassword { Username = cred.Login, Password = cred.Password };
         var u = new User { DisplayName = cred.Login, Auth = auth };
@@ -66,7 +66,7 @@ public class UserService(HabitTrackerContext Context, IClock Clock) : IUserServi
         throw new InvalidUsernameOrPasswordException();
     }
 
-    void IUserService.deleteUser(IdOnly user)
+    void IUserService.deleteUser(UserId user)
     {
         Context.Remove(GetUser(user));
         Context.SaveChanges();
@@ -78,7 +78,7 @@ public class UserService(HabitTrackerContext Context, IClock Clock) : IUserServi
     }
 
     private bool IsValid(Token t) => t.ExpirationDate > Clock.Now;
-    IdOnly IUserService.validateToken(string token)
+    UserId IUserService.validateToken(string token)
     {
         try
         {
@@ -101,8 +101,8 @@ public class UserService(HabitTrackerContext Context, IClock Clock) : IUserServi
         Context.Tokens.Where(x => x.ExpirationDate > Clock.Now).ExecuteDelete();
     }
 
-    private User GetUser(IdOnly user) => Context.Users.Single(u => u.Id == user.Id);
-    AccountDetails IUserService.GetAccountDetails(IdOnly user)
+    private User GetUser(UserId user) => Context.Users.Single(u => u.Id == user.Id);
+    AccountDetails IUserService.GetAccountDetails(UserId user)
     {
         return new(user.Id, GetUser(user).DisplayName);
     }

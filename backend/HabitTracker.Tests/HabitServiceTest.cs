@@ -1,4 +1,4 @@
-using HabitTracker.DTOs.Habit;
+using HabitTracker.DTOs;
 using HabitTracker.Exceptions;
 using HabitTracker.Services;
 
@@ -55,7 +55,7 @@ public class HabitServiceTest(UserFixture Fixture) : IClassFixture<UserFixture>
         Assert.NotEqual(u1, u2);
         var habit = new HabitNameDescription("habit", null);
         var hid = MakeService().addHabit(habit, u1);
-        var counterfeit = new IdUser(hid.Id, u2);
+        var counterfeit = new HabitId(hid.Id, u2);
         Assert.Throws<NoSuchHabitException>(() => MakeService().getHabitDetails(counterfeit));
     }
     [Fact]

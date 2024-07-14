@@ -1,6 +1,7 @@
 
 using System.Net.Http.Headers;
 using HabitTracker.Authentication;
+using HabitTracker.DTOs;
 using HabitTracker.Services;
 using HabitTracker.Tests;
 using Microsoft.AspNetCore.TestHost;
@@ -37,7 +38,7 @@ public class AuthenticationTest(CreatedDatabaseFixture Fixture) : IClassFixture<
                             {
                                 var uname = c.Items["user"] switch
                                 {
-                                    HabitTracker.DTOs.User.IdOnly u => "something",
+                                    UserId u => "something",
                                     _ => "nothing"
                                 };
                                 await c.Response.WriteAsync(uname);

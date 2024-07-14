@@ -1,4 +1,4 @@
-using HabitTracker.DTOs.User;
+using HabitTracker.DTOs;
 using HabitTracker.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -23,13 +23,13 @@ public class UsersController(IUserService Service) : ControllerBase
 
     [Authorize]
     [HttpGet("me")]
-    public ActionResult<AccountDetails> GetUserData([ModelBinder] IdOnly user)
+    public ActionResult<AccountDetails> GetUserData([ModelBinder] UserId user)
     {
         return new(Service.GetAccountDetails(user));
     }
     [Authorize]
     [HttpDelete("me")]
-    public ActionResult<bool> DeleteUser([ModelBinder] IdOnly user)
+    public ActionResult<bool> DeleteUser([ModelBinder] UserId user)
     {
         Service.deleteUser(user);
         return new(true);

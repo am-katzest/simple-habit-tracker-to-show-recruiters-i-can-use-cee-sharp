@@ -1,4 +1,4 @@
-using HabitTracker.DTOs.User;
+using HabitTracker.DTOs;
 
 namespace HabitTracker.Tests;
 
@@ -38,7 +38,7 @@ public class CreatedDatabaseFixture : UniqueDatabaseFixture
 
 public class UserFixture : CreatedDatabaseFixture
 {
-    public IdOnly MakeUser()
+    public UserId MakeUser()
     {
         var c = MakeContext();
         var u = new User() { DisplayName = "user", Auth = new DebugAuth() };

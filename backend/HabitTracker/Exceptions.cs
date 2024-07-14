@@ -16,3 +16,5 @@ public class InvalidUsernameOrPasswordException() : UserVisibleException(Unautho
 public class InvalidTokenException() : UserVisibleException(Unauthorized, "invalid token");
 
 public class NoSuchHabitException() : UserVisibleException(NotFound, "habit not found");
+
+public class NoSuchCompletionTypeException() : UserVisibleException(NotFound, "completion type not found");

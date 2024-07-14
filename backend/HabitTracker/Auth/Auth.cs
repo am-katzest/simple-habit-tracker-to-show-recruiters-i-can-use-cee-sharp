@@ -1,7 +1,6 @@
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Text.Encodings.Web;
-using HabitTracker.DTOs.User;
 using HabitTracker.Exceptions;
 using HabitTracker.Services;
 using Microsoft.AspNetCore.Authentication;
@@ -34,7 +33,7 @@ public class LocalAuthenticationHandler(
         try
         {
             var user = service.validateToken(token);
-            Request.HttpContext.Items["user"] = new IdOnly(user.Id);
+            Request.HttpContext.Items["user"] = new DTOs.UserId(user.Id);
             var identity = new ClaimsIdentity(null, Scheme.Name);
             var principal = new GenericPrincipal(identity, null);
             var ticket = new AuthenticationTicket(principal, Scheme.Name);
