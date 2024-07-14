@@ -6,8 +6,7 @@ namespace HabitTracker.Tests;
 
 public class HabitServiceTest(UserFixture Fixture) : IClassFixture<UserFixture>
 {
-    private IHabitService MakeService() => MakeService(new RealClock());
-    private IHabitService MakeService(IClock clock) => new HabitService(Fixture.MakeContext(), clock);
+    private IHabitService MakeService() => new HabitService(Fixture.MakeContext());
 
     [Fact]
     public void CreatingHabit()

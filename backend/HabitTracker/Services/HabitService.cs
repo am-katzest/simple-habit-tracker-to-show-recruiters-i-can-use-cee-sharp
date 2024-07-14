@@ -12,7 +12,9 @@ public interface IHabitService
     HabitNameDescriptionId getHabitDetails(HabitId Habit);
     List<HabitNameId> getHabits(UserId User);
 };
-public class HabitService(HabitTrackerContext Context, IClock _Clock) : IHabitService
+
+
+public class HabitService(HabitTrackerContext Context) : IHabitService
 {
     HabitId IHabitService.addHabit(HabitNameDescription Habit, UserId User)
     {
