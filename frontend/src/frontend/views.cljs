@@ -27,23 +27,27 @@
          :children
          [[re-com/label :label (tr :login/username)]
           [re-com/input-text
+           :attr {:name :username :data-testid :register-username}
            :change-on-blur? false
            :model username
            :status (status username-ok)
            :on-change #(reset! username %)]
           [re-com/label :label (tr :login/password)]
           [re-com/input-password
+           :attr {:name :password :data-testid :register-password}
            :change-on-blur? false
            :model password
            :status (status password-ok)
            :on-change #(reset! password %)]
           [re-com/label :label (tr :login/repeat)]
           [re-com/input-password
+           :attr {:name :password2 :data-testid :register-password2}
            :change-on-blur? false
            :model password2
            :status (status password2-ok)
            :on-change #(reset! password2 %)]
           [re-com/button
+           :attr {:name :register-button :data-testid :register-button}
            :label (tr :login/create-new-account)
            :on-click submit
            :disabled? (not ready?)]]]))))
@@ -60,17 +64,20 @@
          :children
          [[re-com/label :label (tr :login/username)]
           [re-com/input-text
+           :attr {:name :username :data-testid :login-username}
            :change-on-blur? false
            :model username
            :status (status username-ok)
            :on-change #(reset! username %)]
           [re-com/label :label (tr :login/password)]
           [re-com/input-password
+           :attr {:name :password :data-testid :login-password}
            :change-on-blur? false
            :model password
            :status (status password-ok)
            :on-change #(reset! password %)]
           [re-com/button
+           :attr {:name :login-button :data-testid :login-button}
            :label (tr :login/login)
            :on-click submit
            :disabled? (not ready?)]]]))))
@@ -94,10 +101,12 @@
              :select
              [re-com/h-box
               :children [[re-com/button
+                          :attr {:data-testid :new-account}
                           :label (tr :login/register-new-account)
                           :class "btn-white"
                           :on-click #(reset! state :register)]
                          [re-com/button
+                          :attr {:data-testid :login}
                           :label (tr :login/login-old-account)
                           :class "btn-white"
                           :on-click #(reset! state :login)]]]
@@ -115,12 +124,15 @@
      :children [[re-com/button
                  :label (tr :nav/account)
                  :class "btn-white"
+                 :attr {:data-testid :nav-account}
                  :on-click #(>evt [::e/account-panel])]
                 [re-com/button
+                 :attr {:data-testid :nav-home}
                  :label (tr :nav/home)
                  :class "btn-white"
                  :on-click #(>evt [::e/home-panel])]
                 [re-com/button
+                 :attr {:data-testid :nav-logout}
                  :label (tr :nav/logout)
                  :class "btn-white"
                  :on-click #(>evt [::e/logout])]]]]])

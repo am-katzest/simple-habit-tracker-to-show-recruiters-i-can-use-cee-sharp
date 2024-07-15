@@ -7,6 +7,7 @@
   (try (->>
         (-> sstr (.substring 1) (.split "&"))
         (map (fn [x] (let [[a b] (.split x "=")]
+                       (assert (and (not= "" a) (not= "" b)))
                        [(keyword a) (keyword b)])))
         (into {}))
        (catch js/Error _ {})))
@@ -30,16 +31,15 @@
 (defn store-url-info! [m]
   (change-url-query (map->sstr m)))
 
-(defn initialize-to-login-if-no-found! [default]
-  (let [current (get-url-info)]
-    (when-not current
-      (store-url-info! {:panel default}))))
+(defn set-panel! [panel]
+  (store-url-info! {:panel panel}))
+
+(defn set-panel-if-none-found! [default]
+  (when (= {} (get-url-info))
+    (set-panel! default)))
 
 (defn get-panel! []
   (:panel (get-url-info)))
-
-(defn set-panel! [panel]
-  (store-url-info! {:panel panel}))
 
 (re-frame/reg-fx
  :set-panel
@@ -49,7 +49,8 @@
 ;; local storage
 
 (defn get-token []
-  (.getItem (.-localStorage js/window) "token"))
+  (let [t (.getItem (.-localStorage js/window) "token")]
+    (when (and (some? t) (not= "" t)) t)))
 
 (defn set-token! [token]
   (.setItem (.-localStorage js/window) "token" (str token)))
