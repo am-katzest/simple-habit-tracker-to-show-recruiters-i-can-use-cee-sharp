@@ -11,6 +11,10 @@ public interface IHabitService
     void RemoveHabit(HabitId Habit);
     HabitNameDescriptionId getHabitDetails(HabitId Habit);
     List<HabitNameId> getHabits(UserId User);
+    CompletionTypeId AddCompletionType(HabitId Habit, CompletionTypeData type);
+    void RemoveCompletionType(CompletionTypeId id);
+    void UpdateCompletionType(CompletionTypeId id, CompletionTypeData replacement);
+    List<CompletionTypeDataId> GetCompletionTypes(HabitId id);
 };
 
 
@@ -60,5 +64,47 @@ public class HabitService(HabitTrackerContext Context) : IHabitService
         h.Name = Replacement.Name;
         h.Description = Replacement.Description;
         Context.SaveChanges();
+    }
+
+    private CompletionType FindCompletionType(CompletionTypeId id)
+    {
+        var h = FindHabit(id.Habit);
+        try
+        {
+            return Context.Entry(h).Collection(h => h.CompletionTypes).Query().Single(c => c.Id == id.Id);
+        }
+        catch (InvalidOperationException)
+        {
+            throw new NoSuchCompletionTypeException();
+        }
+    }
+
+    CompletionTypeId IHabitService.AddCompletionType(HabitId Habit, CompletionTypeData ctype)
+    {
+        var h = FindHabit(Habit);
+        var t = new CompletionType() { Habit = h, Name = ctype.Name, Description = ctype.Description, Color = ctype.Color };
+        Context.Add(t);
+        Context.SaveChanges();
+        return new(t.Id, Habit);
+    }
+    void IHabitService.RemoveCompletionType(CompletionTypeId id)
+    {
+        var c = FindCompletionType(id);
+        Context.Remove(c);
+        Context.SaveChanges();
+    }
+    void IHabitService.UpdateCompletionType(CompletionTypeId id, CompletionTypeData replacement)
+    {
+        var c = FindCompletionType(id);
+        c.Name = replacement.Name;
+        c.Color = replacement.Color;
+        c.Description = replacement.Description;
+        Context.SaveChanges();
+    }
+    List<CompletionTypeDataId> IHabitService.GetCompletionTypes(HabitId id)
+    {
+        var h = FindHabit(id);
+        Context.Entry(h).Collection(h => h.CompletionTypes).Load();
+        return h.CompletionTypes.Select(ct => new CompletionTypeDataId(ct.Color, ct.Name, ct.Description, ct.Id)).ToList();
     }
 }

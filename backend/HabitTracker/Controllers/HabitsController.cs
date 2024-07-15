@@ -35,4 +35,30 @@ public class HabitsController(IHabitService Service) : ControllerBase
     {
         Service.UpdateHabit(new(id, user), habit);
     }
+
+    [HttpPost("{Hid:int}/CompletionTypes")]
+    public ActionResult<int> CreateCompletionType([ModelBinder][FromHeader] UserId user, int Hid, CompletionTypeData ct)
+    {
+        return new(Service.AddCompletionType(new(Hid, user), ct).Id);
+    }
+
+    [HttpPut("{Hid:int}/CompletionTypes/{Ctid:int}")]
+    public void UpdateCompletionType([ModelBinder][FromHeader] UserId user, int Hid, int Ctid, CompletionTypeData ct)
+    {
+        var id = new CompletionTypeId(Ctid, new(Hid, user));
+        Service.UpdateCompletionType(id, ct);
+    }
+
+    [HttpDelete("{Hid:int}/CompletionTypes/{Ctid:int}")]
+    public void UpdateCompletionType([ModelBinder][FromHeader] UserId user, int Hid, int Ctid)
+    {
+        var id = new CompletionTypeId(Ctid, new(Hid, user));
+        Service.RemoveCompletionType(id);
+    }
+
+    [HttpGet("{Hid:int}/CompletionTypes/")]
+    public ActionResult<List<CompletionTypeDataId>> UpdateCompletionType([ModelBinder][FromHeader] UserId user, int Hid)
+    {
+        return new(Service.GetCompletionTypes(new(Hid, user)));
+    }
 }

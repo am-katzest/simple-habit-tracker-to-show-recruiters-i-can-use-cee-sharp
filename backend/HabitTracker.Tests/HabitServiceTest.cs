@@ -82,4 +82,15 @@ public class HabitServiceTest(UserFixture Fixture) : IClassFixture<UserFixture>
         MakeService().UpdateHabit(hid, new("other", null));
         Assert.Null(MakeService().getHabitDetails(hid).Description);
     }
+    [Fact]
+    public void CompletionTypeExceptionTest()
+    {
+        var u = Fixture.MakeUser();
+        var hid = MakeService().addHabit(new("name", null), u);
+        var ct = new CompletionTypeData("#333333", "name", null);
+        Assert.Throws<NoSuchHabitException>(() => MakeService().AddCompletionType(hid with { Id = 131535153 }, ct));
+        var ctid = MakeService().AddCompletionType(hid, ct);
+        Assert.Throws<NoSuchHabitException>(() => MakeService().RemoveCompletionType(ctid with { Habit = ctid.Habit with { Id = 131333 } }));
+        Assert.Throws<NoSuchCompletionTypeException>(() => MakeService().RemoveCompletionType(ctid with { Id = 1351531 }));
+    }
 }
