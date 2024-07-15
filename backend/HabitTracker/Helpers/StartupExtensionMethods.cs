@@ -1,24 +1,27 @@
+using HabitTracker.Auth;
 using HabitTracker.Authentication;
+using HabitTracker.Middleware;
 using HabitTracker.Models;
 using HabitTracker.Services;
 
 namespace HabitTracker.Helpers;
 
-public static class SetupExtensionMethods
+public static class StartupExtensionMethods
 {
     public static void AddControllersAndBinders(this IServiceCollection services)
     {
-         services.AddControllers(options =>
-     {
-         // add user binder
-         options.ModelBinderProviders.Insert(0, new Controllers.UserModelBinderProvider());
-    // necessery to make it work when called from other (test) assembly
-     }).AddApplicationPart(typeof(HabitTrackerContext).Assembly);;
+        services.AddControllers(options =>
+    {
+        // add user binder
+        options.ModelBinderProviders.Insert(0, new UserModelBinderProvider());
+        // necessery to make it work when called from other (test) assembly
+    }).AddApplicationPart(typeof(HabitTrackerContext).Assembly); ;
     }
     public static void RegisterServices(this IServiceCollection services, Func<HabitTrackerContext> db, IClock clock)
     {
 
         services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IHabitService, HabitService>();
         services.AddScoped<HabitTrackerContext>((_) => db());
         services.AddSingleton(clock);
     }
@@ -31,5 +34,9 @@ public static class SetupExtensionMethods
     {
         services.AddAuthentication("Local").AddScheme<LocalAuthenticationOptions, LocalAuthenticationHandler>("Local", null);
         services.AddAuthorization();
+    }
+    public static void AddMiddleware(this IApplicationBuilder builder)
+    {
+        builder.UseMiddleware<ErrorTranslation>();
     }
 }

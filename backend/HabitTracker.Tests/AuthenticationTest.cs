@@ -3,14 +3,9 @@ using System.Net.Http.Headers;
 using HabitTracker.Authentication;
 using HabitTracker.DTOs;
 using HabitTracker.Services;
-using HabitTracker.Tests;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+
+namespace HabitTracker.Tests;
 
 public class AuthenticationTest(CreatedDatabaseFixture Fixture) : IClassFixture<CreatedDatabaseFixture>
 {
@@ -44,7 +39,7 @@ public class AuthenticationTest(CreatedDatabaseFixture Fixture) : IClassFixture<
                             {
                                 var uname = c.Items["user"] switch
                                 {
-                                    UserIdOnly u => "something",
+                                    UserId u => "something",
                                     _ => "nothing"
                                 };
                                 await c.Response.WriteAsync(uname);
@@ -58,10 +53,10 @@ public class AuthenticationTest(CreatedDatabaseFixture Fixture) : IClassFixture<
     }
 
     [Fact]
-    public async void Negative()
+    public async Task Negative()
     {
-        MakeService().createPasswordUser("a", "b");
-        var t = MakeService().createToken("a", "b");
+        MakeService().createPasswordUser(new("a", "b"));
+        var t = MakeService().createToken(new("a", "b"));
         Assert.NotNull(MakeService().validateToken(t));
         using var h = makeHost();
         var c = h.GetTestClient();
@@ -69,17 +64,19 @@ public class AuthenticationTest(CreatedDatabaseFixture Fixture) : IClassFixture<
         Assert.Equal(System.Net.HttpStatusCode.Unauthorized, (await c.GetAsync("/auth")).StatusCode);
         c.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("meow!");
         Assert.Equal(System.Net.HttpStatusCode.Unauthorized, (await c.GetAsync("/auth")).StatusCode);
+        c.UseToken("meow!");
+        Assert.Equal(System.Net.HttpStatusCode.Unauthorized, (await c.GetAsync("/auth")).StatusCode);
     }
 
     [Fact]
-    public async void Positive()
+    public async Task Positive()
     {
-        MakeService().createPasswordUser("meow", "b");
-        var t = MakeService().createToken("meow", "b");
+        MakeService().createPasswordUser(new("meow", "b"));
+        var t = MakeService().createToken(new("meow", "b"));
         Assert.NotNull(MakeService().validateToken(t));
         using var h = makeHost();
         var c = h.GetTestClient();
-        c.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(t);
+        c.UseToken(t);
         var correct = await c.GetAsync("/auth");
         Assert.Equal(System.Net.HttpStatusCode.OK, correct.StatusCode);
         Assert.Equal("something", await correct.Content.ReadAsStringAsync());

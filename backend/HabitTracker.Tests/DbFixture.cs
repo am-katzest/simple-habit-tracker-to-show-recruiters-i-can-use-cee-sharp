@@ -1,25 +1,13 @@
-using System.ComponentModel;
-using System.Security.Cryptography.X509Certificates;
+using HabitTracker.DTOs;
 
 namespace HabitTracker.Tests;
 
 
 public class ContainerHolder
 {
-    private static DbContainer? _instance;
-    private static readonly object _mutex = new();
-    public static DbContainer Container
-    {
-        get
-        {
-            lock (_mutex)
-            {
-                _instance ??= new DbContainer();
-                return _instance;
-            }
-        }
-        set { _instance = value; }
-    }
+    private static Lazy<DbContainer> _instance = new(() => new());
+
+    public static DbContainer Container { get => _instance.Value; }
 }
 
 
@@ -45,5 +33,17 @@ public class CreatedDatabaseFixture : UniqueDatabaseFixture
     public CreatedDatabaseFixture() : base()
     {
         MakeContext().Database.EnsureCreated();
+    }
+}
+
+public class UserFixture : CreatedDatabaseFixture
+{
+    public UserId MakeUser()
+    {
+        var c = MakeContext();
+        var u = new User() { DisplayName = "user", Auth = new DebugAuth() };
+        c.Users.Add(u);
+        c.SaveChanges();
+        return new(u.Id);
     }
 }

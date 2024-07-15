@@ -1,44 +1,70 @@
-using System.Net.Http.Headers;
 using HabitTracker.DTOs;
-using Microsoft.AspNetCore.TestHost;
+using HabitTracker.Exceptions;
 using static System.Net.HttpStatusCode;
 
 namespace HabitTracker.Tests;
 public class UserControllerTest(HostFixture fixture) : IClassFixture<HostFixture>
 {
     [Fact]
-    public async void UserCreationPositive()
+    public async Task UserCreationPositive()
     {
-        using var h = fixture.makeHost();
-        using var c = h.GetTestClient();
-        var lp = new UserLoginPassword() { Login = "kitty", Password = "cat" };
-        var ans1 = await c.PostAsJsonAsync("api/user/create", lp);
+        using var c = fixture.Client;
+        var lp = new Credentials("kitty", "cat");
+        var ans1 = await c.PostAsJsonAsync("api/users", lp);
         Assert.Equal(OK, ans1.StatusCode);
+    }
+    [Fact]
+    public async Task UserCreationNegative()
+    {
+        using var c = fixture.Client;
+        var lp = new Credentials("existing", "cat");
+        var ans1 = await c.PostAsJsonAsync("api/users", lp);
+        var ans2 = await c.PostAsJsonAsync("api/users", lp);
+        Assert.Equal(OK, ans1.StatusCode);
+        await AssertHelpers.ReturnedError<DuplicateUsernameException>(ans2);
     }
 
     [Fact]
-    public async void AuthorizationNegative()
+    public async Task AuthorizationNegative()
     {
-        using var h = fixture.makeHost();
-        using var c = h.GetTestClient();
-        c.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("awawa");
-        var ans1 = await c.GetAsync("api/user/displayname");
+        using var c = fixture.Client;
+        c.UseToken("awawa");
+        var ans1 = await c.GetAsync("api/users/me");
         Assert.NotEqual(OK, ans1.StatusCode);
     }
+
+
     [Fact]
-    public async void AuthorizationPositive()
+    public async Task AuthenticationNegative()
     {
-        using var h = fixture.makeHost();
-        using var c = h.GetTestClient();
-        var lp = new UserLoginPassword() { Login = "user1", Password = "cat" };
-        var ans1 = await c.PostAsJsonAsync("api/user/create", lp);
+        using var c = fixture.Client;
+        var credentials = new Credentials("wrong_username", "password");
+        var ans = await c.PostAsJsonAsync("api/users/createtoken", credentials);
+        await AssertHelpers.ReturnedError<InvalidUsernameOrPasswordException>(ans);
+    }
+
+    [Fact]
+    public async Task AuthorizationPositive()
+    {
+        using var c = fixture.Client;
+        var lp = new Credentials("user1", "cat");
+        var ans1 = await c.PostAsJsonAsync("api/users", lp);
         Assert.Equal(OK, ans1.StatusCode);
         Assert.True(await c.AuthenticateUser(lp));
-        var ans2 = await c.GetAsync("api/user/id");
-        Assert.Equal(OK, ans2.StatusCode);
+        var ans2 = await c.GetFromJsonAsync<AccountDetails>("api/users/me");
         var id1 = await ans1.Content.ReadAsStringAsync();
-        var id2 = await ans2.Content.ReadAsStringAsync();
-        Assert.Equal(id1, id2);
-        Assert.NotEqual("", id2);
+        Assert.NotNull(ans2);
+        Assert.Equal(id1, ans2!.Id.ToString());
+    }
+    [Fact]
+    public async Task DeletionPositive()
+    {
+        using var c = fixture.Client;
+        var lp = new Credentials("user2", "cat");
+        Assert.True(await c.RegisterUser(lp));
+        var ans = await c.DeleteAsync("/api/users/me");
+        Assert.True(ans.IsSuccessStatusCode);
+        Assert.False((await c.GetAsync("/api/users/me")).IsSuccessStatusCode);
+        Assert.False(await c.AuthenticateUser(lp));
     }
 }

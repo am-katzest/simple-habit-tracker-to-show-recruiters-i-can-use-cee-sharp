@@ -2,6 +2,8 @@
 // i only introduce vurneabilities and that it's a bad idea
 // yet i don't care :3 (it's not like anyone but me will ever use it)
 
+using HabitTracker.DTOs;
+using HabitTracker.Exceptions;
 using HabitTracker.Helpers;
 using HabitTracker.Models;
 using Microsoft.EntityFrameworkCore;
@@ -10,27 +12,28 @@ namespace HabitTracker.Services;
 
 public interface IUserService
 {
-    User createPasswordUser(string username, string password);
-    string createToken(string username, string password);
+    UserId createPasswordUser(Credentials lp);
+    string createToken(Credentials lp);
     void removeToken(string token);
-    void deleteUser(User user);
-    User validateToken(string token);
+    void deleteUser(UserId user);
+    UserId validateToken(string token);
+    AccountDetails GetAccountDetails(UserId user);
     void clearExpiredTokens();
 };
 
 public class UserService(HabitTrackerContext Context, IClock Clock) : IUserService
 {
-    public User createPasswordUser(string username, string password)
+    public UserId createPasswordUser(Credentials cred)
     {
-        var auth = new LoginPassword { Username = username, Password = password };
-        var u = new User { DisplayName = username, Auth = auth };
+        var auth = new LoginPassword { Username = cred.Login, Password = cred.Password };
+        var u = new User { DisplayName = cred.Login, Auth = auth };
         Context.Database.BeginTransaction();
-        if (Context.GetUserByUsername(username) is null)
+        if (Context.GetUserByUsername(cred.Login) is null)
         {
             Context.Add(u);
             Context.SaveChanges();
             Context.Database.CommitTransaction();
-            return u;
+            return new(u.Id);
         }
         else
         {
@@ -47,14 +50,14 @@ public class UserService(HabitTrackerContext Context, IClock Clock) : IUserServi
         return t.Id;
     }
 
-    string IUserService.createToken(string username, string password)
+    string IUserService.createToken(Credentials cred)
     {
-        var user = Context.GetUserByUsername(username);
+        var user = Context.GetUserByUsername(cred.Login);
         if (user is not null)
         {
             if (user.Auth is LoginPassword lp)
             {
-                if (lp.Password.Equals(password))
+                if (lp.Password.Equals(cred.Password))
                 {
                     return CreateToken(user);
                 }
@@ -63,9 +66,9 @@ public class UserService(HabitTrackerContext Context, IClock Clock) : IUserServi
         throw new InvalidUsernameOrPasswordException();
     }
 
-    void IUserService.deleteUser(User user)
+    void IUserService.deleteUser(UserId user)
     {
-        Context.Remove(user);
+        Context.Remove(GetUser(user));
         Context.SaveChanges();
     }
 
@@ -75,15 +78,15 @@ public class UserService(HabitTrackerContext Context, IClock Clock) : IUserServi
     }
 
     private bool IsValid(Token t) => t.ExpirationDate > Clock.Now;
-    User IUserService.validateToken(string token)
+    UserId IUserService.validateToken(string token)
     {
         try
         {
             var t = Context.Tokens.Single(t => t.Id == token);
             if (IsValid(t) && t is SessionToken st)
             {
-                Context.Entry(st).Reference(st => st.User).Load(); // another roundtrip for no good reason, on the hottest of paths
-                return st.User;
+                Context.Entry(st).Reference(st => st.User).Load(); // unnecessary roundtrip
+                return new(st.User.Id);
             }
             throw new InvalidTokenException();
         }
@@ -96,5 +99,11 @@ public class UserService(HabitTrackerContext Context, IClock Clock) : IUserServi
     void IUserService.clearExpiredTokens()
     {
         Context.Tokens.Where(x => x.ExpirationDate > Clock.Now).ExecuteDelete();
+    }
+
+    private User GetUser(UserId user) => Context.Users.Single(u => u.Id == user.Id);
+    AccountDetails IUserService.GetAccountDetails(UserId user)
+    {
+        return new(user.Id, GetUser(user).DisplayName);
     }
 }

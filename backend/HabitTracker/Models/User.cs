@@ -10,6 +10,7 @@ public class User
     public int Id { get; set; }
     public required string DisplayName { get; set; }
     public required UserAuth Auth { get; set; }
+    public ICollection<Habit> Habits { get; } = new List<Habit>();
 }
 
 public abstract class UserAuth
@@ -19,7 +20,6 @@ public abstract class UserAuth
 
 public class DebugAuth : UserAuth
 {
-    public required int Key { get; set; }  // to identify users during tests
 }
 
 public class LoginPassword : UserAuth

@@ -47,7 +47,7 @@ public class UserManagementTest : IClassFixture<UniqueDatabaseFixture>
         _ctx.SaveChanges();
         var returned = _ctx.Users.Single(u => u.DisplayName == "u2");
         var auth2 = (LoginPassword)returned.Auth;
-        Assert.True(auth2.Username.Equals("uniq1"));
+        Assert.Equal("uniq1", auth2.Username);
         Assert.False(auth2.Password.Equals("nope, wrong"));
         Assert.True(auth2.Password.Equals("some password"));
 

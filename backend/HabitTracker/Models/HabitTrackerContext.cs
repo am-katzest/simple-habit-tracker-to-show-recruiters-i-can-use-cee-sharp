@@ -8,6 +8,10 @@ public class HabitTrackerContext(String connectionString) : DbContext
 
     public DbSet<Token> Tokens { get; set; } = null!;
 
+    public DbSet<Habit> Habits { get; set; } = null!;
+    public DbSet<Completion> Completions { get; set; } = null!;
+    public DbSet<CompletionType> completionTypes { get; set; } = null!;
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // only way to guarantee strict 1:1 user - userAuth relationship with polymorphism (which i know of)
