@@ -5,8 +5,8 @@
    [frontend.events :as events]
    [frontend.views :as views]
    [frontend.config :as config]
-   ))
-
+   [frontend.persistance :as p]
+   [day8.re-frame.http-fx]))
 
 (defn dev-setup []
   (when config/debug?
@@ -19,6 +19,9 @@
     (rdom/render [views/main-panel] root-el)))
 
 (defn init []
-  (re-frame/dispatch-sync [::events/initialize-db])
+  (if (p/get-token)
+    (p/set-panel-if-none-found! :home)
+    (p/set-panel! :login))
+  (re-frame/dispatch-sync [::events/initialize-db (p/get-panel!)])
   (dev-setup)
   (mount-root))

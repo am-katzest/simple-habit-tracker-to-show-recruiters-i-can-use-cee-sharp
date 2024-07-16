@@ -6,4 +6,5 @@
    :panel :login
    :locale :eng
    :locales l/one-big-dictionary
-   :login {}})
+   :login {}
+   :alerts []})
