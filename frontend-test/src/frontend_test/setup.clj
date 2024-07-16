@@ -9,11 +9,15 @@
 
 (defn url [rest] (str ROOT [rest]))
 
-(def DRIVER (get {"FIREFOX" e/firefox} (System/getenv "FRONTEND_TEST_WEBDRIVER") e/firefox))
-(defn make-driver [] (DRIVER))
+(def make-driver
+  (get {"FIREFOX" e/firefox
+        "FIREFOX_HEADLESS" e/firefox-headless}
+       (System/getenv "FRONTEND_TEST_WEBDRIVER")
+       e/firefox))
+
 (def ^:dynamic *driver* nil)
 (defmacro with-driver  [& exprs]
-  `(let [name# (e/firefox)]
+  `(let [name# (make-driver)]
      (binding [*driver* name#]
        (try ~@exprs
             (finally
