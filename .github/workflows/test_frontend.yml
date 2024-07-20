@@ -1,0 +1,15 @@
+# build and run dockerized app and test gui
+name: test frontend
+on:
+  push:
+    paths:
+      - 'frontend/**'
+      - 'frontend-test/**'
+      - 'compose.yaml'
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Integration Tests
+      run: ./run-integration-tests.sh
