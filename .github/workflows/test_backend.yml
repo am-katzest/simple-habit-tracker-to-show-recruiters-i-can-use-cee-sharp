@@ -1,6 +1,9 @@
 # build and test backend only
 name: test backend
-on: [push]
+on:
+  push:
+    paths:
+      - 'backend/**'
 jobs:
   test:
     runs-on: ubuntu-latest
