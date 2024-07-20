@@ -1,4 +1,3 @@
-#!/usr/bin/bb
 (ns frontend-test.setup
   (:require
    [clojure.walk :refer [postwalk]]
