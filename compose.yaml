@@ -1,18 +1,12 @@
 services:
-  nginx:
-    image: "nginx:1.25.5-alpine"
+  frontend:
+    build: ./frontend
     ports:
       - "8580:80"
     networks:
       - outer
-      - inner
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - compiled-frontend:/var/www/mnt
-  frontend:
-    build: ./frontend
-    volumes:
-      - compiled-frontend:/opt/build/resources/public
   backend:
     build: ./backend
     environment:
@@ -22,6 +16,7 @@ services:
       - "ASPNETCORE_URLS=http://+:8680"
     networks:
       - inner
+      - outer
   db: # without persistance for now
     image: "postgres:16.2"
     environment:
@@ -32,6 +27,3 @@ services:
 networks:
   outer:
   inner:
-
-volumes:
-  compiled-frontend:

@@ -1,7 +1,7 @@
 (ns frontend-test.login
   (:require [clojure.test :refer [deftest testing is are]]
             [frontend-test.setup :as s :refer-macros true]
-            [frontend-test.helpers :refer [btn input wait-enabled wait-disabled wait-exists query] :as h  :refer-macros true]
+            [frontend-test.helpers :refer [btn input wait-enabled wait-disabled wait-exists wait-predicate query] :as h  :refer-macros true]
             [etaoin.api :as e]))
 
 (defn goto-login []
@@ -32,7 +32,10 @@
    (e/fill (input :login-username) username)
    (wait-enabled (btn :login-button))
    (e/wait 0.1)
-   (e/click (btn :login-button))))
+   (e/click (btn :login-button))
+   (wait-predicate #(or (e/exists? (btn :nav-logout))
+                        (e/has-text? "invalid username or password"))) ; placeholder (only english)
+   (e/exists? (btn :nav-logout))))
 
 (defn- create-user [username password]
   (s/use-driver
@@ -59,8 +62,7 @@
        (is (e/has-text? (btn :login) "login"))
        (is (e/has-text? (btn :new-account) "new account")))
      (testing "logging in negative wrong cred"
-       (login-as (random-str) (random-str))
-       (is (e/has-text? "invalid username or password")))
+       (is (not (login-as (random-str) (random-str)))))
      (testing "user creation negative, checking works"
        (goto-register)
        (is (e/exists? (btn :register-button false)))
@@ -96,8 +98,7 @@
          (wait-exists (btn :login))
          (is (= "?panel=login" (query (e/get-url)))))
        (testing "logging in"
-         (login-as username password)
-         (wait-exists (btn :nav-logout))
+         (is (login-as username password))
          (testing "url changed"
            (is (= "?panel=home" (query (e/get-url)))))
          (testing "username visible"

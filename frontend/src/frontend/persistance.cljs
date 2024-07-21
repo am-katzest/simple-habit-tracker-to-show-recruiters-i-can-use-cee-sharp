@@ -7,8 +7,8 @@
   (try (->>
         (-> sstr (.substring 1) (.split "&"))
         (map (fn [x] (let [[a b] (.split x "=")]
-                       (assert (and (not= "" a) (not= "" b)))
-                       [(keyword a) (keyword b)])))
+                      (when (and a b (not= "" a) (not= "" b))
+                        [(keyword a) (keyword b)]))))
         (into {}))
        (catch js/Error _ {})))
 

@@ -1,39 +1,41 @@
 # simple habit tracker
 
 
-# tests
+# backend tests
 
 ``` sh
+cd backend
 dotnet test
 ```
 
 # gui developement
 
-1. start backend
+1. start backend (and frontend that's going to be replaced)
 
-```
-docker-compose build
-docker-compose up
+```sh
+docker-compose up -d --build
 ```
 2. start relay
 
-```
-bash start_nginx_dev.sh
+```sh
+./start_nginx_dev.sh
 ```
 3. start watcher for updates to frontend code
-```
+```sh
 cd frontend
-npx shadow-cljs  watch app
+npx shadow-cljs watch app
 ```
 
-# habit
+# gui tests
 
-user, name, description (rarely)
+## outside developement
+``` sh
+./run-integration-tests.sh
+```
+## during developement
+```sh 
+cd frontend-test
+lein test
+```
 
-# result
-
-habit, color, name, description (sometimes)
-
-# completion
-
-result, date, description (rarely)
+`

@@ -18,4 +18,5 @@ RUN \
     npm run release
 # thank you shadow-cljs for returning 0 even if compilation failed
 RUN test -e resources/public/js/compiled/app.js
-ENTRYPOINT ["sleep", "infinity"]
+FROM "nginx:1.25.5-alpine" as ngnix
+COPY --from=build  /opt/build/resources/public /var/www/mnt

@@ -20,6 +20,7 @@
 (def wait-enabled (wrap-waiter-into-test e/wait-enabled))
 (def wait-exists (wrap-waiter-into-test e/wait-exists))
 (def wait-disabled (wrap-waiter-into-test e/wait-disabled))
+(def wait-predicate e/wait-predicate)   ; one of the functions ignoring convention
 
 (defn query [s]
   (reduce str (drop-while (complement #{\?}) s)))
