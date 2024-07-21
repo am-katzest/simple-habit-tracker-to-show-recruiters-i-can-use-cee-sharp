@@ -167,10 +167,7 @@
 
 (defn main-panel []
   (let [panel (or (panels @(<sub [::subs/panel])) title)]
-    (if (= :login @(<sub [::subs/panel]))
-      [:div [panel]
-       [alerts]]
-      [:div
-       [navbar]
-       [panel]
-       [alerts]])))
+    [:div
+     (when-not (= :login @(<sub [::subs/panel])) [navbar])
+     [panel]
+     [alerts]]))
