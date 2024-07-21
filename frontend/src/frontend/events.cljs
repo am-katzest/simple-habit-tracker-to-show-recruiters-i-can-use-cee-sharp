@@ -22,8 +22,8 @@
 
 (re-frame/reg-event-db
  ::initialize-db
- (fn [_ [_ panel]]
-   (assoc db/default-db :panel panel)))
+ (fn [_ [_ token panel]]
+   (assoc db/default-db :panel panel :token token)))
 
 (re-frame/reg-event-fx
  ::create-new-account
