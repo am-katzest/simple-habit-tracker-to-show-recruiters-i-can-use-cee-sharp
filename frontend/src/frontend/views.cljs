@@ -123,7 +123,7 @@
     [re-com/h-box
      :gap "20px"
      :children (->> [[:account :nav-account :nav/account ::e/account-panel]
-                     [:home :nav-home :nav/home ::e/home-panel]
+                     [:habits :nav-habits :nav/habits ::e/habits-panel]
                      [nil :nav-logout :nav/logout ::e/logout]]
                     (map (fn [[id nav trans evt]]
                            [re-com/button
@@ -132,10 +132,10 @@
                             :attr {:data-testid nav}
                             :on-click #(>evt [evt])])))]]])
 
-(defn home-panel []
+(defn habits-panel []
   [re-com/title
    :src   (at)
-   :label "meow (i'm home panel placeholder)"
+   :label "meow (i'm habits panel placeholder)"
    :level :level1
    :class (styles/level1)])
 
@@ -147,8 +147,9 @@
      :level :level1
      :class (styles/level1)]))
 
+
 (def panels {:login login-register-panel
-             :home home-panel
+             :habits habits-panel
              :account account-panel})
 
 (defn alerts []

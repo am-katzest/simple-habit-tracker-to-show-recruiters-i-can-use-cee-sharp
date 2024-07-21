@@ -88,11 +88,11 @@
            (e/has-text? username))
          (wait-exists (btn :nav-logout))
          (testing "query changed"
-           (is (= "?panel=home" (query (e/get-url))))))
+           (is (= "?panel=habits" (query (e/get-url))))))
        (testing "url sets correctly when token exits"
          (e/go s/ROOT)
          (wait-exists (btn :nav-logout))
-         (is (= "?panel=home" (query (e/get-url)))))
+         (is (= "?panel=habits" (query (e/get-url)))))
        (testing "logging out"
          (e/click (btn :nav-logout))
          (wait-exists (btn :login))
@@ -100,7 +100,7 @@
        (testing "logging in"
          (is (login-as username password))
          (testing "url changed"
-           (is (= "?panel=home" (query (e/get-url)))))
+           (is (= "?panel=habits" (query (e/get-url)))))
          (testing "username visible"
            (e/has-text? username)))))))
 

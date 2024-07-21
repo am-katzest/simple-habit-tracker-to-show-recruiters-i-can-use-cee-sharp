@@ -50,7 +50,7 @@
  ::receive-token
  (fn [{:keys [db]} [_ token]]
    (let [panel (if (= :login (:panel db))
-                 :home
+                 :habits
                  (:panel db))
          db (assoc db :token token :panel panel)]
      (cond->
@@ -83,9 +83,9 @@
    (assoc db :panel :account)))
 
 (re-frame/reg-event-db
- ::home-panel
+ ::habits-panel
  (fn [db & _]
-   (assoc db :panel :home)))
+   (assoc db :panel :habits)))
 
 (re-frame/reg-event-db
  ::close-alert
