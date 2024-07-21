@@ -116,26 +116,21 @@
              [register-form]))])]]]])
 
 (defn navbar []
+(defn navbar [panel]
   [:nav.navbar.navbar-light.bg-light
    [:div.container-fluid
     [:a.navbar-brand "habit tracker"]
     [re-com/h-box
      :gap "20px"
-     :children [[re-com/button
-                 :label (tr :nav/account)
-                 :class "btn-white"
-                 :attr {:data-testid :nav-account}
-                 :on-click #(>evt [::e/account-panel])]
-                [re-com/button
-                 :attr {:data-testid :nav-home}
-                 :label (tr :nav/home)
-                 :class "btn-white"
-                 :on-click #(>evt [::e/home-panel])]
-                [re-com/button
-                 :attr {:data-testid :nav-logout}
-                 :label (tr :nav/logout)
-                 :class "btn-white"
-                 :on-click #(>evt [::e/logout])]]]]])
+     :children (->> [[:account :nav-account :nav/account ::e/account-panel]
+                     [:home :nav-home :nav/home ::e/home-panel]
+                     [nil :nav-logout :nav/logout ::e/logout]]
+                    (map (fn [[id nav trans evt]]
+                           [re-com/button
+                            :label (tr trans)
+                            :class (if (= id panel) "btn-white nav-disabled" "btn-white")
+                            :attr {:data-testid nav}
+                            :on-click #(>evt [evt])])))]]])
 
 (defn home-panel []
   [re-com/title
@@ -166,8 +161,8 @@
                    (fn [a] (apply re-com/alert-box :closeable? true :on-close #(>evt [::e/close-alert (:id a)]) (apply concat a))) @alerts))])))
 
 (defn main-panel []
-  (let [panel (or (panels @(<sub [::subs/panel])) title)]
+  (let [current-panel @(<sub [::subs/panel])]
     [:div
-     (when-not (= :login @(<sub [::subs/panel])) [navbar])
-     [panel]
+     (when-not (= :login current-panel) [navbar current-panel])
+     [(or (panels current-panel) title)]
      [alerts]]))

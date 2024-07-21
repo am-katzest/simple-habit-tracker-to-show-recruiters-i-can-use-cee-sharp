@@ -26,6 +26,9 @@
 (defglobal fix-alerts-being-invisible
   [:.rc-alert.fade {:opacity 1}])
 
+(defglobal nav-disabled
+  [:.nav-disabled {:color "#ccc"}])
+
 (defclass level1
   []
   {:color :green})
