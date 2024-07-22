@@ -23,6 +23,12 @@
             [:headers "Authorization"]
             (str "SessionToken " (:token db))))
 
+(defn reg-event-http [keyword f]
+  (re-frame/reg-event-fx
+   keyword
+   (fn [{:keys [db]} [_kw & rest]]
+     {:http-xhrio (apply request-auth db (apply f rest))})))
+
 (re-frame/reg-event-db
  ::initialize-db
  (fn [_ [_ token panel]]
