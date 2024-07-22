@@ -6,14 +6,17 @@
    [ajax.core :as ajax]
    [frontend.persistance :as p]))
 
+(defn- wrap-if-kw [thing]
+  (if (keyword? thing) [thing] thing))
+
 (defn request [method path on-success on-failure & keywords]
   (apply assoc
          {:method          method
           :uri             (str "/api" path)
           :response-format (ajax/json-response-format {:keywords? true})
           :format (ajax/json-request-format)
-          :on-success      on-success
-          :on-failure      on-failure} keywords))
+          :on-success      (wrap-if-kw on-success)
+          :on-failure      (wrap-if-kw on-failure)} keywords))
 
 (defn request-auth [db & other]
   (assoc-in (apply request other)
