@@ -91,15 +91,19 @@
  (fn [_ & args]
    (js/alert (str args))))
 
-(re-frame/reg-event-db
+(re-frame/reg-event-fx
  ::account-panel
- (fn [db & _]
-   (assoc db :panel :account)))
+ (fn [{:keys [db]} & _]
+   {:db (assoc db :panel :account)
+    :set-panel :account
+    :dispatch [::download-user]}))
 
-(re-frame/reg-event-db
+(re-frame/reg-event-fx
  ::habits-panel
- (fn [db & _]
-   (assoc db :panel :habits)))
+ (fn [{:keys [db]} & _]
+   {:db (assoc db :panel :habits)
+    :dispatch [::download-habits]
+    :set-panel :habits}))
 
 (re-frame/reg-event-db
  ::close-alert
