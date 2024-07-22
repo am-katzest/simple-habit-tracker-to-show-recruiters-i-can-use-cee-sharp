@@ -114,7 +114,6 @@
              :register
              [register-form]))])]]]])
 
-(defn navbar []
 (defn navbar [panel]
   [:nav.navbar.navbar-light.bg-light
    [:div.container-fluid
@@ -131,12 +130,27 @@
                             :attr {:data-testid nav}
                             :on-click #(>evt [evt])])))]]])
 
+
+(defn habit-list []
+  (let [habits @(<sub [::subs/habit-names])
+        current @(<sub [::subs/selected-habit])]
+    [re-com/box
+     :width "200px"
+     :child
+     (into [:div.list-group
+            [:button.list-group-item.list-group-item-action.list-group-item-dark
+             {:on-click #(>evt [::e/new-empty-habit])}
+             (tr :habit/add-new)]]
+           (mapv (fn [[id name]]
+                   [:button.list-group-item.list-group-item-action
+                    (cond-> {:on-click #(>evt [::e/select-habit id])}
+                      (= id current) (assoc :class :active))
+                    name])
+                 habits))]))
+
 (defn habits-panel []
-  [re-com/title
-   :src   (at)
-   :label "meow (i'm habits panel placeholder)"
-   :level :level1
-   :class (styles/level1)])
+  [re-com/v-box
+   :children [[habit-list]]])
 
 (defn account-panel []
   (let [user (<sub [::subs/user])]

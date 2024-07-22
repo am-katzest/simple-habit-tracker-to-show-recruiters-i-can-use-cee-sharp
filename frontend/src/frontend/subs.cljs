@@ -26,3 +26,18 @@
  ::alerts
  (fn [db]
    (:alerts db)))
+
+(re-frame/reg-sub
+ ::habits
+ (fn [db]
+   (:habits-data db)))
+
+(re-frame/reg-sub
+ ::habit-names
+ :<- [::habits]
+ (fn [habits]
+   (mapv (fn [[id h]] [id (:name h)]) habits)))
+
+(re-frame/reg-sub
+ ::selected-habit
+ (fn [db] (-> db :habits :selected-habit)))

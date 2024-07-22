@@ -19,5 +19,7 @@
            {:logout "logout"
             :account "account"
             :habits "habits"}
+           #:habit
+           {:add-new "add new"}
           #:error
            {:wrong-cred "invalid username or password"})})

@@ -112,3 +112,32 @@
    (let [id (->> db :alerts (map :id) (reduce max 0) inc)
          new-alert (apply assoc {:alert-type type :id id} keys)]
      (update db :alerts conj new-alert))))
+
+(re-frame/reg-event-fx
+ ::select-habit
+ (fn [{:keys [db]} [_ id]]
+   {:db (assoc-in db [:habits :selected-habit] id)}))
+
+(reg-event-http
+ ::download-habits
+ (fn [] [:get "/habits/" ::receive-habits :show]))
+
+(re-frame/reg-event-fx
+ ::receive-habits
+ (fn [{:keys [db]} [_ habits]]
+   (let [formatted (->> habits (map (fn [{:keys [id] :as h}] [id h])) (into {}))]
+     {:db (assoc db :habits-data formatted)})))
+
+(reg-event-http
+ ::new-empty-habit
+ (fn []
+   (let [data {:name "new habit"}]
+     [:post "/habits/" [::empty-habit-created data] :show :params data])))
+
+(re-frame/reg-event-db
+ ::empty-habit-created
+ (fn [db [_ habit-no-id id]]
+   (let [habit (assoc habit-no-id :id id)]
+     (-> db
+         (update :habits-data assoc id habit)
+         (assoc-in [:habits :selected-habit] id)))))
