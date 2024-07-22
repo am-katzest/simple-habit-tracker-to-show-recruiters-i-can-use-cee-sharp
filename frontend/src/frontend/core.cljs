@@ -23,5 +23,6 @@
     (p/set-panel-if-none-found! :habits)
     (p/set-panel! :login))
   (re-frame/dispatch-sync [::events/initialize-db (p/get-token) (p/get-panel!)])
+  (re-frame/dispatch-sync [::events/reset-panel])
   (dev-setup)
   (mount-root))
