@@ -61,14 +61,19 @@
    (let [panel (if (= :login (:panel db))
                  :habits
                  (:panel db))
-         panel-setter ({:habits [::habits-panel]
-                        :account [::account-panel]} panel)
          db (assoc db :token token)]
-     (cond->
-         {:db db
-          :store-token token
-          :set-panel panel}
-       panel-setter (assoc :dispatch panel-setter)))))
+     {:dispatch [::reset-panel]
+      :db db
+      :store-token token
+      :set-panel panel})))
+
+(re-frame/reg-event-fx
+ ::reset-panel
+ (fn [{:keys [db]}]
+   (let [panel (:panel db)
+         panel-setter ({:habits [::habits-panel]
+                        :account [::account-panel]} panel)]
+     (if panel-setter {:dispatch panel-setter} {}))))
 
 (reg-event-http
  ::download-user
