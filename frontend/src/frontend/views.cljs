@@ -137,19 +137,19 @@
     [re-com/box
      :width "200px"
      :child
-     (into [:div.list-group
+     (into [:div.list-group.w-100
             [:button.list-group-item.list-group-item-action.list-group-item-dark
              {:on-click #(>evt [::e/new-empty-habit])}
              (tr :habit/add-new)]]
            (mapv (fn [[id name]]
-                   [:button.list-group-item.list-group-item-action
+                   [:button.list-group-item.list-group-item-action.w-100
                     (cond-> {:on-click #(>evt [::e/select-habit id])}
                       (= id current) (assoc :class :active))
                     name])
                  habits))]))
 
 (defn habits-panel []
-  [re-com/v-box
+  [re-com/h-box
    :children [[habit-list]]])
 
 (defn account-panel []
