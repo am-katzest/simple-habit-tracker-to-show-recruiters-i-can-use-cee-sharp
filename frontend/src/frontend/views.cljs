@@ -82,13 +82,12 @@
            :on-click submit
            :disabled? (not ready?)]]]))))
 
-(defn title []
-  (let [name (<sub [::subs/name])]
-    [re-com/title
-     :src   (at)
-     :label (str "Hello from :3" @name)
-     :level :level1
-     :class (styles/level1)]))
+(defn error-panel []
+  [re-com/title
+   :src   (at)
+   :label "wrong panel, shouldn't happen"
+   :level :level1
+   :class (styles/level1)])
 
 (defn login-register-panel []
   [:div.container-sm.md-2.center.bd-layout
@@ -165,5 +164,5 @@
   (let [current-panel @(<sub [::subs/panel])]
     [:div
      (when-not (= :login current-panel) [navbar current-panel])
-     [(or (panels current-panel) title)]
+     [(or (panels current-panel) error-panel)]
      [alerts]]))
