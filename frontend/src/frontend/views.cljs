@@ -171,7 +171,7 @@
                     name])
                  habits))]))
 
-(defn single-habit-info-edit-panel [original state]
+(defn single-habit-info-edit-panel [original state deleting?]
   (let [modified? (not= original (dh/normalize-habit @state))
         valid? (not (contains? #{nil ""} (:name @state)))]
     [re-com/v-box
@@ -201,19 +201,24 @@
                        :on-click #(reset! state original)
                        :md-icon-name "zmdi-undo"]
                       [re-com/md-icon-button
-                       :on-click #(>evt [::e/delete-habit (:id original)])
+                       :on-click #(reset! deleting? true)
                        :md-icon-name "zmdi-delete"])]]]]
       [re-com/input-textarea
        :width "280px"
        :change-on-blur? false
        :placeholder (tr :habit/description)
        :model (-> @state :description str) ; can be null
-       :on-change #(swap! state assoc :description %)]]]))
+       :on-change #(swap! state assoc :description %)]
+      (when @deleting?
+        [confirm-panel
+         (tr :habit/confirm-deletion)
+         #(>evt [::e/delete-habit (:id original)])
+         #(reset! deleting? false)])]]))
 
 (defn single-habit-info-edit-panel-wrap [id]
   (let [original @(<sub [::subs/habit id])
         state (r/atom original)]
-    [single-habit-info-edit-panel original state]))
+    [single-habit-info-edit-panel original state (r/atom false)]))
 
 (defn habits-panel []
   [re-com/h-box

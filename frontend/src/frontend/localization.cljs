@@ -22,6 +22,7 @@
            #:habit
            {:add-new "add new"
             :description "add description.."
+            :confirm-deletion "really delete this habit?"
             :new-habit "new habit"
             :name "add name.."}
            #:prompt{:confirm "confirm"
