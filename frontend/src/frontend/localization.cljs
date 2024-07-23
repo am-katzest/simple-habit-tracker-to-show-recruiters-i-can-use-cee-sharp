@@ -20,6 +20,8 @@
             :account "account"
             :habits "habits"}
            #:habit
-           {:add-new "add new"}
+           {:add-new "add new"
+            :description "add description.."
+            :name "add name.."}
           #:error
            {:wrong-cred "invalid username or password"})})

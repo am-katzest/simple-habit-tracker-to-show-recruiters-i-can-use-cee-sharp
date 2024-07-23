@@ -152,6 +152,34 @@
      (-> db
          (update :habits-data assoc id habit)
          (assoc-in [:habits :selected-habit] id)))))
+
+(reg-event-http
+ ::download-habit-details
+ (fn [id]
+   [:get (str "/habits/" id) [::receive-habit-details id] :show]))
+
+(re-frame/reg-event-db
+ ::receive-habit-details
+ (fn [db [_ id habit-details]]
+   (update db :habits-data assoc id habit-details)))
+
+(reg-event-http
+ ::update-habit
+ (fn [habit]
+   [:put (str "/habits/" (:id habit)) [::receive-habit-details (:id habit) habit] :show
+    :params (dissoc habit :id)]))
+
+(reg-event-http
+ ::delete-habit
+ (fn [id]
+   [:delete (str "/habits/" id) [::delete-habit-receive id] :show]))
+
+(re-frame/reg-event-fx
+ ::delete-habit-receive
+ (fn [{:keys [db]} [_ id]]
+   {:db (update db :habits-data dissoc id)
+    :dispatch [::fixup-habit-selection]}))
+
 (re-frame/reg-event-fx
  ::fixup-habit-selection
  (fn [{:keys [db]} _]

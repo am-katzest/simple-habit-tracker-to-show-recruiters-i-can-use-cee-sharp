@@ -41,3 +41,9 @@
 (re-frame/reg-sub
  ::selected-habit
  (fn [db] (-> db :habits :selected-habit)))
+
+(re-frame/reg-sub
+ ::habit
+ :<- [::habits]
+ (fn [habits [_ id]]
+   (when (and habits id) (habits id))))

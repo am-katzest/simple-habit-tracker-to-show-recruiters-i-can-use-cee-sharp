@@ -13,6 +13,8 @@
 
 (defn status [x] (if x :success :warning))
 
+(defn status-no-green [x] (if x nil :warning))
+
 (defn register-form []
   (let [username (r/atom "")
         password (r/atom "")
@@ -148,9 +150,55 @@
                     name])
                  habits))]))
 
+(defn single-habit-info-edit-panel [original state]
+  (let [modified? (not= original @state)
+        valid? (not (contains? #{nil ""} (:name @state)))]
+    [re-com/v-box
+     :margin "20px"
+     :width "280px"
+     :gap "20px"
+     :children
+     [[re-com/h-box
+       :justify :between
+       :children [[re-com/input-text
+                   :width "200px"
+                   :placeholder (tr :habit/name)
+                   :status (status-no-green valid?)
+                   :change-on-blur? false
+                   :model (:name @state)
+                   :on-change #(swap! state assoc :name %)]
+                  [re-com/h-box
+                   :gap "5px"
+                   :align :center
+                   :children
+                   [[re-com/md-icon-button
+                     :md-icon-name "zmdi-save"
+                     :on-click #(>evt [::e/update-habit @state])
+                     :disabled? (not (and modified? valid?))]
+                    (if modified?
+                      [re-com/md-icon-button
+                       :on-click #(reset! state original)
+                       :md-icon-name "zmdi-undo"]
+                      [re-com/md-icon-button
+                       :on-click #(>evt [::e/delete-habit (:id original)])
+                       :md-icon-name "zmdi-delete"])]]]]
+      [re-com/input-textarea
+       :width "280px"
+       :change-on-blur? false
+       :placeholder (tr :habit/description)
+       :model (-> @state :description str) ; can be null
+       :on-change #(swap! state assoc :description %)]]]))
+
+(defn single-habit-info-edit-panel-wrap [id]
+  (let [original @(<sub [::subs/habit id])
+        state (r/atom original)]
+    [single-habit-info-edit-panel original state]))
+
 (defn habits-panel []
   [re-com/h-box
-   :children [[habit-list]]])
+   :children [[habit-list]
+              (when-let [id @(<sub [::subs/selected-habit])]
+                [single-habit-info-edit-panel-wrap id])]])
 
 (defn account-panel []
   (let [user (<sub [::subs/user])]
