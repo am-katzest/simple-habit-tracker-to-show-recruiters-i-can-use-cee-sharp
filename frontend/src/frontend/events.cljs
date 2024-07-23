@@ -125,7 +125,8 @@
 (re-frame/reg-event-fx
  ::select-habit
  (fn [{:keys [db]} [_ id]]
-   {:db (assoc-in db [:habits :selected-habit] id)}))
+   (cond-> {:db (assoc-in db [:habits :selected-habit] id)}
+     (some? id) (assoc :dispatch [::download-habit-details id]))))
 
 (reg-event-http
  ::download-habits
@@ -135,7 +136,8 @@
  ::receive-habits
  (fn [{:keys [db]} [_ habits]]
    (let [formatted (->> habits (map (fn [{:keys [id] :as h}] [id h])) (into {}))]
-     {:db (assoc db :habits-data formatted)})))
+     {:db (assoc db :habits-data formatted)
+      :dispatch [::fixup-habit-selection]})))
 
 (reg-event-http
  ::new-empty-habit
@@ -150,3 +152,13 @@
      (-> db
          (update :habits-data assoc id habit)
          (assoc-in [:habits :selected-habit] id)))))
+(re-frame/reg-event-fx
+ ::fixup-habit-selection
+ (fn [{:keys [db]} _]
+   (let [old-id (get-in db [:habits :selected-habit])
+         existing-data (get-in db [:habits-data old-id])
+         other-id (-> db :habits-data ffirst) ; will be null if no habits remain
+         new-id (when (some? other-id)
+                  (if (some? existing-data) old-id other-id))]
+     (when (not= new-id old-id)
+         {:dispatch [::select-habit new-id]}))))
