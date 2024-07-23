@@ -4,6 +4,7 @@
    [frontend.db :as db]
    [frontend.localization :refer [tr]]
    [ajax.core :as ajax]
+   [frontend.data-helpers :as dh]
    [frontend.persistance :as p]))
 
 (defn- wrap-if-kw [thing]
@@ -142,7 +143,7 @@
 (reg-event-http
  ::new-empty-habit
  (fn []
-   (let [data {:name "new habit"}]
+   (let [data (dh/normalize-habit {:name (tr :habit/new-habit)})]
      [:post "/habits/" [::empty-habit-created data] :show :params data])))
 
 (re-frame/reg-event-db

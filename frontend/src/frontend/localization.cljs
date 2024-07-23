@@ -22,6 +22,7 @@
            #:habit
            {:add-new "add new"
             :description "add description.."
+            :new-habit "new habit"
             :name "add name.."}
           #:error
            {:wrong-cred "invalid username or password"})})
