@@ -16,6 +16,26 @@
 
 (defn status-no-green [x] (if x nil :warning))
 
+(defn confirm-panel [text confirm cancel]
+  [re-com/modal-panel
+   :backdrop-on-click cancel
+   :child [re-com/v-box
+           :gap "30px"
+           :children
+           [text
+            [re-com/h-box
+             :align :center
+             :gap "30px"
+             :children
+             [[re-com/button
+               :class "btn btn-primary"
+               :label (tr :prompt/confirm)
+               :on-click confirm]
+              [re-com/button
+               :class "btn btn-secondary"
+               :label (tr :prompt/cancel)
+               :on-click cancel]]]]]])
+
 (defn register-form []
   (let [username (r/atom "")
         password (r/atom "")

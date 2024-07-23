@@ -24,5 +24,7 @@
             :description "add description.."
             :new-habit "new habit"
             :name "add name.."}
+           #:prompt{:confirm "confirm"
+                    :cancel "cancel"}
           #:error
            {:wrong-cred "invalid username or password"})})
