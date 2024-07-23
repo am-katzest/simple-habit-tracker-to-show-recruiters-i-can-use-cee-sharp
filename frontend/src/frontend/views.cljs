@@ -6,6 +6,7 @@
    [frontend.localization :refer [tr]]
    [frontend.styles :as styles]
    [frontend.events :as e]
+   [frontend.data-helpers :as dh]
    [frontend.subs :as subs]))
 
 (def <sub re-frame.core/subscribe)
@@ -151,7 +152,7 @@
                  habits))]))
 
 (defn single-habit-info-edit-panel [original state]
-  (let [modified? (not= original @state)
+  (let [modified? (not= original (dh/normalize-habit @state))
         valid? (not (contains? #{nil ""} (:name @state)))]
     [re-com/v-box
      :margin "20px"
@@ -173,7 +174,7 @@
                    :children
                    [[re-com/md-icon-button
                      :md-icon-name "zmdi-save"
-                     :on-click #(>evt [::e/update-habit @state])
+                     :on-click #(>evt [::e/update-habit (dh/normalize-habit @state)])
                      :disabled? (not (and modified? valid?))]
                     (if modified?
                       [re-com/md-icon-button
