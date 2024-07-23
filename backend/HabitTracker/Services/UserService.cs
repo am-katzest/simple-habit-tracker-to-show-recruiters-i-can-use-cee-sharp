@@ -44,7 +44,7 @@ public class UserService(HabitTrackerContext Context, IClock Clock) : IUserServi
 
     private string CreateToken(User User)
     {
-        var t = new SessionToken { ExpirationDate = Clock.Now.AddMinutes(20), User = User };
+        var t = new SessionToken { ExpirationDate = Clock.Now.AddDays(2), User = User };
         Context.Add(t);
         Context.SaveChanges();
         return t.Id;
