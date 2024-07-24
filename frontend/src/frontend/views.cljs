@@ -197,7 +197,7 @@
                    :children
                    [[re-com/md-icon-button
                      :md-icon-name "zmdi-save"
-                     :attr {:data-testid :habit-edit-undo}
+                     :attr {:data-testid :habit-edit-save}
                      :on-click #(>evt [::e/update-habit (dh/normalize-habit @state)])
                      :disabled? (not (and modified? valid?))]
                     (if modified?
