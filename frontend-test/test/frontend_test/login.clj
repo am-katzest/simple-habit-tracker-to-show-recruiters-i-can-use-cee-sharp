@@ -39,9 +39,9 @@
            password (random-str)]
        (testing "user creation positive"
          (f/create-user username password)
+         (wait-exists (btn :nav-logout))
          (testing "username visible"
            (e/has-text? username))
-         (wait-exists (btn :nav-logout))
          (testing "query changed"
            (is (= "?panel=habits" (query (e/get-url))))))
        (testing "url sets correctly when token exits"
