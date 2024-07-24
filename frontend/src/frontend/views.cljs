@@ -162,12 +162,14 @@
      :child
      (into [:div.list-group.w-100
             [:button.list-group-item.list-group-item-action.list-group-item-dark
-             {:on-click #(>evt [::e/new-empty-habit])}
+             {:data-testid :add-new-habit
+              :on-click #(>evt [::e/new-empty-habit])}
              (tr :habit/add-new)]]
            (mapv (fn [[id name]]
                    [:button.list-group-item.list-group-item-action.w-100
-                    (cond-> {:on-click #(>evt [::e/select-habit id])}
-                      (= id current) (assoc :class :active))
+                    (cond-> {:on-click #(>evt [::e/select-habit id])
+                             :data-testid :habit-list-item}
+                      (= id current) (assoc :class :active :data-testid :habit-list-item-selected))
                     name])
                  habits))]))
 
@@ -182,6 +184,7 @@
      [[re-com/h-box
        :justify :between
        :children [[re-com/input-text
+                   :attr {:data-testid :habit-edit-name}
                    :width "200px"
                    :placeholder (tr :habit/name)
                    :status (status-no-green valid?)
@@ -194,16 +197,20 @@
                    :children
                    [[re-com/md-icon-button
                      :md-icon-name "zmdi-save"
+                     :attr {:data-testid :habit-edit-undo}
                      :on-click #(>evt [::e/update-habit (dh/normalize-habit @state)])
                      :disabled? (not (and modified? valid?))]
                     (if modified?
                       [re-com/md-icon-button
+                       :attr {:data-testid :habit-edit-undo}
                        :on-click #(reset! state original)
                        :md-icon-name "zmdi-undo"]
                       [re-com/md-icon-button
+                       :attr {:data-testid :habit-edit-delete}
                        :on-click #(reset! deleting? true)
                        :md-icon-name "zmdi-delete"])]]]]
       [re-com/input-textarea
+       :attr {:data-testid :habit-edit-description}
        :width "280px"
        :change-on-blur? false
        :placeholder (tr :habit/description)
