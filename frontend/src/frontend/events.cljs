@@ -61,10 +61,9 @@
  (fn [{:keys [db]} [_ token]]
    (let [panel (if (= :login (:panel db))
                  :habits
-                 (:panel db))
-         db (assoc db :token token)]
+                 (:panel db))]
      {:dispatch [::reset-panel]
-      :db db
+      :db (assoc db :token token :panel panel)
       :store-token token
       :set-panel panel})))
 
