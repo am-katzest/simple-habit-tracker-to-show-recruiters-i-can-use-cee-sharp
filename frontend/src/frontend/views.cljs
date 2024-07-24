@@ -234,7 +234,7 @@
                 [single-habit-info-edit-panel-wrap id])]])
 
 (defn account-panel []
-  (let [user (<sub [::subs/user])]
+  (let [user @(<sub [::subs/user])]
     [re-com/title
      :src   (at)
      :label (str "meow, current user is" (:displayName user))
