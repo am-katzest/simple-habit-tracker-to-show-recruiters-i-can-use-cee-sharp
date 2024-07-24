@@ -32,3 +32,6 @@
   `(binding [e/*wait-timeout* (:timeout ~params)
              e/*wait-interval* (:interval ~params)]
      ~@exprs))
+
+(defn random-str []
+  (reduce str (take 15 (str (random-uuid)))))
