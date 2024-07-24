@@ -1,7 +1,7 @@
 (ns frontend-test.login
   (:require [clojure.test :refer [deftest testing is are]]
             [frontend-test.setup :as s :refer-macros true]
-            [frontend-test.helpers :refer [btn input wait-enabled wait-disabled wait-exists wait-predicate query random-str] :as h  :refer-macros true]
+            [frontend-test.helpers :refer [btn input wait-enabled wait-disabled wait-exists wait-predicate query random-str lazy-is] :as h  :refer-macros true]
             [frontend-test.fragments :as f]
             [etaoin.api :as e]))
 
@@ -12,15 +12,15 @@
      (e/go s/ROOT)
      (wait-exists {:tag :button})
      (testing "changes url"
-       (is (= "?panel=login" (query (e/get-url)))))
+       (lazy-is (= "?panel=login" (query (e/get-url)))))
      (testing "option screen is shown"
-       (is (e/has-text? (btn :login) "login"))
+       (lazy-is (e/has-text? (btn :login) "login"))
        (is (e/has-text? (btn :new-account) "new account")))
      (testing "logging in negative wrong cred"
        (is (not (f/login-as (random-str) (random-str)))))
      (testing "user creation negative, checking works"
        (f/goto-register)
-       (is (e/exists? (btn :register-button false)))
+       (lazy-is (e/exists? (btn :register-button false)))
        (e/fill (input :register-username) "meow")
        (e/fill (input :register-password) "awawa")
        (e/fill (input :register-password2) "awawa")
@@ -39,14 +39,14 @@
            password (random-str)]
        (testing "user creation positive"
          (f/create-user username password)
-         (wait-exists (btn :nav-logout))
+         (f/wait-logged-in)
          (testing "username visible"
-           (e/has-text? username))
+           (lazy-is (e/has-text? username)))
          (testing "query changed"
            (is (= "?panel=habits" (query (e/get-url))))))
        (testing "url sets correctly when token exits"
          (e/go s/ROOT)
-         (wait-exists (btn :nav-logout))
+         (f/wait-logged-in)
          (is (= "?panel=habits" (query (e/get-url)))))
        (testing "logging out"
          (e/click (btn :nav-logout))
@@ -55,9 +55,9 @@
        (testing "logging in"
          (is (f/login-as username password))
          (testing "url changed"
-           (is (= "?panel=habits" (query (e/get-url)))))
+           (lazy-is (= "?panel=habits" (query (e/get-url)))))
          (testing "username visible"
-           (e/has-text? username)))))))
+           (lazy-is (e/has-text? username))))))))
 
 (comment
   (def d (e/firefox))

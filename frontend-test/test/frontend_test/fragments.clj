@@ -46,3 +46,21 @@
    (e/fill (input :register-password2) password)
    (wait-enabled (btn :register-button))
    (e/click (btn :register-button))))
+
+(defn wait-logged-in []
+  (s/use-driver
+   e/go
+   (e/wait-exists (btn :nav-logout))))
+
+(defn new-user []
+  (let [username (h/random-str)
+        password (h/random-str)]
+    (create-user username password)
+    (wait-logged-in)
+    username))
+
+(defn goto-panel [nav]
+  (s/use-driver
+   e/go
+   (e/click (btn nav))
+   (e/wait-exists (assoc (btn nav) :fn/has-class :nav-disabled))))

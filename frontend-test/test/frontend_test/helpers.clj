@@ -22,6 +22,24 @@
 (def wait-disabled (wrap-waiter-into-test e/wait-disabled))
 (def wait-predicate e/wait-predicate)   ; one of the functions ignoring convention
 
+(defn lazy-is' "tries predicate until it succeds, after timeout throws last exception" [pred]
+  (let [captured-ex (atom nil)]
+    (try (wait-predicate
+          (fn []
+            (try (pred)
+                 (catch Throwable inner
+                   (reset! captured-ex inner)
+                   nil))))
+         (catch clojure.lang.ExceptionInfo e
+           (if (and (= :etaoin/timeout (:type (ex-data e)))
+                    (some? @captured-ex))
+             (throw @captured-ex) :timeout)))))
+
+(defmacro lazy-is
+  "version of is repeatedly trying predicate until it succeeds"
+  [form & rest]
+  `(is (= nil (lazy-is' (fn [] ~form))) ~@rest))
+
 (defn query [s]
   (reduce str (drop-while (complement #{\?}) s)))
 
