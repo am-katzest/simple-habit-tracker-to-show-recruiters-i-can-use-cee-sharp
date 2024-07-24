@@ -40,10 +40,11 @@
        (testing "user creation positive"
          (f/create-user username password)
          (f/wait-logged-in)
-         (testing "username visible"
-           (lazy-is (e/has-text? username)))
          (testing "query changed"
-           (is (= "?panel=habits" (query (e/get-url))))))
+           (is (= "?panel=habits" (query (e/get-url)))))
+         (testing "username visible"
+           (f/goto-panel :nav-account)
+           (lazy-is (e/has-text? username))))
        (testing "url sets correctly when token exits"
          (e/go s/ROOT)
          (f/wait-logged-in)
@@ -57,6 +58,7 @@
          (testing "url changed"
            (lazy-is (= "?panel=habits" (query (e/get-url)))))
          (testing "username visible"
+           (f/goto-panel :nav-account)
            (lazy-is (e/has-text? username))))))))
 
 (comment
