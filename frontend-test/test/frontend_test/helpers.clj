@@ -5,13 +5,15 @@
 
 (defn tag-selector-factory-factory [x]
   (fn self
-    ([] {:tag x})
+    ([] x)
     ([id] (assoc (self) :data-testid id))
     ([id enabled] (assoc (self id) :fn/enabled enabled))))
 
-(def btn (tag-selector-factory-factory :button))
+(def any (tag-selector-factory-factory {}))
 
-(def input (tag-selector-factory-factory :input))
+(def btn (tag-selector-factory-factory {:tag :button}))
+
+(def input (tag-selector-factory-factory {:tag :input}))
 
 (defn wrap-waiter-into-test [f]
   (fn [& args]
