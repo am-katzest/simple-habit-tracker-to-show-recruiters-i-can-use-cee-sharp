@@ -16,6 +16,9 @@
 
 (defn status-no-green [x] (if x nil :warning))
 
+(defn tag [tag & kvs]
+  (apply assoc {} :data-testid tag kvs))
+
 (defn confirm-panel [text confirm cancel]
   [re-com/modal-panel
    :backdrop-on-click cancel
@@ -50,27 +53,27 @@
          :children
          [[re-com/label :label (tr :login/username)]
           [re-com/input-text
-           :attr {:name :username :data-testid :register-username}
+           :attr (tag :register-username :name :username)
            :change-on-blur? false
            :model username
            :status (status username-ok)
            :on-change #(reset! username %)]
           [re-com/label :label (tr :login/password)]
           [re-com/input-password
-           :attr {:name :password :data-testid :register-password}
+           :attr (tag :register-password :name :password)
            :change-on-blur? false
            :model password
            :status (status password-ok)
            :on-change #(reset! password %)]
           [re-com/label :label (tr :login/repeat)]
           [re-com/input-password
-           :attr {:name :password2 :data-testid :register-password2}
+           :attr (tag :register-password2 :name :password2)
            :change-on-blur? false
            :model password2
            :status (status password2-ok)
            :on-change #(reset! password2 %)]
           [re-com/button
-           :attr {:name :register-button :data-testid :register-button}
+           :attr (tag :register-button :name :register-button)
            :label (tr :login/create-new-account)
            :on-click submit
            :disabled? (not ready?)]]]))))
@@ -87,20 +90,20 @@
          :children
          [[re-com/label :label (tr :login/username)]
           [re-com/input-text
-           :attr {:name :username :data-testid :login-username}
+           :attr (tag :login-username :name :username)
            :change-on-blur? false
            :model username
            :status (status username-ok)
            :on-change #(reset! username %)]
           [re-com/label :label (tr :login/password)]
           [re-com/input-password
-           :attr {:name :password :data-testid :login-password}
+           :attr (tag :login-password :name :password)
            :change-on-blur? false
            :model password
            :status (status password-ok)
            :on-change #(reset! password %)]
           [re-com/button
-           :attr {:name :login-button :data-testid :login-button}
+           :attr (tag :login-button :name :login-button)
            :label (tr :login/login)
            :on-click submit
            :disabled? (not ready?)]]]))))
@@ -123,12 +126,12 @@
              :select
              [re-com/h-box
               :children [[re-com/button
-                          :attr {:data-testid :new-account}
+                          :attr (tag :new-account)
                           :label (tr :login/register-new-account)
                           :class "btn-white"
                           :on-click #(reset! state :register)]
                          [re-com/button
-                          :attr {:data-testid :login}
+                          :attr (tag :login)
                           :label (tr :login/login-old-account)
                           :class "btn-white"
                           :on-click #(reset! state :login)]]]
@@ -150,7 +153,7 @@
                            [re-com/button
                             :label (tr trans)
                             :class (if (= id panel) "btn-white nav-disabled" "btn-white")
-                            :attr {:data-testid nav}
+                            :attr (tag nav)
                             :on-click #(>evt [evt])])))]]])
 
 
@@ -162,14 +165,14 @@
      :child
      (into [:div.list-group.w-100
             [:button.list-group-item.list-group-item-action.list-group-item-dark
-             {:data-testid :add-new-habit
-              :on-click #(>evt [::e/new-empty-habit])}
+             (tag :add-new-habit :on-click #(>evt [::e/new-empty-habit]))
              (tr :habit/add-new)]]
            (mapv (fn [[id name]]
                    [:button.list-group-item.list-group-item-action.w-100
-                    (cond-> {:on-click #(>evt [::e/select-habit id])
-                             :data-testid :habit-list-item}
-                      (= id current) (assoc :class :active :data-testid :habit-list-item-selected))
+                    (let [select #(>evt [::e/select-habit id])]
+                      (if (= id current)
+                        (tag :habit-list-item-selected :class :active :on-click select)
+                        (tag :habit-list-item :on-click select)))
                     name])
                  habits))]))
 
@@ -184,7 +187,7 @@
      [[re-com/h-box
        :justify :between
        :children [[re-com/input-text
-                   :attr {:data-testid :habit-edit-name}
+                   :attr (tag :habit-edit-name)
                    :width "200px"
                    :placeholder (tr :habit/name)
                    :status (status-no-green valid?)
@@ -197,20 +200,20 @@
                    :children
                    [[re-com/md-icon-button
                      :md-icon-name "zmdi-save"
-                     :attr {:data-testid :habit-edit-save}
+                     :attr (tag :habit-edit-save)
                      :on-click #(>evt [::e/update-habit (dh/normalize-habit @state)])
                      :disabled? (not (and modified? valid?))]
                     (if modified?
                       [re-com/md-icon-button
-                       :attr {:data-testid :habit-edit-undo}
+                       :attr (tag :habit-edit-undo)
                        :on-click #(reset! state original)
                        :md-icon-name "zmdi-undo"]
                       [re-com/md-icon-button
-                       :attr {:data-testid :habit-edit-delete}
+                       :attr (tag :habit-edit-delete)
                        :on-click #(reset! deleting? true)
                        :md-icon-name "zmdi-delete"])]]]]
       [re-com/input-textarea
-       :attr {:data-testid :habit-edit-description}
+       :attr (tag :habit-edit-description)
        :width "280px"
        :change-on-blur? false
        :placeholder (tr :habit/description)
