@@ -15,6 +15,8 @@
 
 (def input (tag-selector-factory-factory {:tag :input}))
 
+(def textarea (tag-selector-factory-factory {:tag :textarea}))
+
 (defn wrap-waiter-into-test [f]
   (fn [& args]
     (is (any? (apply f s/*driver* args)) args)))
