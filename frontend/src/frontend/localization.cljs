@@ -23,6 +23,10 @@
            {:add-new "add new"
             :description "add description.."
             :confirm-deletion "really delete this habit?"
+            :tabs-select "select view"
+            :tab-cts "categories"
+            :tab-alerts "alerts"
+            :tab-completions "completions"
             :new-habit "new habit"
             :name "add name.."}
            #:prompt{:confirm "confirm"

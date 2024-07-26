@@ -234,11 +234,43 @@
         state (r/atom original)]
     [single-habit-info-edit-panel original state (r/atom false)]))
 
+(defn tabs [selected tabs f]
+  ;; re-com says it provides this, but it's borked
+  (into [:ul.nav.nav-tabs]
+        (for [ [id label data-tag] tabs]
+          [:li.nav-item
+           (if (= id selected)
+             [:a.nav-link.active (tag data-tag) label]
+             [:a.nav-link (tag data-tag :on-click #(f id)) label])])))
+
+(defn habit-subpanel-control [id selected-subpanel]
+  [re-com/h-box
+   :align :end
+   :children
+   [[re-com/v-box
+     :children
+     [[re-com/box
+       :align :center
+       :child [re-com/label :label (tr :habit/tabs-select)]]
+      [tabs @selected-subpanel
+       [[:cts (tr :habit/tab-cts) :habit-tab-cts]
+        [:alerts (tr :habit/tab-alerts) :habit-tab-alerts]
+        [:completions (tr :habit/tab-completions) :habit-tab-completions]]
+       #(reset! selected-subpanel %)]]]]])
+
+(defn habits-panel-right-part [id]
+  (let [selected-subpanel (r/atom :cts)]
+    (re-com/v-box
+     :children [(re-com/h-box
+                 :children [[single-habit-info-edit-panel-wrap id]
+                            [habit-subpanel-control id selected-subpanel]
+                            ])])))
+
 (defn habits-panel []
   [re-com/h-box
    :children [[habit-list]
               (when-let [id @(<sub [::subs/selected-habit])]
-                [single-habit-info-edit-panel-wrap id])]])
+                [habits-panel-right-part id])]])
 
 (defn account-panel []
   (let [user @(<sub [::subs/user])]
