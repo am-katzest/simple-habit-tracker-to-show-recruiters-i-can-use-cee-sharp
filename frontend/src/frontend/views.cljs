@@ -19,8 +19,9 @@
 (defn tag [tag & kvs]
   (apply assoc {} :data-testid tag kvs))
 
-(defn confirm-panel [text confirm cancel]
+(defn confirm-panel [text confirm cancel attr]
   [re-com/modal-panel
+   :attr attr
    :backdrop-on-click cancel
    :child [re-com/v-box
            :gap "30px"
@@ -31,10 +32,12 @@
              :gap "30px"
              :children
              [[re-com/button
+               :attr (tag :confirm-panel-confirm)
                :class "btn btn-primary"
                :label (tr :prompt/confirm)
                :on-click confirm]
               [re-com/button
+               :attr (tag :confirm-panel-cancel)
                :class "btn btn-secondary"
                :label (tr :prompt/cancel)
                :on-click cancel]]]]]])
@@ -223,7 +226,8 @@
         [confirm-panel
          (tr :habit/confirm-deletion)
          #(>evt [::e/delete-habit (:id original)])
-         #(reset! deleting? false)])]]))
+         #(reset! deleting? false)
+         (tag :delete-habit-confirm-panel)])]]))
 
 (defn single-habit-info-edit-panel-wrap [id]
   (let [original @(<sub [::subs/habit id])
