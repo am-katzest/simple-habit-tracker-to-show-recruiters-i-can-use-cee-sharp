@@ -258,13 +258,41 @@
         [:completions (tr :habit/tab-completions) :habit-tab-completions]]
        #(reset! selected-subpanel %)]]]]])
 
+(defn completion-type-list []
+  (let [habit-id @(<sub [::subs/selected-habit])
+        cts @(<sub [::subs/selected-habit-cts])
+        selected @(<sub [::subs/selected-ct])]
+    [re-com/box
+     :width "200px"
+     :child
+     (into [:div.list-group.w-100
+            [:button.list-group-item.list-group-item-action.list-group-item-dark
+             (tag :add-new-ct :on-click #(>evt [::e/new-empty-ct habit-id]))
+             (tr :ct/add-new)]]
+           (mapv (fn [[id {:keys [color name]}]]
+                   [:button.list-group-item.list-group-item-action.w-100
+                    (let [select #(>evt [::e/select-ct habit-id id])]
+                      (if (= id selected)
+                        (tag :ct-list-item-selected :class :active :on-click select)
+                        (tag :ct-list-item :on-click select)))
+                    name])
+                 cts))]
+    ))
+
+(defn ct-subpanel []
+  [re-com/h-box
+   :children [[completion-type-list]]])
+
 (defn habits-panel-right-part [id]
   (let [selected-subpanel (r/atom :cts)]
     (re-com/v-box
      :children [(re-com/h-box
                  :children [[single-habit-info-edit-panel-wrap id]
-                            [habit-subpanel-control id selected-subpanel]
-                            ])])))
+                            [habit-subpanel-control id selected-subpanel]])
+                (case @selected-subpanel
+                  :cts [ct-subpanel]
+                  :alerts nil
+                  :completions nil)])))
 
 (defn habits-panel []
   [re-com/h-box

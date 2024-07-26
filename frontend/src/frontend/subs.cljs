@@ -33,6 +33,11 @@
    (:habits-data db)))
 
 (re-frame/reg-sub
+ ::habits-state
+ (fn [db]
+   (:habits db)))
+
+(re-frame/reg-sub
  ::habit-names
  :<- [::habits]
  (fn [habits]
@@ -47,3 +52,22 @@
  :<- [::habits]
  (fn [habits [_ id]]
    (when (and habits id) (habits id))))
+
+(re-frame/reg-sub
+ ::all-cts
+ (fn [db]
+   (:cts db)))
+
+(re-frame/reg-sub
+ ::selected-habit-cts
+ :< [::all-cts]
+ :< [::selected-habit]
+ (fn [[all selected]]
+   (when (and all selected)
+     (all selected))))
+
+(re-frame/reg-sub
+ ::selected-ct
+ :< [::habits-state]
+ :< [::selected-habit]
+ (fn [[state id]] (get-in state [id :selected-ct])))

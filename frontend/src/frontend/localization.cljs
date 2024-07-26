@@ -29,6 +29,9 @@
             :tab-completions "completions"
             :new-habit "new habit"
             :name "add name.."}
+           #:ct
+           {:add-new "add new"
+            :new-ct "category"}
            #:prompt{:confirm "confirm"
                     :cancel "cancel"}
           #:error

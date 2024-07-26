@@ -126,7 +126,8 @@
  ::select-habit
  (fn [{:keys [db]} [_ id]]
    (cond-> {:db (assoc-in db [:habits :selected-habit] id)}
-     (some? id) (assoc :dispatch [::download-habit-details id]))))
+     (some? id) (assoc :fx [[:dispatch [::download-habit-details id]]
+                            [:dispatch [::download-habit-cts id]]]))))
 
 (reg-event-http
  ::download-habits
@@ -172,9 +173,7 @@
 (reg-event-http
  ::delete-habit
  (fn [id]
-   [:delete (str "/habits/" id) [::delete-habit-receive id] :show]))
-
-(re-frame/reg-event-fx
+   [:delete (str "/habits/" id) [::delete-habit-receive id] :show]))(re-frame/reg-event-fx
  ::delete-habit-receive
  (fn [{:keys [db]} [_ id]]
    {:db (update db :habits-data dissoc id)
@@ -189,4 +188,37 @@
          new-id (when (some? other-id)
                   (if (some? existing-data) old-id other-id))]
      (when (not= new-id old-id)
-         {:dispatch [::select-habit new-id]}))))
+       {:dispatch [::select-habit new-id]}))))
+
+(reg-event-http
+ ::download-habit-cts
+ (fn [id]
+   [:get (str "/habits/" id "/completionTypes/") [::receive-habit-cts id] :show]))
+
+(re-frame/reg-event-db
+ ::receive-habit-cts
+ (fn [db [_ habit-id cts]]
+   (cond-> db
+     true (assoc-in [:cts habit-id]
+                    (into {} (map (juxt :id identity) cts)))
+     (seq cts) (assoc-in [:habits habit-id :selected-ct] (:id (first cts))))))
+
+(reg-event-http
+ ::new-empty-ct
+ (fn [id]
+   (let [color "#555555"
+         name (tr :ct/new-ct)
+         new-ct (dh/normalize-ct {:name name :color color})]
+     [:post (str "/habits/" id "/completionTypes/") [::receive-newly-created-ct id new-ct] :show :params new-ct])))
+
+(re-frame/reg-event-db
+ ::receive-newly-created-ct
+ (fn [db [_ hid new-ct ctid]]
+   (-> db
+       (assoc-in [:cts hid ctid] (assoc new-ct :id ctid))
+       (assoc-in [:habits hid :selected-ct] ctid))))
+
+(re-frame/reg-event-db
+ ::select-ct
+ (fn [db [_ hid ctid]]
+   (assoc-in db [:habits hid :selected-ct] ctid)))

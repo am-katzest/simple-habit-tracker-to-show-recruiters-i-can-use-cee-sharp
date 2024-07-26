@@ -4,3 +4,6 @@
 
 (defn normalize-habit [h]
   (update h :description empty-space->nil))
+
+(defn normalize-ct [ct]
+  (update ct :description empty-space->nil))
