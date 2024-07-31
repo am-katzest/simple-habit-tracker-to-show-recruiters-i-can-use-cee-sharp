@@ -16,8 +16,24 @@
 
 (defn status-no-green [x] (if x nil :warning))
 
+(defn join-keyword-ns ":a/b -> :a-b" [kw]
+  (let [kw (keyword kw)]
+    (if-let [ns (namespace kw)]
+      (keyword (str ns "-" (name kw)))
+      kw)))
+
+(defn join-keywords [a b]
+  (keyword
+   (str (name (join-keyword-ns a))
+        "-"
+        (name (join-keyword-ns b)))))
+
 (defn tag [tag & kvs]
-  (apply assoc {} :data-testid tag kvs))
+  (apply assoc {} :data-testid (join-keyword-ns tag) kvs))
+
+(defn make-tag [part1]
+  (fn [part2 & rest]
+    (apply tag (join-keywords part1 part2) rest)))
 
 (defn confirm-panel [text confirm cancel attr]
   [re-com/modal-panel
@@ -41,6 +57,35 @@
                :class "btn btn-secondary"
                :label (tr :prompt/cancel)
                :on-click cancel]]]]]])
+
+(defn save-undo-delete [base modified? valid? save undo delete deletion-confirm-text]
+  (let [deleting? (r/atom false)]
+    [(fn []
+       (let [tag (make-tag base)]
+         [re-com/h-box
+          :gap "5px"
+          :align :center
+          :children
+          [[re-com/md-icon-button
+            :md-icon-name "zmdi-save"
+            :attr (tag :save)
+            :on-click save
+            :disabled? (not (and modified? valid?))]
+           (if modified?
+             [re-com/md-icon-button
+              :attr (tag :undo)
+              :on-click undo
+              :md-icon-name "zmdi-undo"]
+             [re-com/md-icon-button
+              :attr (tag :delete)
+              :on-click #(reset! deleting? true)
+              :md-icon-name "zmdi-delete"])
+           (when @deleting?
+             [confirm-panel
+              deletion-confirm-text
+              delete
+              #(reset! deleting? false)
+              (tag :confirm-delete)])]]))]))
 
 (defn register-form []
   (let [username (r/atom "")
@@ -159,7 +204,6 @@
                             :attr (tag nav)
                             :on-click #(>evt [evt])])))]]])
 
-
 (defn habit-list []
   (let [habits @(<sub [::subs/habit-names])
         current @(<sub [::subs/selected-habit])]
@@ -179,7 +223,7 @@
                     name])
                  habits))]))
 
-(defn single-habit-info-edit-panel [original state deleting?]
+(defn single-habit-info-edit-panel [original state]
   (let [modified? (not= original (dh/normalize-habit @state))
         valid? (not (contains? #{nil ""} (:name @state)))]
     [re-com/v-box
@@ -197,47 +241,28 @@
                    :change-on-blur? false
                    :model (:name @state)
                    :on-change #(swap! state assoc :name %)]
-                  [re-com/h-box
-                   :gap "5px"
-                   :align :center
-                   :children
-                   [[re-com/md-icon-button
-                     :md-icon-name "zmdi-save"
-                     :attr (tag :habit-edit-save)
-                     :on-click #(>evt [::e/update-habit (dh/normalize-habit @state)])
-                     :disabled? (not (and modified? valid?))]
-                    (if modified?
-                      [re-com/md-icon-button
-                       :attr (tag :habit-edit-undo)
-                       :on-click #(reset! state original)
-                       :md-icon-name "zmdi-undo"]
-                      [re-com/md-icon-button
-                       :attr (tag :habit-edit-delete)
-                       :on-click #(reset! deleting? true)
-                       :md-icon-name "zmdi-delete"])]]]]
+                  [save-undo-delete :habit-edit modified? valid?
+                   #(>evt [::e/update-habit (dh/normalize-habit @state)])
+                   #(reset! state original)
+                   #(>evt [::e/delete-habit (:id original)])
+                   (tr :habit/confirm-deletion)]]]
       [re-com/input-textarea
        :attr (tag :habit-edit-description)
        :width "280px"
        :change-on-blur? false
        :placeholder (tr :habit/description)
        :model (-> @state :description str) ; can be null
-       :on-change #(swap! state assoc :description %)]
-      (when @deleting?
-        [confirm-panel
-         (tr :habit/confirm-deletion)
-         #(>evt [::e/delete-habit (:id original)])
-         #(reset! deleting? false)
-         (tag :delete-habit-confirm-panel)])]]))
+       :on-change #(swap! state assoc :description %)]]]))
 
 (defn single-habit-info-edit-panel-wrap [id]
   (let [original @(<sub [::subs/habit id])
         state (r/atom original)]
-    [single-habit-info-edit-panel original state (r/atom false)]))
+    [single-habit-info-edit-panel original state]))
 
 (defn tabs [selected tabs f]
   ;; re-com says it provides this, but it's borked
   (into [:ul.nav.nav-tabs]
-        (for [ [id label data-tag] tabs]
+        (for [[id label data-tag] tabs]
           [:li.nav-item
            (if (= id selected)
              [:a.nav-link.active (tag data-tag) label]

@@ -77,10 +77,10 @@
      (testing "deleting"
        (testing "popup panel shows up"
          (f/click (any :habit-edit-delete))
-         (lazy-is (e/exists? (any :delete-habit-confirm-panel))))
+         (lazy-is (e/exists? (any :habit-edit-confirm-delete))))
        (testing "panel closes"
          (f/click (btn :confirm-panel-cancel))
-         (lazy-is (not (e/exists? (any :delete-habit-confirm-panel)))))
+         (lazy-is (not (e/exists? (any :habit-edit-confirm-delete)))))
        (testing "not deleted"
          (lazy-is (e/has-text? "meowing")))
        (testing "actually deleting"
