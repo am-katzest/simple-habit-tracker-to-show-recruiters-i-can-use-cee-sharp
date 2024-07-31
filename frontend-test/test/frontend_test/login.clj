@@ -5,7 +5,7 @@
             [frontend-test.fragments :as f]
             [etaoin.api :as e]))
 
-(deftest login-test
+(deftest ^:parallel login-test
   (s/use-new-driver
    e/go
    (h/with-wait h/short-wait

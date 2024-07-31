@@ -17,7 +17,7 @@
     (lazy-is (e/exists? (any :habit-edit-undo )) "undo enabled")
     (lazy-is (e/absent? (any :habit-edit-delete)) "no delete")))
 
-(deftest habit-main-panel-test
+(deftest ^:parallel  habit-main-panel-test
   (s/use-new-driver
    e/go
    (h/with-wait h/short-wait
