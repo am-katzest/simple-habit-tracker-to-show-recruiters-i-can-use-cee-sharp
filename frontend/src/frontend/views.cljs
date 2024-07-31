@@ -298,9 +298,14 @@
                       (if (= id selected)
                         (tag :ct-list-item-selected :class :active :on-click select)
                         (tag :ct-list-item :on-click select)))
-                    name])
-                 cts))]
-    ))
+                    [re-com/h-box
+                     :justify :between
+                     :children [[:label {:style {:overflow-x :hidden :width "145px"}} name]
+                                [:div {:style {:background-color color
+                                               :border-radius "10px"
+                                               :width "25px"
+                                               :height "25px"}}]]]])
+                 cts))]))
 
 (defn ct-subpanel []
   [re-com/h-box
