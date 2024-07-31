@@ -223,41 +223,38 @@
                     name])
                  habits))]))
 
-(defn single-habit-info-edit-panel [original state]
-  (let [modified? (not= original (dh/normalize-habit @state))
-        valid? (not (contains? #{nil ""} (:name @state)))]
-    [re-com/v-box
-     :margin "20px"
-     :width "280px"
-     :gap "20px"
-     :children
-     [[re-com/h-box
-       :justify :between
-       :children [[re-com/input-text
-                   :attr (tag :habit-edit-name)
-                   :width "200px"
-                   :placeholder (tr :habit/name)
-                   :status (status-no-green valid?)
-                   :change-on-blur? false
-                   :model (:name @state)
-                   :on-change #(swap! state assoc :name %)]
-                  [save-undo-delete :habit-edit modified? valid?
-                   #(>evt [::e/update-habit (dh/normalize-habit @state)])
-                   #(reset! state original)
-                   #(>evt [::e/delete-habit (:id original)])
-                   (tr :habit/confirm-deletion)]]]
-      [re-com/input-textarea
-       :attr (tag :habit-edit-description)
-       :width "280px"
-       :change-on-blur? false
-       :placeholder (tr :habit/description)
-       :model (-> @state :description str) ; can be null
-       :on-change #(swap! state assoc :description %)]]]))
-
-(defn single-habit-info-edit-panel-wrap [id]
+(defn single-habit-info-edit-panel [id]
   (let [original @(<sub [::subs/habit id])
         state (r/atom original)]
-    [single-habit-info-edit-panel original state]))
+    [(fn [] (let [modified? (not= original (dh/normalize-habit @state))
+                  valid? (not (contains? #{nil ""} (:name @state)))]
+              [re-com/v-box
+               :margin "20px"
+               :width "280px"
+               :gap "20px"
+               :children
+               [[re-com/h-box
+                 :justify :between
+                 :children [[re-com/input-text
+                             :attr (tag :habit-edit-name)
+                             :width "200px"
+                             :placeholder (tr :habit/name)
+                             :status (status-no-green valid?)
+                             :change-on-blur? false
+                             :model (:name @state)
+                             :on-change #(swap! state assoc :name %)]
+                            [save-undo-delete :habit-edit modified? valid?
+                             #(>evt [::e/update-habit (dh/normalize-habit @state)])
+                             #(reset! state original)
+                             #(>evt [::e/delete-habit (:id original)])
+                             (tr :habit/confirm-deletion)]]]
+                [re-com/input-textarea
+                 :attr (tag :habit-edit-description)
+                 :width "280px"
+                 :change-on-blur? false
+                 :placeholder (tr :habit/description)
+                 :model (-> @state :description str) ; can be null
+                 :on-change #(swap! state assoc :description %)]]]))]))
 
 (defn tabs [selected tabs f]
   ;; re-com says it provides this, but it's borked
@@ -312,7 +309,7 @@
   (let [selected-subpanel (r/atom :cts)]
     (re-com/v-box
      :children [(re-com/h-box
-                 :children [[single-habit-info-edit-panel-wrap id]
+                 :children [[single-habit-info-edit-panel id]
                             [habit-subpanel-control id selected-subpanel]])
                 (case @selected-subpanel
                   :cts [ct-subpanel]
