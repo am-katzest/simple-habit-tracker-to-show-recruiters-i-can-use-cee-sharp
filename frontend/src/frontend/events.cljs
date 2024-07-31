@@ -173,7 +173,9 @@
 (reg-event-http
  ::delete-habit
  (fn [id]
-   [:delete (str "/habits/" id) [::delete-habit-receive id] :show]))(re-frame/reg-event-fx
+   [:delete (str "/habits/" id) [::delete-habit-receive id] :show]))
+
+(re-frame/reg-event-fx
  ::delete-habit-receive
  (fn [{:keys [db]} [_ id]]
    {:db (update db :habits-data dissoc id)
