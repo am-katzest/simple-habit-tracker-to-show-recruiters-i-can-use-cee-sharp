@@ -226,8 +226,9 @@
 (defn single-habit-info-edit-panel [id]
   (let [original @(<sub [::subs/habit id])
         state (r/atom original)]
-    [(fn [] (let [modified? (not= original (dh/normalize-habit @state))
-                  valid? (not (contains? #{nil ""} (:name @state)))]
+    [(fn [] (let [normalized (dh/normalize-habit @state)
+                  modified? (not= original normalized)
+                  valid? (dh/validate-habit normalized)]
               [re-com/v-box
                :margin "20px"
                :width "280px"
