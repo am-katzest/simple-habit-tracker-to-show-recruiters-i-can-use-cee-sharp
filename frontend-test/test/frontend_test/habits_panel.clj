@@ -6,16 +6,18 @@
             [etaoin.api :as e]))
 
 (defn test-buttons-no-change []
-  (s/use-driver e/go
-    (lazy-is (e/exists? (any :habit-edit-save false)) "save disabled")
-    (lazy-is (e/absent? (any :habit-edit-undo)) "no undo")
-    (lazy-is (e/exists? (any :habit-edit-delete )) "delete enabled")))
+  (s/use-driver
+   e/go
+   (lazy-is (e/exists? (any :habit-edit-save false)) "save disabled")
+   (lazy-is (e/absent? (any :habit-edit-undo)) "no undo")
+   (lazy-is (e/exists? (any :habit-edit-delete)) "delete enabled")))
 
 (defn test-buttons-change []
-  (s/use-driver e/go
-    (lazy-is (e/exists? (any :habit-edit-save )) "save enabled")
-    (lazy-is (e/exists? (any :habit-edit-undo )) "undo enabled")
-    (lazy-is (e/absent? (any :habit-edit-delete)) "no delete")))
+  (s/use-driver
+   e/go
+   (lazy-is (e/exists? (any :habit-edit-save)) "save enabled")
+   (lazy-is (e/exists? (any :habit-edit-undo)) "undo enabled")
+   (lazy-is (e/absent? (any :habit-edit-delete)) "no delete")))
 
 (deftest ^:parallel  habit-main-panel-test
   (s/use-new-driver
