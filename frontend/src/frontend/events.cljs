@@ -224,3 +224,27 @@
  ::select-ct
  (fn [db [_ hid ctid]]
    (assoc-in db [:habits hid :selected-ct] ctid)))
+
+(reg-event-http
+ ::delete-ct
+ (fn [hid ctid]
+   [:delete (str "/habits/" hid "/completionTypes/" ctid) [::delete-ct-receive hid ctid] :show]))
+
+(re-frame/reg-event-db
+ ::delete-ct-receive
+ (fn [db [_ hid ctid]]
+   (let [cts (dissoc (get-in db [:cts hid]) ctid)]
+     (-> db
+         (assoc-in [:cts hid] cts)
+         (assoc-in [:habits hid :selected-ct] (ffirst cts))))))
+
+(reg-event-http
+ ::update-ct
+ (fn [hid ctid ct]
+   [:put (str "/habits/" hid "/CompletionTypes/" ctid) [::confirm-ct-update hid ctid ct] :show
+    :params (dissoc ct :id)]))
+
+(re-frame/reg-event-db
+ ::confirm-ct-update
+ (fn [db [_ hid ctid ct]]
+   (assoc-in db [:cts hid ctid] ct)))

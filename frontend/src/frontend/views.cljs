@@ -307,9 +307,45 @@
                                                :height "25px"}}]]]])
                  cts))]))
 
+(defn completion-type-edit-panel [ctid hid]
+  (let [original @(<sub [::subs/selected-ct-data])
+        state (r/atom original)]
+    [(fn []
+       (let [normalized (dh/normalize-ct @state)
+             modified? (not= original normalized)
+             valid? (dh/validate-ct normalized)]
+         [re-com/v-box
+          :margin "20px"
+          :children
+          [[re-com/input-text
+            :attr (tag :ct-edit-name)
+            :status (status-no-green valid?)
+            :model (:name  @state)
+            :change-on-blur? false
+            :on-change #(swap! state assoc :name %)]
+           [re-com/input-textarea
+            :attr (tag :ct-edit-description)
+            :change-on-blur? false
+            :model (:description  @state)
+            :on-change #(swap! state assoc :description %)]
+           [re-com/h-box
+            :justify :between
+            :children [[:input (tag :ct-edit-color
+                                    :type :color
+                                    :value (:color @state)
+                                    :on-change #(swap! state assoc :color (.-value (.-target %))))]
+                       [save-undo-delete :ct-edit modified? valid?
+                        #(>evt [::e/update-ct hid ctid (dh/normalize-ct @state)])
+                        #(reset! state original)
+                        #(>evt [::e/delete-ct hid ctid])
+                        (tr :ct/confirm-deletion)]]]]]))]))
+
 (defn ct-subpanel []
   [re-com/h-box
-   :children [[completion-type-list]]])
+   :margin "20px"
+   :children [[completion-type-list]
+              (when-let [id @(<sub [::subs/selected-ct])]
+                [completion-type-edit-panel id @(<sub [::subs/selected-habit])])]])
 
 (defn habits-panel-right-part [id]
   (let [selected-subpanel (r/atom :cts)]

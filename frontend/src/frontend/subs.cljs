@@ -71,3 +71,10 @@
  :< [::habits-state]
  :< [::selected-habit]
  (fn [[state id]] (get-in state [id :selected-ct])))
+
+(re-frame/reg-sub
+ ::selected-ct-data
+ :<- [::selected-habit-cts]
+ :<- [::selected-ct]
+ (fn [[all id]]
+   (when (and all id) (all id))))
