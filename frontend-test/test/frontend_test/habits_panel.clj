@@ -41,7 +41,7 @@
          (f/fill (input :habit-edit-name) "mraww")
          (test-buttons-change :habit-edit))
        (testing "after undo"
-         (f/click (any :habit-edit-undo))
+         (f/click :habit-edit-undo)
          (test-buttons-no-change :habit-edit)
          (is (not (e/has-text? "mraww"))))
        (testing "after messing with description"
@@ -52,7 +52,7 @@
        (testing "saving"
          (f/fill (textarea :habit-edit-description) "meow meow meow")
          (f/fill (input :habit-edit-name) "meowing")
-         (f/click (any :habit-edit-save))
+         (f/click :habit-edit-save)
          (test-buttons-no-change :habit-edit)
          (lazy-is (e/has-text? (any :habit-list-item-selected) "meowing") "updated on list")))
      (testing "still there after refresh"
@@ -69,27 +69,27 @@
          (lazy-is (not= "meowing" (e/get-element-value (input :habit-edit-name))) "in name editor box"))
        (testing "editing it"
          (f/fill (input :habit-edit-name) "other one")
-         (f/click (any :habit-edit-save)))
+         (f/click :habit-edit-save))
        (lazy-is (e/has-text? (any :habit-list-item-selected) "other one")))
      (testing "switching habits"
-       (f/click (any :habit-list-item))
+       (f/click :habit-list-item)
        (lazy-is (e/has-text? (any :habit-list-item-selected) "meowing"))
        (lazy-is (= "meowing" (e/get-element-value (input :habit-edit-name))) "in name editor box"))
      (testing "deleting"
        (testing "popup panel shows up"
-         (f/click (any :habit-edit-delete))
-         (exists? (any :habit-edit-confirm-delete)))
+         (f/click :habit-edit-delete)
+         (exists? :habit-edit-confirm-delete))
        (testing "panel closes"
          (f/click (btn :confirm-panel-cancel))
          (absent? :habit-edit-confirm-delete))
        (testing "not deleted"
          (lazy-is (e/has-text? "meowing")))
        (testing "actually deleting"
-         (f/click (any :habit-edit-delete))
-         (f/click (any :confirm-panel-confirm))
+         (f/click :habit-edit-delete)
+         (f/click :confirm-panel-confirm)
          (lazy-is (not (e/has-text? "meowing")) "first one gone")
          (lazy-is (= "other one" (e/get-element-value (input :habit-edit-name))) "switched to other")
-         (f/click (any :habit-edit-delete))
-         (f/click (any :confirm-panel-confirm))
+         (f/click :habit-edit-delete)
+         (f/click :confirm-panel-confirm)
          (lazy-is (not (or (e/exists? :habit-list-item)
                            (e/exists? :habit-list-item-selected)))))))))

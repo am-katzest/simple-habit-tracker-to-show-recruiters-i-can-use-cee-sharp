@@ -3,11 +3,12 @@
             [frontend-test.setup :as s :refer-macros true]
             [frontend-test.helpers :refer [btn input wait-enabled wait-disabled wait-exists wait-predicate query] :as h  :refer-macros true]
             [etaoin.api :as e]))
+
 (defn click [p]
   (s/use-driver
    e/go
-   (wait-enabled p)
-   (e/click p)))
+   (wait-enabled (h/fix p))
+   (e/click (h/fix p))))
 
 (defn fill [p text]
   (s/use-driver
