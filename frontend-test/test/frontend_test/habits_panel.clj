@@ -93,3 +93,83 @@
          (f/click :confirm-panel-confirm)
          (absent? :habit-list-item)
          (absent? :habit-list-item-selected))))))
+
+(deftest ^:parallel habit-ct-test
+  ;; can't test color picker because
+  (s/use-new-driver
+   e/go
+   (h/with-wait h/short-wait
+     (testing "setup"
+       (is (some? (f/new-user)))
+       (f/goto-panel :nav-habits)
+       (doseq [habit ["habit_a" "habit_b"]]
+         (f/click :add-new-habit)
+         (f/fill :habit-edit-name habit)
+         (f/click :habit-edit-save)))
+     (testing "add button shows"
+       (exists? (btn :add-new-ct)))
+     (testing "list starts empty"
+       (absent? :ct-list-item-selected)
+       (absent? :ct-list-item))
+     (testing "editing"
+       (absent? :ct-edit-name "editor doesn't show"))
+     (f/click :add-new-ct)
+     (f/click :add-new-ct)
+     (exists? :ct-list-item-selected "added to list")
+     (lazy-is (e/exists? (input :ct-edit-name)) "editor shows")
+     (testing "edit"
+       (testing "initial"
+         (test-buttons-no-change :ct-edit))
+       (testing "empty name input"
+         (f/fill :ct-edit-name "   ")
+         (exists? (any :ct-edit-save false) "unable to save")
+         (f/click :ct-edit-undo))
+       (testing "unchanged name"
+         (f/fill :ct-edit-name "meow")
+         (f/click :ct-edit-save)
+         (testing "identical"
+           (f/fill :ct-edit-name "meow")
+           (exists? (any :ct-edit-save false) "unable to save"))
+         (testing "with added space"
+           (f/fill :ct-edit-name "meow   ")
+           (exists? (any :ct-edit-save false) "unable to save")))
+       (testing "description"
+         (testing "unchanged"
+           (f/fill :ct-edit-description "")
+           (exists? (any :ct-edit-save false) "unable to save"))
+         (f/fill :ct-edit-description "some description")
+         (f/click :ct-edit-save))
+       (testing "there is a color picker"
+         (exists? (input :ct-edit-color))))
+     (testing "other ct unaffected"
+       (f/click :ct-list-item)
+       (lazy-is (not= "meow" (e/get-element-value (input :ct-edit-name)))))
+     (testing "changes remain after return"
+       (f/click :ct-list-item)
+       (lazy-is (= "meow" (e/get-element-value (input :ct-edit-name)))))
+     (testing "changes remain after refresh"
+       (e/refresh)
+       (f/click (h/list-item "habit_b"))
+       (exists? {:fn/text "meow"})
+       (f/click (h/list-item "meow"))
+       (lazy-is (= "meow" (e/get-element-value (input :ct-edit-name))))
+       (lazy-is (= "some description" (e/get-element-value (textarea :ct-edit-description)))))
+     (testing "other habit is empty"
+       (f/click (h/list-item "habit_a"))
+       (exists? :add-new-ct)
+       (absent? :ct-list-item)
+       (absent? :ct-list-item-selected))
+     (testing "deleting"
+       (f/click (h/list-item "habit_b"))
+       (f/click (h/list-item "meow"))
+       (f/click :ct-list-item) ;;select the other one
+       (f/click :ct-edit-delete)
+       (f/click :confirm-panel-confirm)
+       ;; (f/click {:fn/text "meow" :tag :label})
+       (absent? :ct-list-item)
+       (exists? :ct-list-item-selected)
+       (lazy-is (= "meow" (e/get-element-value (input :ct-edit-name))))
+       (f/click :ct-edit-delete)
+       (f/click :confirm-panel-confirm)
+       (absent? :ct-list-item)
+       (absent? :ct-list-item-selected)))))

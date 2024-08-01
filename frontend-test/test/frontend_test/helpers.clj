@@ -17,6 +17,9 @@
 
 (def textarea (tag-selector-factory-factory {:tag :textarea}))
 
+(defn list-item [text]
+  (format "//div[contains(@class, 'list-group')]//descendant::*[text()='%s']" text))
+
 (defn wrap-waiter-into-test [f]
   (fn [& args]
     (is (any? (apply f s/*driver* args)) args)))
