@@ -44,6 +44,15 @@
   [form & rest]
   `(is (= nil (lazy-is' (fn [] ~form))) ~@rest))
 
+(defn fix [x]
+  (if (keyword? x) (any x) x))
+
+(defmacro exists? [target & rest]
+  `(lazy-is (e/exists? s/*driver* (fix ~target)) ~@rest))
+
+(defmacro absent? [target & rest]
+  `(lazy-is (e/absent? s/*driver* (fix ~target)) ~@rest))
+
 (defn query [s]
   (reduce str (drop-while (complement #{\?}) s)))
 
@@ -57,3 +66,6 @@
 
 (defn random-str []
   (reduce str (take 15 (str (random-uuid)))))
+
+(defn join [a b]
+  (keyword (str (name a) "-" (name b))))
