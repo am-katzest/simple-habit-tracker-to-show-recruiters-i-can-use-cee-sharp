@@ -13,9 +13,9 @@
 (defn fill [p text]
   (s/use-driver
    e/go
-   (wait-enabled p)
-   (e/clear p)
-   (e/fill p text)))
+   (wait-enabled (h/fix p))
+   (e/clear (h/fix p))
+   (e/fill (h/fix p) text)))
 
 (defn goto-login []
   (s/use-driver
