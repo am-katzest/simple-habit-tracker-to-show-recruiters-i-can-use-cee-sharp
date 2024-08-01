@@ -91,5 +91,5 @@
          (lazy-is (= "other one" (e/get-element-value (input :habit-edit-name))) "switched to other")
          (f/click :habit-edit-delete)
          (f/click :confirm-panel-confirm)
-         (lazy-is (not (or (e/exists? :habit-list-item)
-                           (e/exists? :habit-list-item-selected)))))))))
+         (absent? :habit-list-item)
+         (absent? :habit-list-item-selected))))))
