@@ -8,7 +8,7 @@ public static class AssertHelpers
     {
         var expected = new T();
         Assert.Equal(expected.Code, r.StatusCode);
-        var body = await r.Content.ReadAsStringAsync();
+        var body = await r.Content.ReadFromJsonAsync<String>();
         Assert.Equal(expected.ErrorMessage, body);
     }
 }
