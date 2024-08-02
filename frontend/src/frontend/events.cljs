@@ -5,6 +5,7 @@
    [frontend.localization :refer [tr]]
    [ajax.core :as ajax]
    [frontend.data-helpers :as dh]
+   [frontend.alert-formatting :refer [format-alert]]
    [frontend.persistance :as p]))
 
 (defn- wrap-if-kw [thing]
@@ -40,21 +41,21 @@
  (fn [_ [_ username password]]
    (let [body {:login username
                :password password}]
-     {:http-xhrio (request :post "/users/" [::ask-for-token username password] [:show] :params body)})))
+     {:http-xhrio (request :post "/users/" [::ask-for-token username password] [::http-error {:data body}] :params body)})))
 
 (re-frame/reg-event-fx
  ::ask-for-token
  (fn [_ [_ username password]]
    (let [body {:login username
                :password password}]
-     {:http-xhrio (request :post "/users/createtoken" [::receive-token] [:show] :params body)})))
+     {:http-xhrio (request :post "/users/createtoken" [::receive-token] [::http-error {:data body}] :params body)})))
 
 (re-frame/reg-event-fx
  ::ask-for-token-login
  (fn [_ [_ username password]]
    (let [body {:login username
                :password password}]
-     {:http-xhrio (request :post "/users/createtoken" [::receive-token] [::add-alert [:danger :body (tr :error/wrong-cred)]] :params body)})))
+     {:http-xhrio (request :post "/users/createtoken" [::receive-token] [::http-error {:data body}] :params body)})))
 
 (re-frame/reg-event-fx
  ::receive-token
@@ -77,7 +78,7 @@
 
 (reg-event-http
  ::download-user
- (fn [] [:get "/users/me" [::receive-user] [:show]]))
+ (fn [] [:get "/users/me" [::receive-user] [::http-error]]))
 
 (re-frame/reg-event-db
  ::receive-user
@@ -92,9 +93,15 @@
     :set-panel :login}))
 
 (re-frame/reg-event-fx
- :show
- (fn [_ & args]
-   (js/alert (str args))))
+ ::http-error
+ (fn [_ [_ arg1 arg2]]
+   ;;  last argument is response
+   ;;  second argument has context for formatting, it is optional
+   (let [[response {:keys [handler data]}] (if arg2
+                                             [arg2 arg1]
+                                             [arg1 {}])]
+     {:fx [(when handler [:dispatch handler])
+           [:dispatch [::add-alert (format-alert (:response response) data)]]]})))
 
 (re-frame/reg-event-fx
  ::account-panel
@@ -117,10 +124,9 @@
 
 (re-frame/reg-event-db
  ::add-alert
- (fn [db [_ [type & keys] & _]]
-   (let [id (->> db :alerts (map :id) (reduce max 0) inc)
-         new-alert (apply assoc {:alert-type type :id id} keys)]
-     (update db :alerts conj new-alert))))
+ (fn [db [_ alert]]
+   (let [id (->> db :alerts (map :id) (reduce max 0) inc)]
+     (update db :alerts conj (assoc alert :id id)))))
 
 (re-frame/reg-event-fx
  ::select-habit
@@ -131,7 +137,7 @@
 
 (reg-event-http
  ::download-habits
- (fn [] [:get "/habits/" ::receive-habits :show]))
+ (fn [] [:get "/habits/" ::receive-habits [::http-error]]))
 
 (re-frame/reg-event-fx
  ::receive-habits
@@ -144,7 +150,7 @@
  ::new-empty-habit
  (fn []
    (let [data (dh/normalize-habit {:name (tr :habit/new-habit)})]
-     [:post "/habits/" [::empty-habit-created data] :show :params data])))
+     [:post "/habits/" [::empty-habit-created data] ::http-error :params data])))
 
 (re-frame/reg-event-db
  ::empty-habit-created
@@ -157,7 +163,7 @@
 (reg-event-http
  ::download-habit-details
  (fn [id]
-   [:get (str "/habits/" id) [::receive-habit-details id] :show]))
+   [:get (str "/habits/" id) [::receive-habit-details id] ::http-error]))
 
 (re-frame/reg-event-db
  ::receive-habit-details
@@ -167,13 +173,13 @@
 (reg-event-http
  ::update-habit
  (fn [habit]
-   [:put (str "/habits/" (:id habit)) [::receive-habit-details (:id habit) habit] :show
+   [:put (str "/habits/" (:id habit)) [::receive-habit-details (:id habit) habit] ::http-error
     :params (dissoc habit :id)]))
 
 (reg-event-http
  ::delete-habit
  (fn [id]
-   [:delete (str "/habits/" id) [::delete-habit-receive id] :show]))
+   [:delete (str "/habits/" id) [::delete-habit-receive id] ::http-error]))
 
 (re-frame/reg-event-fx
  ::delete-habit-receive
@@ -195,7 +201,7 @@
 (reg-event-http
  ::download-habit-cts
  (fn [id]
-   [:get (str "/habits/" id "/completionTypes/") [::receive-habit-cts id] :show]))
+   [:get (str "/habits/" id "/completionTypes/") [::receive-habit-cts id] ::http-error]))
 
 (re-frame/reg-event-db
  ::receive-habit-cts
@@ -211,7 +217,7 @@
    (let [color "#555555"
          name (tr :ct/new-ct)
          new-ct (dh/normalize-ct {:name name :color color})]
-     [:post (str "/habits/" id "/completionTypes/") [::receive-newly-created-ct id new-ct] :show :params new-ct])))
+     [:post (str "/habits/" id "/completionTypes/") [::receive-newly-created-ct id new-ct] ::http-error :params new-ct])))
 
 (re-frame/reg-event-db
  ::receive-newly-created-ct
@@ -228,7 +234,7 @@
 (reg-event-http
  ::delete-ct
  (fn [hid ctid]
-   [:delete (str "/habits/" hid "/completionTypes/" ctid) [::delete-ct-receive hid ctid] :show]))
+   [:delete (str "/habits/" hid "/completionTypes/" ctid) [::delete-ct-receive hid ctid] ::http-error]))
 
 (re-frame/reg-event-db
  ::delete-ct-receive
@@ -241,7 +247,7 @@
 (reg-event-http
  ::update-ct
  (fn [hid ctid ct]
-   [:put (str "/habits/" hid "/CompletionTypes/" ctid) [::confirm-ct-update hid ctid ct] :show
+   [:put (str "/habits/" hid "/CompletionTypes/" ctid) [::confirm-ct-update hid ctid ct] ::http-error
     :params (dissoc ct :id)]))
 
 (re-frame/reg-event-db
