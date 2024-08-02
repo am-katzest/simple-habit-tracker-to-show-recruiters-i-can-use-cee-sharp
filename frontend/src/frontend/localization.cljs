@@ -5,6 +5,9 @@
   (or (get @(re-frame/subscribe [:locale/map]) kw) (str "translate(:" kw ")")))
 
 ; there's definitely room for improvement
+(defn tr-error [str]
+  (get-in @(re-frame/subscribe [:locale/map]) [:error str]))
+                                        ; there's definitely room for improvement
 (def one-big-dictionary
   {:eng
    (merge #:login
@@ -35,5 +38,8 @@
             :new-ct "category"}
            #:prompt{:confirm "confirm"
                     :cancel "cancel"}
-          #:error
-           {:wrong-cred "invalid username or password"})})
+          {:error {"duplicate username" {:part1 "username" :part2 "taken, pick another"}
+                   "invalid username or password" "invalid username or password"
+                   "invalid token" "token expired, please reload"
+                   "habit not found" "habit not found, deleted?"
+                   "completion type not found" "category not found, deleted?"}})})

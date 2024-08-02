@@ -1,6 +1,7 @@
 using HabitTracker.Exceptions;
 namespace HabitTracker.Middleware;
 using Microsoft.AspNetCore.Http;
+using System.Text.Json;
 
 public class ErrorTranslation(RequestDelegate next)
 {
@@ -18,7 +19,7 @@ public class ErrorTranslation(RequestDelegate next)
                 throw new Exception("Both UserVisibleException has been thrown and response written");
             }
             r.StatusCode = (int)e.Code;
-            await r.WriteAsync(e.ErrorMessage);
+            await r.WriteAsync(JsonSerializer.Serialize(e.ErrorMessage));
         }
     }
 }
