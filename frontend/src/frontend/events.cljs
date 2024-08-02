@@ -163,7 +163,7 @@
 (reg-event-http
  ::download-habit-details
  (fn [id]
-   [:get (str "/habits/" id) [::receive-habit-details id] ::http-error]))
+   [:get (str "/habits/" id) [::receive-habit-details id] [::http-error {:handler [::download-habits]}]]))
 
 (re-frame/reg-event-db
  ::receive-habit-details
@@ -173,13 +173,13 @@
 (reg-event-http
  ::update-habit
  (fn [habit]
-   [:put (str "/habits/" (:id habit)) [::receive-habit-details (:id habit) habit] ::http-error
+   [:put (str "/habits/" (:id habit)) [::receive-habit-details (:id habit) habit] [::http-error {:handler [::download-habits]}]
     :params (dissoc habit :id)]))
 
 (reg-event-http
  ::delete-habit
  (fn [id]
-   [:delete (str "/habits/" id) [::delete-habit-receive id] ::http-error]))
+   [:delete (str "/habits/" id) [::delete-habit-receive id] [::http-error {:handler [::download-habits]}]]))
 
 (re-frame/reg-event-fx
  ::delete-habit-receive
@@ -201,15 +201,15 @@
 (reg-event-http
  ::download-habit-cts
  (fn [id]
-   [:get (str "/habits/" id "/completionTypes/") [::receive-habit-cts id] ::http-error]))
+   [:get (str "/habits/" id "/completionTypes/") [::receive-habit-cts id] [::http-error {:handler [::download-habits]}]]))
 
 (re-frame/reg-event-db
  ::receive-habit-cts
  (fn [db [_ habit-id cts]]
-   (cond-> db
-     true (assoc-in [:cts habit-id]
-                    (into {} (map (juxt :id identity) cts)))
-     (seq cts) (assoc-in [:habits habit-id :selected-ct] (:id (first cts))))))
+   (-> db
+       (assoc-in [:cts habit-id]
+                 (into {} (map (juxt :id identity) cts)))
+       (assoc-in [:habits habit-id :selected-ct] (:id (first cts))))))
 
 (reg-event-http
  ::new-empty-ct
@@ -217,7 +217,7 @@
    (let [color "#555555"
          name (tr :ct/new-ct)
          new-ct (dh/normalize-ct {:name name :color color})]
-     [:post (str "/habits/" id "/completionTypes/") [::receive-newly-created-ct id new-ct] ::http-error :params new-ct])))
+     [:post (str "/habits/" id "/completionTypes/") [::receive-newly-created-ct id new-ct] [::http-error {:handler [::download-habits]}] :params new-ct])))
 
 (re-frame/reg-event-db
  ::receive-newly-created-ct
@@ -234,7 +234,7 @@
 (reg-event-http
  ::delete-ct
  (fn [hid ctid]
-   [:delete (str "/habits/" hid "/completionTypes/" ctid) [::delete-ct-receive hid ctid] ::http-error]))
+   [:delete (str "/habits/" hid "/completionTypes/" ctid) [::delete-ct-receive hid ctid] [::http-error {:handler [::download-habit-cts hid]}]]))
 
 (re-frame/reg-event-db
  ::delete-ct-receive
@@ -247,7 +247,7 @@
 (reg-event-http
  ::update-ct
  (fn [hid ctid ct]
-   [:put (str "/habits/" hid "/CompletionTypes/" ctid) [::confirm-ct-update hid ctid ct] ::http-error
+   [:put (str "/habits/" hid "/CompletionTypes/" ctid) [::confirm-ct-update hid ctid ct] [::http-error {:handler [::download-habit-cts hid]}]
     :params (dissoc ct :id)]))
 
 (re-frame/reg-event-db
