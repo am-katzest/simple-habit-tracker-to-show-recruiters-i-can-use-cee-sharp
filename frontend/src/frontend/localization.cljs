@@ -39,7 +39,7 @@
            #:prompt{:confirm "confirm"
                     :cancel "cancel"}
           {:error {"duplicate username" {:part1 "username" :part2 "taken, pick another"}
-                   "invalid username or password" "wrong username or password"
+                   "invalid username or password" "invalid username or password"
                    "invalid token" "token expired, please reload"
                    "habit not found" "habit not found, deleted?"
                    "completion type not found" "category not found, deleted?"}})})
