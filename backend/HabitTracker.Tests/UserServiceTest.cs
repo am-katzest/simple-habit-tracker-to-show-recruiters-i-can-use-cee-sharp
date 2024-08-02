@@ -103,7 +103,7 @@ public class UserServiceTest(CreatedDatabaseFixture Fixture) : IClassFixture<Cre
     {
         var time1 = new ConstantClock(DateTime.Now.AddDays(531));
         var time11 = new ConstantClock(DateTime.Now.AddMinutes(5));
-        var time2 = new ConstantClock(DateTime.Now.AddDays(532));
+        var time2 = new ConstantClock(DateTime.Now.AddDays(535));
 
         MakeService(time1).clearExpiredTokens();
         // from other tests
