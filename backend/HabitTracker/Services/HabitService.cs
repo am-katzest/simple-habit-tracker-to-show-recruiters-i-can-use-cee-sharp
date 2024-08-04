@@ -6,64 +6,64 @@ namespace HabitTracker.Services;
 
 public interface IHabitService
 {
-    HabitId addHabit(HabitNameDescription Habit, UserId User);
-    void UpdateHabit(HabitId Habit, HabitNameDescription Replacement);
-    void RemoveHabit(HabitId Habit);
-    HabitNameDescriptionId getHabitDetails(HabitId Habit);
-    List<HabitNameId> getHabits(UserId User);
-    CompletionTypeId AddCompletionType(HabitId Habit, CompletionTypeData type);
+    HabitId addHabit(HabitNameDescription habit, UserId user);
+    void UpdateHabit(HabitId id, HabitNameDescription replacement);
+    void RemoveHabit(HabitId id);
+    HabitNameDescriptionId getHabitDetails(HabitId id);
+    List<HabitNameId> getHabits(UserId user);
+    CompletionTypeId AddCompletionType(HabitId habit, CompletionTypeData type);
     void RemoveCompletionType(CompletionTypeId id);
     void UpdateCompletionType(CompletionTypeId id, CompletionTypeData replacement);
     List<CompletionTypeDataId> GetCompletionTypes(HabitId id);
 };
 
 
-public class HabitService(HabitTrackerContext Context) : IHabitService
+public class HabitService(HabitTrackerContext context) : IHabitService
 {
-    HabitId IHabitService.addHabit(HabitNameDescription Habit, UserId User)
+    HabitId IHabitService.addHabit(HabitNameDescription habit, UserId user)
     {
-        Habit h = new() { UserId = User.Id, Name = Habit.Name, Description = Habit.Description };
-        Context.Habits.Add(h);
-        Context.SaveChanges();
-        return new(h.Id, User);
+        Habit h = new() { UserId = user.Id, Name = habit.Name, Description = habit.Description };
+        context.Habits.Add(h);
+        context.SaveChanges();
+        return new(h.Id, user);
     }
 
-    private Habit FindHabit(HabitId Habit)
+    private Habit FindHabit(HabitId habit)
     {
         try
         {
-            return Context.Habits.Single(h => h.Id == Habit.Id && h.UserId == Habit.User.Id);
+            return context.Habits.Single(h => h.Id == habit.Id && h.UserId == habit.User.Id);
         }
         catch (InvalidOperationException)
         {
             throw new NoSuchHabitException();
         }
     }
-    HabitNameDescriptionId IHabitService.getHabitDetails(HabitId Habit)
+    HabitNameDescriptionId IHabitService.getHabitDetails(HabitId habit)
     {
-        var h = FindHabit(Habit);
+        var h = FindHabit(habit);
         return new(h.Name, h.Id, h.Description);
     }
 
-    List<HabitNameId> IHabitService.getHabits(UserId User)
+    List<HabitNameId> IHabitService.getHabits(UserId user)
     {
-        var u = Context.Users.Include(u => u.Habits).Single(u => u.Id == User.Id);
+        var u = context.Users.Include(u => u.Habits).Single(u => u.Id == user.Id);
         return u.Habits.AsEnumerable().Select(h => new HabitNameId(h.Name, h.Id)).ToList();
     }
 
-    void IHabitService.RemoveHabit(HabitId Habit)
+    void IHabitService.RemoveHabit(HabitId id)
     {
-        var h = FindHabit(Habit);
-        Context.Habits.Remove(h);
-        Context.SaveChanges();
+        var h = FindHabit(id);
+        context.Habits.Remove(h);
+        context.SaveChanges();
     }
 
-    void IHabitService.UpdateHabit(HabitId Habit, HabitNameDescription Replacement)
+    void IHabitService.UpdateHabit(HabitId id, HabitNameDescription replacement)
     {
-        var h = FindHabit(Habit);
-        h.Name = Replacement.Name;
-        h.Description = Replacement.Description;
-        Context.SaveChanges();
+        var h = FindHabit(id);
+        h.Name = replacement.Name;
+        h.Description = replacement.Description;
+        context.SaveChanges();
     }
 
     private CompletionType FindCompletionType(CompletionTypeId id)
@@ -71,7 +71,7 @@ public class HabitService(HabitTrackerContext Context) : IHabitService
         var h = FindHabit(id.Habit);
         try
         {
-            return Context.Entry(h).Collection(h => h.CompletionTypes).Query().Single(c => c.Id == id.Id);
+            return context.Entry(h).Collection(h => h.CompletionTypes).Query().Single(c => c.Id == id.Id);
         }
         catch (InvalidOperationException)
         {
@@ -79,19 +79,19 @@ public class HabitService(HabitTrackerContext Context) : IHabitService
         }
     }
 
-    CompletionTypeId IHabitService.AddCompletionType(HabitId Habit, CompletionTypeData ctype)
+    CompletionTypeId IHabitService.AddCompletionType(HabitId habit, CompletionTypeData ctype)
     {
-        var h = FindHabit(Habit);
+        var h = FindHabit(habit);
         var t = new CompletionType() { Habit = h, Name = ctype.Name, Description = ctype.Description, Color = ctype.Color };
-        Context.Add(t);
-        Context.SaveChanges();
-        return new(t.Id, Habit);
+        context.Add(t);
+        context.SaveChanges();
+        return new(t.Id, habit);
     }
     void IHabitService.RemoveCompletionType(CompletionTypeId id)
     {
         var c = FindCompletionType(id);
-        Context.Remove(c);
-        Context.SaveChanges();
+        context.Remove(c);
+        context.SaveChanges();
     }
     void IHabitService.UpdateCompletionType(CompletionTypeId id, CompletionTypeData replacement)
     {
@@ -99,12 +99,12 @@ public class HabitService(HabitTrackerContext Context) : IHabitService
         c.Name = replacement.Name;
         c.Color = replacement.Color;
         c.Description = replacement.Description;
-        Context.SaveChanges();
+        context.SaveChanges();
     }
     List<CompletionTypeDataId> IHabitService.GetCompletionTypes(HabitId id)
     {
         var h = FindHabit(id);
-        Context.Entry(h).Collection(h => h.CompletionTypes).Load();
+        context.Entry(h).Collection(h => h.CompletionTypes).Load();
         return h.CompletionTypes.Select(ct => new CompletionTypeDataId(ct.Color, ct.Name, ct.Description, ct.Id)).ToList();
     }
 }

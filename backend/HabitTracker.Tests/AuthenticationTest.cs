@@ -7,11 +7,11 @@ using Microsoft.AspNetCore.TestHost;
 
 namespace HabitTracker.Tests;
 
-public class AuthenticationTest(CreatedDatabaseFixture Fixture) : IClassFixture<CreatedDatabaseFixture>
+public class AuthenticationTest(CreatedDatabaseFixture fixture) : IClassFixture<CreatedDatabaseFixture>
 {
 
     private IUserService MakeService() => MakeService(new RealClock());
-    private IUserService MakeService(IClock clock) => new UserService(Fixture.MakeContext(), clock);
+    private IUserService MakeService(IClock clock) => new UserService(fixture.MakeContext(), clock);
 
     private IHost makeHost()
     {

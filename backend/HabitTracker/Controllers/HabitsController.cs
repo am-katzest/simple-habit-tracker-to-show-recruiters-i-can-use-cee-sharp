@@ -8,61 +8,61 @@ namespace HabitTracker.Controllers.HabitsController;
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
-public class HabitsController(IHabitService Service) : ControllerBase
+public class HabitsController(IHabitService service) : ControllerBase
 {
     [HttpPost("")]
     public ActionResult<int> CreateHabit([FromHeader][ModelBinder] UserId user, HabitNameDescription habit)
     {
-        return new(Service.addHabit(habit, user).Id);
+        return new(service.addHabit(habit, user).Id);
     }
     [HttpGet("")]
     public ActionResult<List<HabitNameId>> getHabits([ModelBinder] UserId user)
     {
-        return new(Service.getHabits(user));
+        return new(service.getHabits(user));
     }
     [HttpGet("{Id:int}")]
     public ActionResult<HabitNameDescriptionId> getHabitDetails([ModelBinder] UserId user, int id)
     {
-        return new(Service.getHabitDetails(new(id, user)));
+        return new(service.getHabitDetails(new(id, user)));
     }
     [HttpDelete("{Id:int}")]
     public IActionResult deleteHabit([ModelBinder] UserId user, int id)
     {
-        Service.RemoveHabit(new(id, user));
+        service.RemoveHabit(new(id, user));
         return NoContent();
     }
     [HttpPut("{Id:int}")]
     public IActionResult updateHabit([ModelBinder][FromHeader] UserId user, int id, HabitNameDescription habit)
     {
-        Service.UpdateHabit(new(id, user), habit);
+        service.UpdateHabit(new(id, user), habit);
         return NoContent();
     }
 
-    [HttpPost("{Hid:int}/CompletionTypes")]
-    public ActionResult<int> CreateCompletionType([ModelBinder][FromHeader] UserId user, int Hid, CompletionTypeData ct)
+    [HttpPost("{habitId:int}/CompletionTypes")]
+    public ActionResult<int> CreateCompletionType([ModelBinder][FromHeader] UserId user, int habitId, CompletionTypeData ct)
     {
-        return new(Service.AddCompletionType(new(Hid, user), ct).Id);
+        return new(service.AddCompletionType(new(habitId, user), ct).Id);
     }
 
-    [HttpPut("{Hid:int}/CompletionTypes/{Ctid:int}")]
-    public IActionResult UpdateCompletionType([ModelBinder][FromHeader] UserId user, int Hid, int Ctid, CompletionTypeData ct)
+    [HttpPut("{habitId:int}/CompletionTypes/{completionTypeId:int}")]
+    public IActionResult UpdateCompletionType([ModelBinder][FromHeader] UserId user, int habitId, int completionTypeId, CompletionTypeData ct)
     {
-        var id = new CompletionTypeId(Ctid, new(Hid, user));
-        Service.UpdateCompletionType(id, ct);
+        var id = new CompletionTypeId(completionTypeId, new(habitId, user));
+        service.UpdateCompletionType(id, ct);
         return NoContent();
     }
 
-    [HttpDelete("{Hid:int}/CompletionTypes/{Ctid:int}")]
-    public IActionResult UpdateCompletionType([ModelBinder][FromHeader] UserId user, int Hid, int Ctid)
+    [HttpDelete("{habitId:int}/CompletionTypes/{completionTypeId:int}")]
+    public IActionResult UpdateCompletionType([ModelBinder][FromHeader] UserId user, int habitId, int completionTypeId)
     {
-        var id = new CompletionTypeId(Ctid, new(Hid, user));
-        Service.RemoveCompletionType(id);
+        var id = new CompletionTypeId(completionTypeId, new(habitId, user));
+        service.RemoveCompletionType(id);
         return NoContent();
     }
 
-    [HttpGet("{Hid:int}/CompletionTypes/")]
-    public ActionResult<List<CompletionTypeDataId>> UpdateCompletionType([ModelBinder][FromHeader] UserId user, int Hid)
+    [HttpGet("{habitId:int}/CompletionTypes/")]
+    public ActionResult<List<CompletionTypeDataId>> UpdateCompletionType([ModelBinder][FromHeader] UserId user, int habitId)
     {
-        return new(Service.GetCompletionTypes(new(Hid, user)));
+        return new(service.GetCompletionTypes(new(habitId, user)));
     }
 }

@@ -21,38 +21,38 @@ public interface IUserService
     void clearExpiredTokens();
 };
 
-public class UserService(HabitTrackerContext Context, IClock Clock) : IUserService
+public class UserService(HabitTrackerContext context, IClock clock) : IUserService
 {
     public UserId createPasswordUser(Credentials cred)
     {
         var auth = new LoginPassword { Username = cred.Login, Password = cred.Password };
         var u = new User { DisplayName = cred.Login, Auth = auth };
-        Context.Database.BeginTransaction();
-        if (Context.GetUserByUsername(cred.Login) is null)
+        context.Database.BeginTransaction();
+        if (context.GetUserByUsername(cred.Login) is null)
         {
-            Context.Add(u);
-            Context.SaveChanges();
-            Context.Database.CommitTransaction();
+            context.Add(u);
+            context.SaveChanges();
+            context.Database.CommitTransaction();
             return new(u.Id);
         }
         else
         {
-            Context.Database.RollbackTransaction();
+            context.Database.RollbackTransaction();
             throw new DuplicateUsernameException();
         }
     }
 
-    private string CreateToken(User User)
+    private string CreateToken(User user)
     {
-        var t = new SessionToken { ExpirationDate = Clock.Now.AddDays(2), User = User };
-        Context.Add(t);
-        Context.SaveChanges();
+        var t = new SessionToken { ExpirationDate = clock.Now.AddDays(2), User = user };
+        context.Add(t);
+        context.SaveChanges();
         return t.Id;
     }
 
     string IUserService.createToken(Credentials cred)
     {
-        var user = Context.GetUserByUsername(cred.Login);
+        var user = context.GetUserByUsername(cred.Login);
         if (user is not null)
         {
             if (user.Auth is LoginPassword lp)
@@ -68,24 +68,24 @@ public class UserService(HabitTrackerContext Context, IClock Clock) : IUserServi
 
     void IUserService.deleteUser(UserId user)
     {
-        Context.Remove(GetUser(user));
-        Context.SaveChanges();
+        context.Remove(GetUser(user));
+        context.SaveChanges();
     }
 
     void IUserService.removeToken(string token)
     {
-        Context.Tokens.Where(t => t.Id == token).ExecuteDelete();
+        context.Tokens.Where(t => t.Id == token).ExecuteDelete();
     }
 
-    private bool IsValid(Token t) => t.ExpirationDate > Clock.Now;
+    private bool IsValid(Token t) => t.ExpirationDate > clock.Now;
     UserId IUserService.validateToken(string token)
     {
         try
         {
-            var t = Context.Tokens.Single(t => t.Id == token);
+            var t = context.Tokens.Single(t => t.Id == token);
             if (IsValid(t) && t is SessionToken st)
             {
-                Context.Entry(st).Reference(st => st.User).Load(); // unnecessary roundtrip
+                context.Entry(st).Reference(st => st.User).Load(); // unnecessary roundtrip
                 return new(st.User.Id);
             }
             throw new InvalidTokenException();
@@ -98,10 +98,10 @@ public class UserService(HabitTrackerContext Context, IClock Clock) : IUserServi
 
     void IUserService.clearExpiredTokens()
     {
-        Context.Tokens.Where(x => x.ExpirationDate > Clock.Now).ExecuteDelete();
+        context.Tokens.Where(x => x.ExpirationDate > clock.Now).ExecuteDelete();
     }
 
-    private User GetUser(UserId user) => Context.Users.Single(u => u.Id == user.Id);
+    private User GetUser(UserId user) => context.Users.Single(u => u.Id == user.Id);
     AccountDetails IUserService.GetAccountDetails(UserId user)
     {
         return new(user.Id, GetUser(user).DisplayName);

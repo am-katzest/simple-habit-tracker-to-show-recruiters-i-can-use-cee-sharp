@@ -4,16 +4,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HabitTracker.Tests;
 
-public class UserServiceTest(CreatedDatabaseFixture Fixture) : IClassFixture<CreatedDatabaseFixture>
+public class UserServiceTest(CreatedDatabaseFixture fixture) : IClassFixture<CreatedDatabaseFixture>
 {
     private IUserService MakeService() => MakeService(new RealClock());
-    private IUserService MakeService(IClock clock) => new UserService(Fixture.MakeContext(), clock);
+    private IUserService MakeService(IClock clock) => new UserService(fixture.MakeContext(), clock);
 
     [Fact]
     public void UserCreationWorks()
     {
         MakeService().createPasswordUser(new("kitty", "password"));
-        var u = Fixture.MakeContext().Users.Include(u => u.Auth).Single(u => u.DisplayName == "kitty");
+        var u = fixture.MakeContext().Users.Include(u => u.Auth).Single(u => u.DisplayName == "kitty");
         Assert.NotNull(u);
         Assert.Equal("kitty", u.DisplayName);
         var a = u.Auth;
@@ -32,9 +32,9 @@ public class UserServiceTest(CreatedDatabaseFixture Fixture) : IClassFixture<Cre
     public void InsertingDuplicateUser()
     {
         MakeService().createPasswordUser(new("awawa", "passwd"));
-        var count = Fixture.MakeContext().Users.Count();
+        var count = fixture.MakeContext().Users.Count();
         Assert.Throws<DuplicateUsernameException>(() => MakeService().createPasswordUser(new("awawa", "passwd")));
-        var after = Fixture.MakeContext().Users.Count();
+        var after = fixture.MakeContext().Users.Count();
         Assert.Equal(count, after);
     }
 
@@ -107,12 +107,12 @@ public class UserServiceTest(CreatedDatabaseFixture Fixture) : IClassFixture<Cre
 
         MakeService(time1).clearExpiredTokens();
         // from other tests
-        var leftovers = Fixture.MakeContext().Tokens.Count();
+        var leftovers = fixture.MakeContext().Tokens.Count();
         MakeService(time1).createPasswordUser(new("b", "c"));
         var t1 = MakeService(time1).createToken(new("b", "c"));
         var t11 = MakeService(time11).createToken(new("b", "c"));
         var t2 = MakeService(time2).createToken(new("b", "c"));
         MakeService(time2).clearExpiredTokens();
-        Assert.Equal(2, Fixture.MakeContext().Tokens.Count() - leftovers);
+        Assert.Equal(2, fixture.MakeContext().Tokens.Count() - leftovers);
     }
 }

@@ -4,14 +4,14 @@ using HabitTracker.Services;
 
 namespace HabitTracker.Tests;
 
-public class HabitServiceTest(UserFixture Fixture) : IClassFixture<UserFixture>
+public class HabitServiceTest(UserFixture fixture) : IClassFixture<UserFixture>
 {
-    private IHabitService MakeService() => new HabitService(Fixture.MakeContext());
+    private IHabitService MakeService() => new HabitService(fixture.MakeContext());
 
     [Fact]
     public void CreatingHabit()
     {
-        var u = Fixture.MakeUser();
+        var u = fixture.MakeUser();
         Assert.Empty(MakeService().getHabits(u));
         var habit = new HabitNameDescription("habit", null);
         var hid = MakeService().addHabit(habit, u);
@@ -22,7 +22,7 @@ public class HabitServiceTest(UserFixture Fixture) : IClassFixture<UserFixture>
     [Fact]
     public void GettingHabitPositive()
     {
-        var u = Fixture.MakeUser();
+        var u = fixture.MakeUser();
         Assert.Empty(MakeService().getHabits(u));
         {
             var habit = new HabitNameDescription("habit", null);
@@ -49,8 +49,8 @@ public class HabitServiceTest(UserFixture Fixture) : IClassFixture<UserFixture>
     [Fact]
     public void GettingHabitNotOwn()
     {
-        var u1 = Fixture.MakeUser();
-        var u2 = Fixture.MakeUser();
+        var u1 = fixture.MakeUser();
+        var u2 = fixture.MakeUser();
         Assert.NotEqual(u1, u2);
         var habit = new HabitNameDescription("habit", null);
         var hid = MakeService().addHabit(habit, u1);
@@ -60,7 +60,7 @@ public class HabitServiceTest(UserFixture Fixture) : IClassFixture<UserFixture>
     [Fact]
     public void DeletingHabit()
     {
-        var u = Fixture.MakeUser();
+        var u = fixture.MakeUser();
         var habit = new HabitNameDescription("habit", null);
         var hid = MakeService().addHabit(habit, u);
         var hid2 = MakeService().addHabit(new("habit2", null), u);
@@ -73,7 +73,7 @@ public class HabitServiceTest(UserFixture Fixture) : IClassFixture<UserFixture>
     [Fact]
     public void UpdatingHabit()
     {
-        var u = Fixture.MakeUser();
+        var u = fixture.MakeUser();
         var hid = MakeService().addHabit(new("name", null), u);
         MakeService().UpdateHabit(hid, new("other", "meow"));
         Assert.Single(MakeService().getHabits(u));
@@ -85,7 +85,7 @@ public class HabitServiceTest(UserFixture Fixture) : IClassFixture<UserFixture>
     [Fact]
     public void CompletionTypeExceptionTest()
     {
-        var u = Fixture.MakeUser();
+        var u = fixture.MakeUser();
         var hid = MakeService().addHabit(new("name", null), u);
         var ct = new CompletionTypeData("#333333", "name", null);
         Assert.Throws<NoSuchHabitException>(() => MakeService().AddCompletionType(hid with { Id = 131535153 }, ct));
