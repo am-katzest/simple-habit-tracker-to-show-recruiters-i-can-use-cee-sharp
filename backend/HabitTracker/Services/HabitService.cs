@@ -11,10 +11,16 @@ public interface IHabitService
     void RemoveHabit(HabitId id);
     HabitNameDescriptionId getHabitDetails(HabitId id);
     List<HabitNameId> getHabits(UserId user);
+
     CompletionTypeId AddCompletionType(HabitId habit, CompletionTypeData type);
     void RemoveCompletionType(CompletionTypeId id);
     void UpdateCompletionType(CompletionTypeId id, CompletionTypeData replacement);
     List<CompletionTypeDataId> GetCompletionTypes(HabitId id);
+
+    CompletionId AddCompletion(HabitId habit, CompletionData completion);
+    void RemoveCompletion(CompletionId id);
+    void UpdateCompletion(CompletionId id, CompletionData replacement);
+    List<CompletionDataId> GetCompletions(HabitId id, DateTime? before, DateTime? after);
 };
 
 
@@ -79,6 +85,28 @@ public class HabitService(HabitTrackerContext context) : IHabitService
         }
     }
 
+    private Completion FindCompletion(CompletionId id)
+    {
+        var h = FindHabit(id.Habit);
+        try
+        {
+            return context.Entry(h).Collection(h => h.Completions).Query().Single(c => c.Id == id.Id);
+        }
+        catch (InvalidOperationException)
+        {
+            throw new NoSuchCompletionException();
+        }
+    }
+
+    private CompletionType? FindCompletionCompletionType(HabitId habit, CompletionData completion)
+    {
+        return completion.CompletionTypeId switch
+        {
+            int ctid => FindCompletionType(new(ctid, habit)),
+            null => null,
+        };
+    }
+
     CompletionTypeId IHabitService.AddCompletionType(HabitId habit, CompletionTypeData ctype)
     {
         var h = FindHabit(habit);
@@ -106,5 +134,49 @@ public class HabitService(HabitTrackerContext context) : IHabitService
         var h = FindHabit(id);
         context.Entry(h).Collection(h => h.CompletionTypes).Load();
         return h.CompletionTypes.Select(ct => new CompletionTypeDataId(ct.Color, ct.Name, ct.Description, ct.Id)).ToList();
+    }
+
+    CompletionId IHabitService.AddCompletion(HabitId habit, CompletionData completion)
+    {
+        var h = FindHabit(habit);
+        var ct = FindCompletionCompletionType(habit, completion);
+        var c = new Completion() { Habit = h, Note = completion.Note, Type = ct, Color = completion.Color, CompletionDate = completion.CompletionDate };
+        context.Add(c);
+        context.SaveChanges();
+        return new(c.Id, habit);
+    }
+
+    void IHabitService.RemoveCompletion(CompletionId id)
+    {
+        var c = FindCompletion(id);
+        context.Remove(c);
+        context.SaveChanges();
+    }
+
+    void IHabitService.UpdateCompletion(CompletionId id, CompletionData replacement)
+    {
+        var h = FindHabit(id.Habit);
+        var c = FindCompletion(id);
+        c.Type = FindCompletionCompletionType(id.Habit, replacement);
+        c.Note = replacement.Note;
+        c.Color = replacement.Color;
+        c.CompletionDate = replacement.CompletionDate;
+        context.SaveChanges();
+    }
+
+    /// before is exclusive, after inclusive
+    List<CompletionDataId> IHabitService.GetCompletions(HabitId id, DateTime? before, DateTime? after)
+    {
+        var h = FindHabit(id);
+        var q = context.Entry(h).Collection(h => h.Completions).Query();
+        if (before is DateTime b)
+        {
+            q = q.Where(c => c.CompletionDate < b);
+        }
+        if (after is DateTime a)
+        {
+            q = q.Where(c => c.CompletionDate >= a);
+        }
+        return q.Select(c => new CompletionDataId(c.Id, c.Type != null ? c.Type.Id : null, c.CompletionDate, c.Note, c.Color)).ToList();
     }
 }
