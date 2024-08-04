@@ -11,5 +11,5 @@ public class Completion
     public string? Color { get; set; }
 
     [Column(TypeName = "timestamp(6)")]
-    public DateTime ExpirationDate { get; set; }
+    public DateTime CompletionDate { get; set; }
 }
