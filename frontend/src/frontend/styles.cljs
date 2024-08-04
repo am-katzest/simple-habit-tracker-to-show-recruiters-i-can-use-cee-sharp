@@ -14,7 +14,7 @@
 
 (defglobal defaults
   [:body
-   {:color               :red
+   {:color               :black
     :background-color    :#ddd
     :background-image    [(linear-gradient :white (px 2) :transparent (px 2))
                           (linear-gradient (deg 90) :white (px 2) :transparent (px 2))
@@ -25,6 +25,9 @@
 
 (defglobal fix-alerts-being-invisible
   [:.rc-alert.fade {:opacity 1}])
+
+(defglobal nav-disabled
+  [:.nav-disabled {:color "#ccc"}])
 
 (defclass level1
   []
