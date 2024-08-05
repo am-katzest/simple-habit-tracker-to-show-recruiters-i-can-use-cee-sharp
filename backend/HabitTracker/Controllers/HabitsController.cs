@@ -53,7 +53,7 @@ public class HabitsController(IHabitService service) : ControllerBase
     }
 
     [HttpDelete("{habitId:int}/CompletionTypes/{completionTypeId:int}")]
-    public IActionResult UpdateCompletionType([ModelBinder][FromHeader] UserId user, int habitId, int completionTypeId)
+    public IActionResult DeleteCompletionType([ModelBinder][FromHeader] UserId user, int habitId, int completionTypeId)
     {
         var id = new CompletionTypeId(completionTypeId, new(habitId, user));
         service.RemoveCompletionType(id);
@@ -61,7 +61,7 @@ public class HabitsController(IHabitService service) : ControllerBase
     }
 
     [HttpGet("{habitId:int}/CompletionTypes/")]
-    public ActionResult<List<CompletionTypeDataId>> UpdateCompletionType([ModelBinder][FromHeader] UserId user, int habitId)
+    public ActionResult<List<CompletionTypeDataId>> GetCompletionTypes([ModelBinder][FromHeader] UserId user, int habitId)
     {
         return new(service.GetCompletionTypes(new(habitId, user)));
     }
