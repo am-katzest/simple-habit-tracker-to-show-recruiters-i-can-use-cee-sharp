@@ -87,7 +87,7 @@
               #(reset! deleting? false)
               (tag :confirm-delete)])]]))]))
 
-(defn register-form []
+(defn register-form [go-back]
   (let [username (r/atom "")
         password (r/atom "")
         password2 (r/atom "")]
@@ -98,35 +98,51 @@
             ready? (and username-ok password-ok password2-ok)
             submit (when ready? (fn [] (>evt [::e/create-new-account @username @password])))]
         [re-com/v-box
+         :width "280px"
          :children
          [[re-com/label :label (tr :login/username)]
           [re-com/input-text
+           :width "280px"
            :attr (tag :register-username :name :username)
            :change-on-blur? false
            :model username
            :status (status username-ok)
            :on-change #(reset! username %)]
+          [re-com/gap :size "10px"]
           [re-com/label :label (tr :login/password)]
           [re-com/input-password
+           :width "280px"
            :attr (tag :register-password :name :password)
            :change-on-blur? false
            :model password
            :status (status password-ok)
            :on-change #(reset! password %)]
+          [re-com/gap :size "10px"]
           [re-com/label :label (tr :login/repeat)]
           [re-com/input-password
+           :width "280px"
            :attr (tag :register-password2 :name :password2)
            :change-on-blur? false
            :model password2
            :status (status password2-ok)
            :on-change #(reset! password2 %)]
-          [re-com/button
-           :attr (tag :register-button :name :register-button)
-           :label (tr :login/create-new-account)
-           :on-click submit
-           :disabled? (not ready?)]]]))))
+          [re-com/gap :size "10px"]
+          [re-com/h-box
+           :justify :between
+           :children
+           [[re-com/button
+             :attr (tag :register-button :name :register-button)
+             :label (tr :login/create-new-account)
+             :class "btn btn-primary"
+             :on-click submit
+             :disabled? (not ready?)]
+            [re-com/button
+             :attr (tag :register-go-back-button)
+             :label (tr :login/go-back)
+             :on-click go-back
+             :class "btn btn-secondary"]]]]]))))
 
-(defn login-form []
+(defn login-form [go-back]
   (let [username (r/atom "")
         password (r/atom "")]
     (fn []
@@ -135,26 +151,40 @@
             ready? (and username-ok password-ok)
             submit (when ready? (fn [] (>evt [::e/ask-for-token-login @username @password])))]
         [re-com/v-box
+         :width "280px"
          :children
          [[re-com/label :label (tr :login/username)]
           [re-com/input-text
+           :width "280px"
            :attr (tag :login-username :name :username)
            :change-on-blur? false
            :model username
            :status (status username-ok)
            :on-change #(reset! username %)]
+          [re-com/gap :size "10px"]
           [re-com/label :label (tr :login/password)]
           [re-com/input-password
+           :width "280px"
            :attr (tag :login-password :name :password)
            :change-on-blur? false
            :model password
            :status (status password-ok)
            :on-change #(reset! password %)]
-          [re-com/button
-           :attr (tag :login-button :name :login-button)
-           :label (tr :login/login)
-           :on-click submit
-           :disabled? (not ready?)]]]))))
+          [re-com/gap :size  "10px"]
+          [re-com/h-box
+           :justify :between
+           :children
+           [[re-com/button
+             :attr (tag :login-button :name :login-button)
+             :label (tr :login/login)
+             :on-click submit
+             :class "btn btn-primary"
+             :disabled? (not ready?)]
+            [re-com/button
+             :attr (tag :login-go-back-button)
+             :label (tr :login/go-back)
+             :on-click go-back
+             :class "btn btn-secondary"]]]]]))))
 
 (defn error-panel []
   [re-com/title
@@ -168,7 +198,8 @@
    [:div.container
     [:div.row.justify-content-center
      [:div.col-md-4.pt-4
-      (let [state (r/atom :select)]
+      (let [state (r/atom :select)
+            reset (fn [x] (fn [] (reset! state x)))]
         [(fn []
            (case @state
              :select
@@ -177,16 +208,16 @@
                           :attr (tag :new-account)
                           :label (tr :login/register-new-account)
                           :class "btn-white"
-                          :on-click #(reset! state :register)]
+                          :on-click (reset :register)]
                          [re-com/button
                           :attr (tag :login)
                           :label (tr :login/login-old-account)
                           :class "btn-white"
-                          :on-click #(reset! state :login)]]]
+                          :on-click (reset :login)]]]
              :login
-             [login-form]
+             [login-form (reset :select)]
              :register
-             [register-form]))])]]]])
+             [register-form (reset :select)]))])]]]])
 
 (defn navbar [panel]
   [:nav.navbar.navbar-light.bg-light
