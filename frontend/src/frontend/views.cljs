@@ -98,31 +98,39 @@
             ready? (and username-ok password-ok password2-ok)
             submit (when ready? (fn [] (>evt [::e/create-new-account @username @password])))]
         [re-com/v-box
+         :width "280px"
          :children
          [[re-com/label :label (tr :login/username)]
           [re-com/input-text
+           :width "280px"
            :attr (tag :register-username :name :username)
            :change-on-blur? false
            :model username
            :status (status username-ok)
            :on-change #(reset! username %)]
+          [re-com/gap :size "10px"]
           [re-com/label :label (tr :login/password)]
           [re-com/input-password
+           :width "280px"
            :attr (tag :register-password :name :password)
            :change-on-blur? false
            :model password
            :status (status password-ok)
            :on-change #(reset! password %)]
+          [re-com/gap :size "10px"]
           [re-com/label :label (tr :login/repeat)]
           [re-com/input-password
+           :width "280px"
            :attr (tag :register-password2 :name :password2)
            :change-on-blur? false
            :model password2
            :status (status password2-ok)
            :on-change #(reset! password2 %)]
+          [re-com/gap :size "10px"]
           [re-com/button
            :attr (tag :register-button :name :register-button)
            :label (tr :login/create-new-account)
+           :class "btn btn-primary"
            :on-click submit
            :disabled? (not ready?)]]]))))
 
