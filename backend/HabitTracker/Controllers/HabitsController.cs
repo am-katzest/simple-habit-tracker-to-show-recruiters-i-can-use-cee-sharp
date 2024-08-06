@@ -65,4 +65,36 @@ public class HabitsController(IHabitService service) : ControllerBase
     {
         return new(service.GetCompletionTypes(new(habitId, user)));
     }
+
+    [HttpPost("{habitId:int}/Completions/")]
+    public ActionResult<int> PostCompletion([ModelBinder][FromHeader] UserId user, int habitId, CompletionData data)
+    {
+        var TypedHabitId = new HabitId(habitId, user);
+        return new(service.AddCompletion(TypedHabitId, data).Id);
+    }
+
+    [HttpPut("{habitId:int}/Completions/{completionId:int}")]
+    public IActionResult UpdateCompletion([ModelBinder][FromHeader] UserId user, int habitId, int completionId, CompletionData data)
+    {
+        var TypedHabitId = new HabitId(habitId, user);
+        var TypedCompletionId = new CompletionId(completionId, TypedHabitId);
+        service.UpdateCompletion(TypedCompletionId, data);
+        return NoContent();
+    }
+
+    [HttpDelete("{habitId:int}/Completions/{completionId:int}")]
+    public IActionResult DeleteCompletion([ModelBinder][FromHeader] UserId user, int habitId, int completionId)
+    {
+        var TypedHabitId = new HabitId(habitId, user);
+        var TypedCompletionId = new CompletionId(completionId, TypedHabitId);
+        service.RemoveCompletion(TypedCompletionId);
+        return NoContent();
+    }
+
+    [HttpGet("{habitId:int}/Completions/")]
+    public ActionResult<List<CompletionDataId>> GetCompletions([ModelBinder][FromHeader] UserId user, int habitId, [FromQuery] DateTime? after, [FromQuery] DateTime? before)
+    {
+        var TypedHabitId = new HabitId(habitId, user);
+        return new(service.GetCompletions(TypedHabitId, before, after));
+    }
 }
