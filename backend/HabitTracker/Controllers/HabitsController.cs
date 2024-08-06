@@ -1,5 +1,6 @@
 using HabitTracker.DTOs;
 using HabitTracker.Services;
+using HabitTracker.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -70,7 +71,7 @@ public class HabitsController(IHabitService service) : ControllerBase
     public ActionResult<int> PostCompletion([ModelBinder][FromHeader] UserId user, int habitId, CompletionData data)
     {
         var TypedHabitId = new HabitId(habitId, user);
-        return new(service.AddCompletion(TypedHabitId, data).Id);
+        return new(service.AddCompletion(TypedHabitId, data.WithNormalizedDate()).Id);
     }
 
     [HttpPut("{habitId:int}/Completions/{completionId:int}")]
@@ -78,7 +79,7 @@ public class HabitsController(IHabitService service) : ControllerBase
     {
         var TypedHabitId = new HabitId(habitId, user);
         var TypedCompletionId = new CompletionId(completionId, TypedHabitId);
-        service.UpdateCompletion(TypedCompletionId, data);
+        service.UpdateCompletion(TypedCompletionId, data.WithNormalizedDate());
         return NoContent();
     }
 
@@ -95,6 +96,6 @@ public class HabitsController(IHabitService service) : ControllerBase
     public ActionResult<List<CompletionDataId>> GetCompletions([ModelBinder][FromHeader] UserId user, int habitId, [FromQuery] DateTime? after, [FromQuery] DateTime? before)
     {
         var TypedHabitId = new HabitId(habitId, user);
-        return new(service.GetCompletions(TypedHabitId, before, after));
+        return new(service.GetCompletions(TypedHabitId, before?.Normalized(), after?.Normalized()));
     }
 }
