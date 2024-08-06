@@ -13,6 +13,7 @@
    (merge #:login
            {:create-new-account "create new account"
             :login "login"
+            :go-back "return"
             :password "password"
             :repeat "repeat password"
             :username "username"

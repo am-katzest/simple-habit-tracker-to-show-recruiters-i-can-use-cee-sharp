@@ -126,7 +126,7 @@
            :on-click submit
            :disabled? (not ready?)]]]))))
 
-(defn login-form []
+(defn login-form [go-back]
   (let [username (r/atom "")
         password (r/atom "")]
     (fn []
@@ -155,12 +155,20 @@
            :status (status password-ok)
            :on-change #(reset! password %)]
           [re-com/gap :size  "10px"]
-          [re-com/button
-           :attr (tag :login-button :name :login-button)
-           :label (tr :login/login)
-           :on-click submit
-           :class "btn btn-primary"
-           :disabled? (not ready?)]]]))))
+          [re-com/h-box
+           :justify :between
+           :children
+           [[re-com/button
+             :attr (tag :login-button :name :login-button)
+             :label (tr :login/login)
+             :on-click submit
+             :class "btn btn-primary"
+             :disabled? (not ready?)]
+            [re-com/button
+             :attr (tag :login-go-back-button)
+             :label (tr :login/go-back)
+             :on-click go-back
+             :class "btn btn-secondary"]]]]]))))
 
 (defn error-panel []
   [re-com/title
@@ -191,7 +199,7 @@
                           :class "btn-white"
                           :on-click (reset :login)]]]
              :login
-             [login-form]
+             [login-form (reset :select)]
              :register
              [register-form]))])]]]])
 
