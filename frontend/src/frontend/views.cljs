@@ -135,25 +135,31 @@
             ready? (and username-ok password-ok)
             submit (when ready? (fn [] (>evt [::e/ask-for-token-login @username @password])))]
         [re-com/v-box
+         :width "280px"
          :children
          [[re-com/label :label (tr :login/username)]
           [re-com/input-text
+           :width "280px"
            :attr (tag :login-username :name :username)
            :change-on-blur? false
            :model username
            :status (status username-ok)
            :on-change #(reset! username %)]
+          [re-com/gap :size "10px"]
           [re-com/label :label (tr :login/password)]
           [re-com/input-password
+           :width "280px"
            :attr (tag :login-password :name :password)
            :change-on-blur? false
            :model password
            :status (status password-ok)
            :on-change #(reset! password %)]
+          [re-com/gap :size  "10px"]
           [re-com/button
            :attr (tag :login-button :name :login-button)
            :label (tr :login/login)
            :on-click submit
+           :class "btn btn-primary"
            :disabled? (not ready?)]]]))))
 
 (defn error-panel []
