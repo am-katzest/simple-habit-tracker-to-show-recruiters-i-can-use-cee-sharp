@@ -87,7 +87,7 @@
               #(reset! deleting? false)
               (tag :confirm-delete)])]]))]))
 
-(defn register-form []
+(defn register-form [go-back]
   (let [username (r/atom "")
         password (r/atom "")
         password2 (r/atom "")]
@@ -127,12 +127,20 @@
            :status (status password2-ok)
            :on-change #(reset! password2 %)]
           [re-com/gap :size "10px"]
-          [re-com/button
-           :attr (tag :register-button :name :register-button)
-           :label (tr :login/create-new-account)
-           :class "btn btn-primary"
-           :on-click submit
-           :disabled? (not ready?)]]]))))
+          [re-com/h-box
+           :justify :between
+           :children
+           [[re-com/button
+             :attr (tag :register-button :name :register-button)
+             :label (tr :login/create-new-account)
+             :class "btn btn-primary"
+             :on-click submit
+             :disabled? (not ready?)]
+            [re-com/button
+             :attr (tag :register-go-back-button)
+             :label (tr :login/go-back)
+             :on-click go-back
+             :class "btn btn-secondary"]]]]]))))
 
 (defn login-form [go-back]
   (let [username (r/atom "")
@@ -209,7 +217,7 @@
              :login
              [login-form (reset :select)]
              :register
-             [register-form]))])]]]])
+             [register-form (reset :select)]))])]]]])
 
 (defn navbar [panel]
   [:nav.navbar.navbar-light.bg-light
