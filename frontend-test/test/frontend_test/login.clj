@@ -1,7 +1,7 @@
 (ns frontend-test.login
   (:require [clojure.test :refer [deftest testing is are]]
             [frontend-test.setup :as s :refer-macros true]
-            [frontend-test.helpers :refer [btn input wait-enabled wait-disabled wait-exists wait-predicate query random-str lazy-is] :as h  :refer-macros true]
+            [frontend-test.helpers :refer [btn input wait-enabled wait-disabled wait-exists wait-predicate query random-str lazy-is exists? absent?] :as h  :refer-macros true]
             [frontend-test.fragments :as f]
             [etaoin.api :as e]))
 
@@ -60,6 +60,33 @@
          (testing "username visible"
            (f/goto-panel :nav-account)
            (lazy-is (e/has-text? username))))))))
+
+(deftest ^:parallel login-navigation-buttons-test
+  (s/use-new-driver
+   e/go
+   (h/with-wait h/short-wait
+     (e/go s/ROOT)
+     (testing "initial"
+       (exists? (btn :login))
+       (exists? (btn :new-account)))
+     (testing "go-back button exists on register form"
+       (f/click (btn :new-account))
+       (exists? (btn :register-button))
+       (exists? (btn :register-go-back-button)))
+     (testing "go-back button on register form works"
+       (f/click (btn :register-go-back-button))
+       (exists? (btn :login))
+       (exists? (btn :new-account))
+       (absent? (btn :register-button)))
+     (testing "go-back button exists on login form"
+       (f/click (btn :login))
+       (exists? (btn :login-button))
+       (exists? (btn :login-go-back-button)))
+     (testing "go-back button on login form works"
+       (f/click (btn :login-go-back-button))
+       (exists? (btn :login))
+       (exists? (btn :new-account))
+       (absent? (btn :login-button))))))
 
 (comment
   (def d (e/firefox))
