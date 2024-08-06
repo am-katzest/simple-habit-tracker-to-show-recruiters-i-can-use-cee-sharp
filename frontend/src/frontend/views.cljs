@@ -174,7 +174,8 @@
    [:div.container
     [:div.row.justify-content-center
      [:div.col-md-4.pt-4
-      (let [state (r/atom :select)]
+      (let [state (r/atom :select)
+            reset (fn [x] (fn [] (reset! state x)))]
         [(fn []
            (case @state
              :select
@@ -183,12 +184,12 @@
                           :attr (tag :new-account)
                           :label (tr :login/register-new-account)
                           :class "btn-white"
-                          :on-click #(reset! state :register)]
+                          :on-click (reset :register)]
                          [re-com/button
                           :attr (tag :login)
                           :label (tr :login/login-old-account)
                           :class "btn-white"
-                          :on-click #(reset! state :login)]]]
+                          :on-click (reset :login)]]]
              :login
              [login-form]
              :register
