@@ -29,6 +29,9 @@
 (defglobal nav-disabled
   [:.nav-disabled {:color "#ccc"}])
 
+(defglobal fix-rc-datepicker
+  [:.rc-datepicker-selected {:color "#ffffff" :background-color "#6c757d"}])
+
 (defclass level1
   []
   {:color :green})

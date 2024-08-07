@@ -2,6 +2,8 @@
   (:require
    [re-frame.core :as re-frame]
    [re-com.core :as re-com :refer [at]]
+   [cljs-time.core :as time]
+   [cljs-time.format :as time-format]
    [reagent.core :as r]
    [frontend.localization :refer [tr]]
    [frontend.styles :as styles]
@@ -347,6 +349,103 @@
               (when-let [id @(<sub [::subs/selected-ct])]
                 [completion-type-edit-panel id @(<sub [::subs/selected-habit])])]])
 
+(defn advanced-datepicker [confirm cancel]
+  (let [t (time/time-now)
+        hour (time/hour t)
+        minute (time/minute t)
+        hours-minutes (r/atom (+ minute (* 100 hour)))
+        date (r/atom t)
+        use-hour? (r/atom false)]
+    [(fn [] [re-com/h-box
+             :children
+             [[re-com/datepicker
+               :model date
+               :attr (tag :advanced-datepicker-datepicker)
+               :on-change #(reset! date %)]
+              [re-com/v-box
+               :margin "20px"
+               :align :center
+               :children
+               [[re-com/label :label (tr :completion/specify-hour)]
+                [re-com/gap :size "10px"]
+                [re-com/h-box
+                 :width "90px"
+                 :align :center
+                 :gap "20px"
+                 :children
+                 [[re-com/checkbox
+                   :attr (tag :advanced-datepicker-time-checkbox)
+                   :model @use-hour?
+                   :on-change #(reset! use-hour? %)]
+                  [re-com/input-time
+                   :attr (tag :advanced-datepicker-time-input)
+                   :model @hours-minutes
+                   :on-change (fn [x]
+                                (reset! use-hour? true)
+                                (reset! hours-minutes x))]]]
+                [re-com/gap :size "30px"]
+                [re-com/h-box
+                 :width "150px"
+                 :justify :between
+                 :align :center
+                 :children
+                 [[re-com/button :class "btn btn-secondary"
+                   :attr (tag :advanced-datepicker-cancel)
+                   :label (tr :completion/datepicker-cancel)
+                   :on-click cancel]
+                  [re-com/button :class "btn btn-primary"
+                   :attr (tag :advanced-datepicker-confirm)
+                   :label (tr :completion/datepicker-confirm)
+                   :on-click #(confirm (if-not @use-hour?
+                                         [:day (doto @date (.setSeconds 0))]
+                                         [:hour (doto @date
+                                                  (.setSeconds 0)
+                                                  (.setMinutes (mod @hours-minutes 100))
+                                                  (.setHours (int (/ @hours-minutes 100))))]))]]]]]]])]))
+
+(defn simple-date-picker [model]
+  (let [current-state (r/atom :invalid)
+        type (fn [tag] (if (= tag @current-state)
+                         :button.btn.btn-secondary
+                         :button.btn.btn-light))
+        switch (fn [tag date precision]
+                 (fn []
+                   (reset! current-state tag)
+                   (reset! model [precision (date)])))]
+    [(fn []
+       [:<>
+        [(cond
+           (or (vector? @current-state) (= :invalid @current-state))
+           :div.input-group.form-control.is-invalid.btn-group
+           :else :div.input-group.form-control.is-valid.btn-group)
+         [(type :now)
+          (tag :simple-datepicker-now
+               :type :button
+               :on-click (switch :now time/now :hour))
+          (tr :completion/date-now)]
+         [(type :today)
+          (tag :simple-datepicker-today
+               :type :button
+               :on-click (switch :today time/today :day))
+          (tr :completion/date-today)]
+         [(type :yesterday)
+          (tag :simple-datepicker-yesterday
+               :type :button
+               :on-click (switch :yesterday #(time/minus (time/today) (time/days 1)) :day))
+          (tr :completion/date-yesterday)]
+                                        ; vector means advanced picker is active
+         [(type :pick)
+          (tag :simple-datepicker-pick
+               :type :button
+               :on-click #(swap! current-state (fn [old] [old])))
+          (tr :completion/date-pick)]]
+        (when (vector? @current-state)
+          [:div.dropdown-menu.show
+           [advanced-datepicker
+            (fn [date]
+              (reset! model date)
+              (reset! current-state :pick))
+            #(swap! current-state first)]])])]))
 (defn habits-panel-right-part [id]
   (let [selected-subpanel (r/atom :cts)]
     (re-com/v-box
