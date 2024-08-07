@@ -283,6 +283,15 @@
         [:completions (tr :habit/tab-completions) :habit-tab-completions]]
        #(reset! selected-subpanel %)]]]]])
 
+(defn completion-type-label [{:keys [name color]}]
+  [re-com/h-box
+   :justify :between
+   :children [[:label {:style {:overflow-x :hidden :width "145px"}} name]
+              [:div {:style {:background-color color
+                             :border-radius "10px"
+                             :width "25px"
+                             :height "25px"}}]]])
+
 (defn completion-type-list []
   (let [habit-id @(<sub [::subs/selected-habit])
         cts @(<sub [::subs/selected-habit-cts])
@@ -294,19 +303,13 @@
             [:button.list-group-item.list-group-item-action.list-group-item-dark
              (tag :add-new-ct :on-click #(>evt [::e/new-empty-ct habit-id]))
              (tr :ct/add-new)]]
-           (mapv (fn [[id {:keys [color name]}]]
+           (mapv (fn [[id ct]]
                    [:button.list-group-item.list-group-item-action.w-100
                     (let [select #(>evt [::e/select-ct habit-id id])]
                       (if (= id selected)
                         (tag :ct-list-item-selected :class :active :on-click select)
                         (tag :ct-list-item :on-click select)))
-                    [re-com/h-box
-                     :justify :between
-                     :children [[:label {:style {:overflow-x :hidden :width "145px"}} name]
-                                [:div {:style {:background-color color
-                                               :border-radius "10px"
-                                               :width "25px"
-                                               :height "25px"}}]]]])
+                    [completion-type-label ct]])
                  cts))]))
 
 (defn completion-type-edit-panel [ctid hid]
