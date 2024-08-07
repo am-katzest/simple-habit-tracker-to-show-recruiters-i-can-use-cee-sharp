@@ -1,5 +1,7 @@
 (ns frontend.data-helpers
-  (:require [clojure.string :as str]))
+  (:require [clojure.string :as str]
+            [cljs-time.core :as time]
+            [cljs-time.format :as time-format]))
 
 (defn empty-space->nil [s] (when (not= "" s) s))
 
@@ -33,3 +35,9 @@
   (and (not-empty-string? (:name ct))
        (nil-or-not-empty-string? (:description ct))
        (color? (:color ct))))
+
+(defn unparse-date [d]
+  (time-format/unparse (time-format/formatters :date-time) (time/to-utc-time-zone d)))
+
+(defn time-now []
+  (time/to-default-time-zone (time/now)))

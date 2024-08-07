@@ -3,7 +3,6 @@
    [re-frame.core :as re-frame]
    [re-com.core :as re-com :refer [at]]
    [cljs-time.core :as time]
-   [cljs-time.format :as time-format]
    [reagent.core :as r]
    [frontend.localization :refer [tr]]
    [frontend.styles :as styles]
@@ -353,7 +352,7 @@
                 [completion-type-edit-panel id @(<sub [::subs/selected-habit])])]])
 
 (defn advanced-datepicker [confirm cancel]
-  (let [t (time/time-now)
+  (let [t (dh/time-now)
         hour (time/hour t)
         minute (time/minute t)
         hours-minutes (r/atom (+ minute (* 100 hour)))
@@ -424,17 +423,17 @@
          [(type :now)
           (tag :simple-datepicker-now
                :type :button
-               :on-click (switch :now time/now :hour))
+               :on-click (switch :now dh/time-now :hour))
           (tr :completion/date-now)]
          [(type :today)
           (tag :simple-datepicker-today
                :type :button
-               :on-click (switch :today time/today :day))
+               :on-click (switch :today dh/time-now :day))
           (tr :completion/date-today)]
          [(type :yesterday)
           (tag :simple-datepicker-yesterday
                :type :button
-               :on-click (switch :yesterday #(time/minus (time/today) (time/days 1)) :day))
+               :on-click (switch :yesterday #(time/minus (dh/time-now) (time/days 1)) :day))
           (tr :completion/date-yesterday)]
                                         ; vector means advanced picker is active
          [(type :pick)
