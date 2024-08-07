@@ -449,6 +449,23 @@
               (reset! model date)
               (reset! current-state :pick))
             #(swap! current-state first)]])])]))
+
+(defn color-editor [use-color? color]
+  [re-com/h-box
+   :gap "20px"
+   :align :center
+   :children
+   [[re-com/checkbox
+     :attr (tag :colorpicker-toggle)
+     :model use-color?
+     :on-change #(reset! use-color? %)]
+    [re-com/label :label (tr :completion/use-color)]
+    [:input (tag :colorpicker
+                 :type :color
+                 :value @color
+                 :on-change (fn [val]
+                              (reset! use-color? true)
+                              (reset! color (.-value (.-target val)))))]]])
 (defn habits-panel-right-part [id]
   (let [selected-subpanel (r/atom :cts)]
     (re-com/v-box
