@@ -542,6 +542,7 @@
   (let [selected-subpanel (r/atom nil)]
     [(fn []
        (re-com/v-box
+        :class (styles/habit-panel-right)
         :children [(re-com/h-box
                     :children [[single-habit-info-edit-panel id]
                                [re-com/v-box
@@ -549,10 +550,12 @@
                                 :children
                                 [[habit-subpanel-add-completion id]
                                  [habit-subpanel-control id selected-subpanel]]]])
-                   (case @selected-subpanel
-                     :cts [ct-subpanel]
-                     :alerts nil
-                     :completions "meow")]))]))
+                   [:div {:class (styles/habit-subpanel)}
+                    (case @selected-subpanel
+                      :cts [ct-subpanel]
+                      :alerts nil
+                      :completions "meow"
+                      nil nil)]]))]))
 
 (defn habits-panel []
   [re-com/h-box

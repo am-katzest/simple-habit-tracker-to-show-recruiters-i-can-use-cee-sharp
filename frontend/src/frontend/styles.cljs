@@ -35,3 +35,7 @@
 (defclass level1
   []
   {:color :green})
+
+(defclass habit-panel-right [] {:background-color "#eee"})
+
+(defclass habit-subpanel [] {:background-color "#fff"})
