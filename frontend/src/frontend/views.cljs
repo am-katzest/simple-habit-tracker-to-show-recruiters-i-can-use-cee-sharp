@@ -264,7 +264,7 @@
         (for [[id label data-tag] tabs]
           [:li.nav-item
            (if (= id selected)
-             [:a.nav-link.active (tag data-tag) label]
+             [:a.nav-link.active (tag data-tag :on-click #(f nil)) label]
              [:a.nav-link (tag data-tag :on-click #(f id)) label])])))
 
 (defn habit-subpanel-control [id selected-subpanel]
@@ -539,7 +539,7 @@
              (>evt [::e/add-completion id x]))])])]))
 
 (defn habits-panel-right-part [id]
-  (let [selected-subpanel (r/atom :cts)]
+  (let [selected-subpanel (r/atom nil)]
     [(fn []
        (re-com/v-box
         :children [(re-com/h-box
