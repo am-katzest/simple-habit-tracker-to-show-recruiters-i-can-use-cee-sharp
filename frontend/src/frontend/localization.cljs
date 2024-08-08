@@ -29,7 +29,7 @@
             :tabs-select "select view"
             :tab-cts "categories"
             :tab-alerts "alerts"
-            :tab-completions "completions"
+            :tab-completions "history"
             :new-habit "new habit"
             :name "add name.."}
           #:completion
