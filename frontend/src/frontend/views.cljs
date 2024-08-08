@@ -465,6 +465,16 @@
                  :on-change (fn [val]
                               (reset! use-color? true)
                               (reset! color (.-value (.-target val)))))]]])
+
+(defn completion-type-selection-dropbox [id]
+  [re-com/single-dropdown
+   :attr (tag :completion-edit-type-dropdown)
+   :model id
+   :width "100%"
+   :choices (into [{}] (map second @(<sub [::subs/selected-habit-cts])))
+   :label-fn #(when (:id %) (:name %))
+   :render-fn #(if (:id %) (completion-type-label %) [re-com/label :label "none" :style {:color "#666"}])
+   :on-change #(reset! id %)])
 (defn habits-panel-right-part [id]
   (let [selected-subpanel (r/atom :cts)]
     (re-com/v-box
