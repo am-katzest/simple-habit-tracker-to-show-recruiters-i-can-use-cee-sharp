@@ -320,6 +320,7 @@
              valid? (dh/validate-ct normalized)]
          [re-com/v-box
           :margin "20px"
+          :gap "20px"
           :children
           [[re-com/input-text
             :attr (tag :ct-edit-name)
