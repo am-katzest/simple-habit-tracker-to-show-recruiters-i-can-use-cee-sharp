@@ -254,3 +254,13 @@
  ::confirm-ct-update
  (fn [db [_ hid ctid ct]]
    (assoc-in db [:cts hid ctid] ct)))
+
+(reg-event-http
+ ::add-completion
+ (fn [id body]
+   [:post (str "/habits/" id "/Completions/") [::confirm-completion-add id body] [::http-error] :params body]))
+
+(re-frame/reg-event-db
+ ::confirm-completion-add
+ (fn [db [_ habit-id body completion-id]]
+   (assoc-in db [:completions habit-id completion-id] (assoc body :id completion-id))))

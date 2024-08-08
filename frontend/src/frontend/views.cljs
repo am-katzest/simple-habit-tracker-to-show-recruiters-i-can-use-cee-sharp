@@ -475,12 +475,79 @@
    :label-fn #(when (:id %) (:name %))
    :render-fn #(if (:id %) (completion-type-label %) [re-com/label :label "none" :style {:color "#666"}])
    :on-change #(reset! id %)])
+
+(defn completion-edit [id initial cancel accept]
+  (let [date (r/atom (:completionDate initial))
+        note (r/atom (:note initial))
+        use-color? (r/atom (some? (:color initial)))
+        color (r/atom (or (:color initial) "#ffffff"))
+        ct-id (r/atom (:completionTypeId initial))]
+    [(fn [] [re-com/modal-panel
+             :backdrop-on-click cancel
+             :child
+             [re-com/v-box
+              :min-width "300px"
+              :children
+              [[re-com/label :label (tr :completion/new-completion)]
+               [re-com/gap :size "20px"]
+               [simple-date-picker date]
+               [re-com/gap :size "20px"]
+               [re-com/label :label (tr :completion/note)]
+               [re-com/input-textarea
+                :attr (tag :completion-edit-note)
+                :model note
+                :width "100%"
+                :on-change #(reset! note %)]
+               [re-com/gap :size "20px"]
+               [color-editor use-color? color]
+               [re-com/gap :size "20px"]
+               [re-com/label :label (tr :completion/type)]
+               [completion-type-selection-dropbox ct-id]
+               [re-com/gap :size "20px"]
+               [re-com/h-box
+                :justify :between
+                :children
+                [[re-com/button
+                  :attr (tag :completion-edit-confirm)
+                  :class (str "btn btn-primary" (when-not @date " disabled"))
+                  :on-click #(when @date (accept {:completionTypeId @ct-id :color @color :completionDate (dh/unparse-date (second @date)) :note @note}))
+                  :label (tr :completion/add-new-confirm)]
+                 [re-com/button
+                  :attr (tag :completion-edit-cancel)
+                  :on-click cancel
+                  :class "btn btn-secondary"
+                  :label (tr :completion/cancel)]]]]]])]))
+
+(defn habit-subpanel-add-completion [id]
+  (let [adding? (r/atom false)]
+    [(fn []
+       [:<>
+        [re-com/box
+         :align :center
+         :align-self :center
+         :margin "30px"
+         :child [re-com/button
+                 :class "btn btn-primary"
+                 :label (tr :habit/add-new)
+                 :attr (tag :add-new-completion-button)
+                 :on-click #(reset! adding? true)]]
+        (when @adding?
+          [completion-edit {} id
+           #(reset! adding? false)
+           (fn [x]
+             (reset! adding? false)
+             (>evt [::e/add-completion id x]))])])]))
+
 (defn habits-panel-right-part [id]
   (let [selected-subpanel (r/atom :cts)]
     (re-com/v-box
      :children [(re-com/h-box
                  :children [[single-habit-info-edit-panel id]
-                            [habit-subpanel-control id selected-subpanel]])
+                            [re-com/v-box
+                             :justify :between
+                             :children
+                             [[habit-subpanel-add-completion id]
+                              [habit-subpanel-control id selected-subpanel]]]])
                 (case @selected-subpanel
                   :cts [ct-subpanel]
                   :alerts nil
