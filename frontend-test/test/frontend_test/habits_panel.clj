@@ -106,6 +106,7 @@
          (f/click :add-new-habit)
          (f/fill :habit-edit-name habit)
          (f/click :habit-edit-save)))
+     (f/click :habit-tab-cts)
      (testing "add button shows"
        (exists? (btn :add-new-ct)))
      (testing "list starts empty"
@@ -150,17 +151,20 @@
      (testing "changes remain after refresh"
        (e/refresh)
        (f/click (h/list-item "habit_b"))
+       (f/click :habit-tab-cts)
        (exists? {:fn/text "meow"})
        (f/click (h/list-item "meow"))
        (lazy-is (= "meow" (e/get-element-value (input :ct-edit-name))))
        (lazy-is (= "some description" (e/get-element-value (textarea :ct-edit-description)))))
      (testing "other habit is empty"
        (f/click (h/list-item "habit_a"))
+       (f/click :habit-tab-cts)
        (exists? :add-new-ct)
        (absent? :ct-list-item)
        (absent? :ct-list-item-selected))
      (testing "deleting"
        (f/click (h/list-item "habit_b"))
+       (f/click :habit-tab-cts)
        (f/click (h/list-item "meow"))
        (f/click :ct-list-item) ;;select the other one
        (f/click :ct-edit-delete)
