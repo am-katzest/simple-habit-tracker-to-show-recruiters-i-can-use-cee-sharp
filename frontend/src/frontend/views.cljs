@@ -540,18 +540,19 @@
 
 (defn habits-panel-right-part [id]
   (let [selected-subpanel (r/atom :cts)]
-    (re-com/v-box
-     :children [(re-com/h-box
-                 :children [[single-habit-info-edit-panel id]
-                            [re-com/v-box
-                             :justify :between
-                             :children
-                             [[habit-subpanel-add-completion id]
-                              [habit-subpanel-control id selected-subpanel]]]])
-                (case @selected-subpanel
-                  :cts [ct-subpanel]
-                  :alerts nil
-                  :completions nil)])))
+    [(fn []
+       (re-com/v-box
+        :children [(re-com/h-box
+                    :children [[single-habit-info-edit-panel id]
+                               [re-com/v-box
+                                :justify :between
+                                :children
+                                [[habit-subpanel-add-completion id]
+                                 [habit-subpanel-control id selected-subpanel]]]])
+                   (case @selected-subpanel
+                     :cts [ct-subpanel]
+                     :alerts nil
+                     :completions "meow")]))]))
 
 (defn habits-panel []
   [re-com/h-box
