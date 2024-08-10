@@ -258,7 +258,7 @@
 (reg-event-http
  ::add-completion
  (fn [id body]
-   [:post (str "/habits/" id "/Completions/") [::confirm-completion-add id body] [::http-error] :params body]))
+   [:post (str "/habits/" id "/Completions/") [::confirm-completion-add id body] [::http-error] :params (dh/jsonify-completion body)]))
 
 (re-frame/reg-event-db
  ::confirm-completion-add

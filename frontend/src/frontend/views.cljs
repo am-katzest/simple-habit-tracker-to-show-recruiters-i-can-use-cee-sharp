@@ -511,7 +511,7 @@
                 [[re-com/button
                   :attr (tag :completion-edit-confirm)
                   :class (str "btn btn-primary" (when-not @date " disabled"))
-                  :on-click #(when @date (accept {:completionTypeId @ct-id :color @color :completionDate (dh/unparse-date (second @date)) :note @note}))
+                  :on-click #(when @date (accept {:completionTypeId @ct-id :color (when @use-color? @color) :completionDate (second @date) :note @note}))
                   :label (tr :completion/add-new-confirm)]
                  [re-com/button
                   :attr (tag :completion-edit-cancel)
