@@ -230,4 +230,31 @@ public class HabitServiceTest(UserFixture fixture) : IClassFixture<UserFixture>
             Assert.Equal(id3.Id, r.First().Id);
         }
     }
+    [Fact]
+    public void CompletinLimitSelectionTest()
+    {
+        DateTime t(double x) => d.AddHours(x).TrimToMinute();
+        var u = fixture.MakeUser();
+        var h = MakeHabit(u);
+        var id1 = MakeService().AddCompletion(h, baseCompletionA with { CompletionDate = t(1) });
+        var id2 = MakeService().AddCompletion(h, baseCompletionA with { CompletionDate = t(2) });
+        var id3 = MakeService().AddCompletion(h, baseCompletionA with { CompletionDate = t(3) });
+        var id4 = MakeService().AddCompletion(h, baseCompletionA with { CompletionDate = t(4) });
+        Assert.Equal(4, MakeService().GetCompletions(h, null, null, null).Count());
+        Assert.Equal(4, MakeService().GetCompletions(h, null, null, 6).Count());
+        Assert.Equal(4, MakeService().GetCompletions(h, null, null, 4).Count());
+        Assert.Single(MakeService().GetCompletions(h, null, null, 1));
+        {
+            var r = MakeService().GetCompletions(h, t(2.5), null, 1);
+            Assert.Single(r);
+            Assert.Equal(id2.Id, r.First().Id);
+        }
+        {
+            var r = MakeService().GetCompletions(h, t(3.5), null, 2);
+            Assert.NotNull(r);
+            Assert.Equal(2, r.Count());
+            Assert.Equal(id3.Id, r.First().Id);
+            Assert.Equal(id2.Id, r.Last().Id);
+        }
+    }
 }

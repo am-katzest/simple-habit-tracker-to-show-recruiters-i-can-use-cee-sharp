@@ -1,6 +1,6 @@
 using HabitTracker.DTOs;
-using HabitTracker.Services;
 using HabitTracker.Helpers;
+using HabitTracker.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -93,9 +93,9 @@ public class HabitsController(IHabitService service) : ControllerBase
     }
 
     [HttpGet("{habitId:int}/Completions/")]
-    public ActionResult<List<CompletionDataId>> GetCompletions([ModelBinder][FromHeader] UserId user, int habitId, [FromQuery] DateTime? after, [FromQuery] DateTime? before)
+    public ActionResult<List<CompletionDataId>> GetCompletions([ModelBinder][FromHeader] UserId user, int habitId, [FromQuery] DateTime? after, [FromQuery] DateTime? before, [FromQuery] int? limit)
     {
         var TypedHabitId = new HabitId(habitId, user);
-        return new(service.GetCompletions(TypedHabitId, before?.Normalized(), after?.Normalized()));
+        return new(service.GetCompletions(TypedHabitId, before?.Normalized(), after?.Normalized(), limit));
     }
 }

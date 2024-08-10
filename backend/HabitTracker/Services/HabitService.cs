@@ -20,7 +20,7 @@ public interface IHabitService
     CompletionId AddCompletion(HabitId habit, CompletionData completion);
     void RemoveCompletion(CompletionId id);
     void UpdateCompletion(CompletionId id, CompletionData replacement);
-    List<CompletionDataId> GetCompletions(HabitId id, DateTime? before, DateTime? after);
+    List<CompletionDataId> GetCompletions(HabitId id, DateTime? before, DateTime? after, int? limit = null);
 };
 
 
@@ -165,7 +165,7 @@ public class HabitService(HabitTrackerContext context) : IHabitService
     }
 
     /// before is exclusive, after inclusive
-    List<CompletionDataId> IHabitService.GetCompletions(HabitId id, DateTime? before, DateTime? after)
+    List<CompletionDataId> IHabitService.GetCompletions(HabitId id, DateTime? before, DateTime? after, int? limit = null)
     {
         var h = FindHabit(id);
         var q = context.Entry(h).Collection(h => h.Completions).Query();
@@ -176,6 +176,11 @@ public class HabitService(HabitTrackerContext context) : IHabitService
         if (after is DateTime a)
         {
             q = q.Where(c => c.CompletionDate >= a);
+        }
+        q = q.OrderByDescending(i => i.CompletionDate);
+        if (limit is int l)
+        {
+            q = q.Take(l);
         }
         return q.Select(c => new CompletionDataId(c.Id, c.Type != null ? c.Type.Id : null, c.CompletionDate, c.Note, c.Color)).ToList();
     }

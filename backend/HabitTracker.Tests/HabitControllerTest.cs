@@ -207,5 +207,10 @@ public class HabitControllerTest(HostFixture fixture) : IClassFixture<HostFixtur
             Assert.Single(ret);
             Assert.Equal(id2, ret.First().Id);
         }
+        {
+            var ret = await c.GetFromJsonAsync<List<CompletionDataId>>($"api/habits/{h}/Completions/?before={t(3.5)}&limit=2");
+            Assert.NotNull(ret);
+            Assert.Equal(2, ret.Count);
+        }
     }
 }
