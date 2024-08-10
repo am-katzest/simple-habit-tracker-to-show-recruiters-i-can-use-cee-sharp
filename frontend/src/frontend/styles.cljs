@@ -32,6 +32,21 @@
 (defglobal fix-rc-datepicker
   [:.rc-datepicker-selected {:color "#ffffff" :background-color "#6c757d"}])
 
+(defglobal calendar-cell-outline
+  (let [fraction 90
+        rnd 20
+        stroke (* 2 (- 100 fraction))]
+    [:.calendar-cell-outline
+     {:x (px (- fraction))
+      :y (px (- fraction))
+      :width (px (* 2 fraction))
+      :height (px (* 2 fraction))
+      :fill :transparent
+      :stroke :black
+      :rx (px rnd)
+      :ry (px rnd)
+      :stroke-width (px stroke)}]))
+
 (defclass level1
   []
   {:color :green})
