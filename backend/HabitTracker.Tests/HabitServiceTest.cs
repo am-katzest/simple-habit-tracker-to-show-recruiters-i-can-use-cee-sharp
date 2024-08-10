@@ -97,8 +97,8 @@ public class HabitServiceTest(UserFixture fixture) : IClassFixture<UserFixture>
     }
 
     private static DateTime d = DateTime.Now.TrimToMinute();
-    private CompletionData baseCompletionA = new(null, d, null, null);
-    private CompletionData baseCompletionB = new(null, d.AddHours(-1), "meow", "#333333");
+    private CompletionData baseCompletionA = new(null, d, true, null, null);
+    private CompletionData baseCompletionB = new(null, d.AddHours(-1), false, "meow", "#333333");
 
 
     [Fact]
@@ -115,6 +115,7 @@ public class HabitServiceTest(UserFixture fixture) : IClassFixture<UserFixture>
         Assert.Equal(baseCompletionA.Color, ret.Color);
         Assert.Equal(baseCompletionA.CompletionTypeId, ret.CompletionTypeId);
         Assert.Equal(baseCompletionA.CompletionDate, ret.CompletionDate);
+        Assert.Equal(baseCompletionA.IsExactTime, ret.IsExactTime);
     }
 
     [Fact]
@@ -167,6 +168,7 @@ public class HabitServiceTest(UserFixture fixture) : IClassFixture<UserFixture>
         Assert.Equal(updated.Color, ret.Color);
         Assert.Equal(updated.CompletionTypeId, ret.CompletionTypeId);
         Assert.Equal(updated.CompletionDate, ret.CompletionDate);
+        Assert.Equal(updated.IsExactTime, ret.IsExactTime);
     }
     [Fact]
     public void CompletionRemovalTest()

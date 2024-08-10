@@ -12,4 +12,5 @@ public class Completion
 
     [Column(TypeName = "timestamp(6)")]
     public DateTime CompletionDate { get; set; }
+    public bool IsExactTime { get; set; }
 }

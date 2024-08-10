@@ -478,7 +478,7 @@
    :on-change #(reset! id %)])
 
 (defn completion-edit [id initial cancel accept]
-  (let [date (r/atom (:completionDate initial))
+  (let [date (r/atom [(if (:isExactTime initial) :hour :day) (:completionDate initial)])
         note (r/atom (:note initial))
         use-color? (r/atom (some? (:color initial)))
         color (r/atom (or (:color initial) "#ffffff"))
@@ -511,7 +511,11 @@
                 [[re-com/button
                   :attr (tag :completion-edit-confirm)
                   :class (str "btn btn-primary" (when-not @date " disabled"))
-                  :on-click #(when @date (accept {:completionTypeId @ct-id :color (when @use-color? @color) :completionDate (second @date) :note @note}))
+                  :on-click #(when @date (accept {:completionTypeId @ct-id
+                                                  :color (when @use-color? @color)
+                                                  :completionDate (second @date)
+                                                  :isExactTime (= :hour (first @date))
+                                                  :note @note}))
                   :label (tr :completion/add-new-confirm)]
                  [re-com/button
                   :attr (tag :completion-edit-cancel)

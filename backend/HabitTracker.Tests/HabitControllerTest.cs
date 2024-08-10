@@ -142,7 +142,7 @@ public class HabitControllerTest(HostFixture fixture) : IClassFixture<HostFixtur
         using var c = fixture.Client;
         var h = await c.NewHabit();
         var ct = await c.NewCompletionType(h);
-        var completion = new CompletionData(ct, DateTime.Now, null, null);
+        var completion = new CompletionData(ct, DateTime.Now, true, null, null);
         await AssertHelpers.ReturnedError<NoSuchHabitException>(await c.PostAsJsonAsync($"api/habits/1313/Completions/", completion));
         await AssertHelpers.ReturnedError<NoSuchCompletionTypeException>(await c.PostAsJsonAsync($"api/habits/{h}/Completions/", completion with { CompletionTypeId = 13513 }));
         var id = await c.PostAsJsonAsync($"api/habits/{h}/Completions/", completion).Id();
@@ -157,7 +157,7 @@ public class HabitControllerTest(HostFixture fixture) : IClassFixture<HostFixtur
         using var c = fixture.Client;
         var h = await c.NewHabit();
         var d = DateTime.Now;
-        Task<int> newCompletion(int hours) => c.PostAsJsonAsync($"api/habits/{h}/Completions/", new CompletionData(null, d.AddHours(hours), null, null)).Id();
+        Task<int> newCompletion(int hours) => c.PostAsJsonAsync($"api/habits/{h}/Completions/", new CompletionData(null, d.AddHours(hours), true, null, null)).Id();
 
         var id1 = await newCompletion(1);
         var id2 = await newCompletion(2);

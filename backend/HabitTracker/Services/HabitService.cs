@@ -140,7 +140,7 @@ public class HabitService(HabitTrackerContext context) : IHabitService
     {
         var h = FindHabit(habit);
         var ct = FindCompletionCompletionType(habit, completion);
-        var c = new Completion() { Habit = h, Note = completion.Note, Type = ct, Color = completion.Color, CompletionDate = completion.CompletionDate };
+        var c = new Completion() { Habit = h, Note = completion.Note, Type = ct, Color = completion.Color, CompletionDate = completion.CompletionDate, IsExactTime = completion.IsExactTime };
         context.Add(c);
         context.SaveChanges();
         return new(c.Id, habit);
@@ -161,6 +161,7 @@ public class HabitService(HabitTrackerContext context) : IHabitService
         c.Note = replacement.Note;
         c.Color = replacement.Color;
         c.CompletionDate = replacement.CompletionDate;
+        c.IsExactTime = replacement.IsExactTime;
         context.SaveChanges();
     }
 
@@ -182,6 +183,6 @@ public class HabitService(HabitTrackerContext context) : IHabitService
         {
             q = q.Take(l);
         }
-        return q.Select(c => new CompletionDataId(c.Id, c.Type != null ? c.Type.Id : null, c.CompletionDate, c.Note, c.Color)).ToList();
+        return q.Select(c => new CompletionDataId(c.Id, c.Type != null ? c.Type.Id : null, c.CompletionDate, c.IsExactTime, c.Note, c.Color)).ToList();
     }
 }
