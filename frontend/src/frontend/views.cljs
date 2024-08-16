@@ -399,14 +399,14 @@
                    :label (tr :completion/datepicker-confirm)
                    :on-click #(confirm [@exact-time? (dh/set-hours-minutes @date @hours-minutes)])]]]]]]])]))
 
-(defn simple-date-picker [model]
-  (let [current-state (r/atom :invalid)
-        type (fn [tag] (if (= tag @current-state)
-                         :button.btn.btn-secondary
-                         :button.btn.btn-light))
-        switch (fn [tag date precision]
+(defn simple-date-picker-internal [model initial options]
+  (let [current-state (r/atom initial)
+        type (fn [id] (if (= id @current-state)
+                        :button.btn.btn-secondary
+                        :button.btn.btn-light))
+        switch (fn [id date precision]
                  (fn []
-                   (reset! current-state tag)
+                   (reset! current-state id)
                    (reset! model [precision (date)])))]
     [(fn []
        [:<>
@@ -414,27 +414,17 @@
            (or (vector? @current-state) (= :invalid @current-state))
            :div.input-group.form-control.is-invalid.btn-group
            :else :div.input-group.form-control.is-valid.btn-group)
-         [(type :now)
-          (tag :simple-datepicker-now
-               :type :button
-               :on-click (switch :now dh/time-now true))
-          (tr :completion/date-now)]
-         [(type :today)
-          (tag :simple-datepicker-today
-               :type :button
-               :on-click (switch :today dh/time-now false))
-          (tr :completion/date-today)]
-         [(type :yesterday)
-          (tag :simple-datepicker-yesterday
-               :type :button
-               :on-click (switch :yesterday #(time/minus (dh/time-now) (time/days 1)) false))
-          (tr :completion/date-yesterday)]
-                                        ; vector means advanced picker is active
-         [(type :pick)
-          (tag :simple-datepicker-pick
-               :type :button
-               :on-click #(swap! current-state (fn [old] [old])))
-          (tr :completion/date-pick)]]
+         (map (fn [[id test-id description other]]
+                (let [f (if (coll? other)
+                          (switch id (first other) (second other)) ; collection -> two arguments to switch,
+                          other)]       ; function -> standalone
+                  ^{:key id}
+                  [(type id)
+                   (tag test-id
+                        :type :button
+                        :on-click f)
+                   description]))
+              (concat options [[:pick :simple-datepicker-pick (tr :completion/date-pick) #(swap! current-state (fn [old] [old]))]]))]
         (when (vector? @current-state)
           [:div.dropdown-menu.show
            [advanced-datepicker
@@ -442,6 +432,14 @@
               (reset! model date)
               (reset! current-state :pick))
             #(swap! current-state first)]])])]))
+
+(defn simple-date-picker [model]
+  [simple-date-picker-internal
+   model
+   :invalid
+   [[0 :simple-datepicker-now (tr :completion/date-now) [dh/time-now true]]
+    [1 :simple-datepicker-today (tr :completion/date-today) [dh/time-now false]]
+    [2 :simple-datepicker-yesterday (tr :completion/date-yesterday) [#(time/minus (dh/time-now) (time/days 1)) false]]]])
 
 (defn color-editor [use-color? color]
   [re-com/h-box
