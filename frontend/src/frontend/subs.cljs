@@ -114,6 +114,13 @@
             (or (:color comp)
                 (-> comp :completionTypeId completion-types :color)
                 :black)))))
+
+(re-frame/reg-sub
+ ::completion
+ :<- [::selected-habit-completions]
+ (fn [completions [_ id]]
+   (completions id)))
+
 (re-frame/reg-sub
  ::completion-type-data
  :<- [::selected-habit-cts]

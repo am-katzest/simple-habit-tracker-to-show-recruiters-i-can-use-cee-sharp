@@ -533,6 +533,16 @@
    (tr :completion/new-completion)
    (tr :completion/add-new-confirm)])
 
+(defn completion-change [cancel initial-id habit-id]
+  (let [initial @(<sub [::subs/completion initial-id])]
+    [completion-edit initial
+     cancel
+     (fn [x]
+       (cancel)
+       (>evt [::e/edit-completion habit-id (:id initial) x]))
+     (tr :completion/edit-completion)
+     (tr :completion/edit-confirm)]))
+
 (defn habit-subpanel-add-completion [id]
   (let [adding? (r/atom false)]
     [(fn []

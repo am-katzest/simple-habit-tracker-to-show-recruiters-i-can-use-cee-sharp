@@ -264,6 +264,11 @@
  ::confirm-completion-add
  (fn [db [_ habit-id body completion-id]]
    (assoc-in db [:completions habit-id completion-id] (assoc body :id completion-id))))
+
+(reg-event-http
+ ::edit-completion
+ (fn [habit-id completion-id body]
+   [:put (str "/habits/" habit-id "/Completions/" completion-id) [::confirm-completion-add habit-id body completion-id] [::http-error] :params (dh/jsonify-completion body)]))
 (re-frame/reg-event-fx
  ::ensure-completion-history-month-is-downloaded
  (fn [{:keys [db]} [_ habit-id date]]

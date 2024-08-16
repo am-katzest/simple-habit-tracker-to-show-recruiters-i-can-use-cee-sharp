@@ -35,6 +35,7 @@
           #:completion
            {:add-new "new completion"
             :new-completion "create new completion"
+            :edit-completion "edit completion"
             :specify-hour "exact time?"
             :type "category"
             :note "note"
@@ -47,6 +48,7 @@
             :datepicker-cancel "cancel"
             :datepicker-confirm "accept"
             :add-new-confirm "confirm"
+            :edit-confirm "save"
             :cancel "cancel"
             :date-today "today"
             :date-yesterday "yesterday"
