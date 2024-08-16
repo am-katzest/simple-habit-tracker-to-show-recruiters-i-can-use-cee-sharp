@@ -354,11 +354,9 @@
 
 (defn advanced-datepicker [confirm cancel]
   (let [t (dh/time-now)
-        hour (time/hour t)
-        minute (time/minute t)
-        hours-minutes (r/atom (+ minute (* 100 hour)))
+        hours-minutes (r/atom (dh/date-time->hours-minutes t))
         date (r/atom t)
-        use-hour? (r/atom false)]
+        exact-time? (r/atom false)]
     [(fn [] [re-com/h-box
              :children
              [[re-com/datepicker
@@ -378,13 +376,13 @@
                  :children
                  [[re-com/checkbox
                    :attr (tag :advanced-datepicker-time-checkbox)
-                   :model @use-hour?
-                   :on-change #(reset! use-hour? %)]
+                   :model @exact-time?
+                   :on-change #(reset! exact-time? %)]
                   [re-com/input-time
                    :attr (tag :advanced-datepicker-time-input)
                    :model @hours-minutes
                    :on-change (fn [x]
-                                (reset! use-hour? true)
+                                (reset! exact-time? true)
                                 (reset! hours-minutes x))]]]
                 [re-com/gap :size "30px"]
                 [re-com/h-box
@@ -399,12 +397,7 @@
                   [re-com/button :class "btn btn-primary"
                    :attr (tag :advanced-datepicker-confirm)
                    :label (tr :completion/datepicker-confirm)
-                   :on-click #(confirm (if-not @use-hour?
-                                         [:day (doto @date (.setSeconds 0))]
-                                         [:hour (doto @date
-                                                  (.setSeconds 0)
-                                                  (.setMinutes (mod @hours-minutes 100))
-                                                  (.setHours (int (/ @hours-minutes 100))))]))]]]]]]])]))
+                   :on-click #(confirm [@exact-time? (dh/set-hours-minutes @date @hours-minutes)])]]]]]]])]))
 
 (defn simple-date-picker [model]
   (let [current-state (r/atom :invalid)
@@ -424,17 +417,17 @@
          [(type :now)
           (tag :simple-datepicker-now
                :type :button
-               :on-click (switch :now dh/time-now :hour))
+               :on-click (switch :now dh/time-now true))
           (tr :completion/date-now)]
          [(type :today)
           (tag :simple-datepicker-today
                :type :button
-               :on-click (switch :today dh/time-now :day))
+               :on-click (switch :today dh/time-now false))
           (tr :completion/date-today)]
          [(type :yesterday)
           (tag :simple-datepicker-yesterday
                :type :button
-               :on-click (switch :yesterday #(time/minus (dh/time-now) (time/days 1)) :day))
+               :on-click (switch :yesterday #(time/minus (dh/time-now) (time/days 1)) false))
           (tr :completion/date-yesterday)]
                                         ; vector means advanced picker is active
          [(type :pick)
@@ -478,7 +471,7 @@
    :on-change #(reset! id %)])
 
 (defn completion-edit [id initial cancel accept]
-  (let [date (r/atom [(if (:isExactTime initial) :hour :day) (:completionDate initial)])
+  (let [date (r/atom [(:isExactTime initial) (:completionDate initial)])
         note (r/atom (:note initial))
         use-color? (r/atom (some? (:color initial)))
         color (r/atom (or (:color initial) "#ffffff"))
@@ -511,11 +504,12 @@
                 [[re-com/button
                   :attr (tag :completion-edit-confirm)
                   :class (str "btn btn-primary" (when-not @date " disabled"))
-                  :on-click #(when @date (accept {:completionTypeId @ct-id
-                                                  :color (when @use-color? @color)
-                                                  :completionDate (second @date)
-                                                  :isExactTime (= :hour (first @date))
-                                                  :note @note}))
+                  :on-click #(when @date (accept (dh/normalize-completion
+                                                  {:completionTypeId @ct-id
+                                                   :color (when @use-color? @color)
+                                                   :completionDate (second @date)
+                                                   :isExactTime (first @date)
+                                                   :note @note})))
                   :label (tr :completion/add-new-confirm)]
                  [re-com/button
                   :attr (tag :completion-edit-cancel)
