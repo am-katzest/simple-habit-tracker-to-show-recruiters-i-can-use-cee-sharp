@@ -1,5 +1,7 @@
 (ns frontend.subs
   (:require
+   [cljs-time.core :as time]
+   [frontend.data-helpers :as dh]
    [re-frame.core :as re-frame]))
 
 (re-frame/reg-sub
@@ -78,3 +80,43 @@
  :<- [::selected-ct]
  (fn [[all id]]
    (when (and all id) (all id))))
+
+(re-frame/reg-sub
+ ::all-completions
+ (fn [db]
+   (:completions db)))
+
+(re-frame/reg-sub
+ ::selected-habit-completions
+ :<- [::all-completions]
+ :<- [::selected-habit]
+ (fn [[all id]]
+   (when (and all id) (all id))))
+
+(re-frame/reg-sub
+ ::selected-habit-completion-ids-on-day
+ :<- [::selected-habit-completions]
+ (fn [completions [_ day]]
+   (keep (fn [[id {:keys [completionDate]}]]
+           (when (and  (= (time/day completionDate) (time/day day))
+                       (= (time/month completionDate) (time/month day))
+                       (= (time/year completionDate) (time/year day))) id))
+         completions)))
+
+(re-frame/reg-sub
+ ::completion-with-fixed-color
+ :<- [::selected-habit-cts]
+ :<- [::selected-habit-completions]
+ (fn [[completion-types completions] [_ id]]
+   ;; try completion own color, completion type color and then black
+   (let [comp (completions id)]
+     (assoc comp :color
+            (or (:color comp)
+                (-> comp :completionTypeId completion-types :color)
+                :black)))))
+(re-frame/reg-sub
+ ::completion-type-data
+ :<- [::selected-habit-cts]
+ (fn [all [_ comp]]
+   (let [id (:completionTypeId comp)]
+     (when (and all id) (all id)))))
