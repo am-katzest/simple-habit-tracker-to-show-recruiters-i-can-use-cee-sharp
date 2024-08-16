@@ -43,6 +43,7 @@
             :no-completion-types "no completion types"
             :date-pick "pick"
             :date-now "now"
+            :date-unchanged "without change"
             :datepicker-cancel "cancel"
             :datepicker-confirm "accept"
             :add-new-confirm "confirm"

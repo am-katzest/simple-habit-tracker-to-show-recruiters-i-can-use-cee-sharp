@@ -441,6 +441,12 @@
     [1 :simple-datepicker-today (tr :completion/date-today) [dh/time-now false]]
     [2 :simple-datepicker-yesterday (tr :completion/date-yesterday) [#(time/minus (dh/time-now) (time/days 1)) false]]]])
 
+(defn simple-date-picker-already-present-variant [initial model]
+  [simple-date-picker-internal
+   model
+   :existing
+   [[:existing :simple-datepicker-unchanged (tr :completion/date-unchanged) [#(:completionDate initial) (:isExactTime initial)]]]])
+
 (defn color-editor [use-color? color]
   [re-com/h-box
    :gap "20px"
