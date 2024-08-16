@@ -474,8 +474,9 @@
    :render-fn #(if (:id %) (completion-type-label %) [re-com/label :label "none" :style {:color "#666"}])
    :on-change #(reset! id %)])
 
-(defn completion-edit [id initial cancel accept]
-  (let [date (r/atom [(:isExactTime initial) (:completionDate initial)])
+(defn completion-edit [initial cancel accept title-text confirm-button-text]
+  (let [initial-date [(:isExactTime initial) (:completionDate initial)]
+        date (r/atom initial-date)
         note (r/atom (:note initial))
         use-color? (r/atom (some? (:color initial)))
         color (r/atom (or (:color initial) "#ffffff"))
@@ -486,9 +487,11 @@
              [re-com/v-box
               :min-width "300px"
               :children
-              [[re-com/label :label (tr :completion/new-completion)]
+              [[re-com/label :label title-text]
                [re-com/gap :size "20px"]
-               [simple-date-picker date]
+               (if initial
+                 [simple-date-picker-already-present-variant initial-date date]
+                 [simple-date-picker date])
                [re-com/gap :size "20px"]
                [re-com/label :label (tr :completion/note)]
                [re-com/input-textarea
@@ -514,12 +517,21 @@
                                                    :completionDate (second @date)
                                                    :isExactTime (first @date)
                                                    :note @note})))
-                  :label (tr :completion/add-new-confirm)]
+                  :label confirm-button-text]
                  [re-com/button
                   :attr (tag :completion-edit-cancel)
                   :on-click cancel
                   :class "btn btn-secondary"
                   :label (tr :completion/cancel)]]]]]])]))
+
+(defn completion-add [cancel habit-id]
+  [completion-edit nil
+   cancel
+   (fn [x]
+     (cancel)
+     (>evt [::e/add-completion habit-id x]))
+   (tr :completion/new-completion)
+   (tr :completion/add-new-confirm)])
 
 (defn habit-subpanel-add-completion [id]
   (let [adding? (r/atom false)]
@@ -535,11 +547,7 @@
                  :attr (tag :add-new-completion-button)
                  :on-click #(reset! adding? true)]]
         (when @adding?
-          [completion-edit {} id
-           #(reset! adding? false)
-           (fn [x]
-             (reset! adding? false)
-             (>evt [::e/add-completion id x]))])])]))
+          [completion-add #(reset! adding? false) id])])]))
 
 (defn habits-panel-right-part [id]
   (let [selected-subpanel (r/atom nil)]
