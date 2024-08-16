@@ -588,6 +588,86 @@
    :on-change #(js/alert "meow")
    :attr (tag :advanced-datepicker-datepicker)])
 
+(defn- format-completion-date [completion]
+  (let [[model class]
+        (if (:isExactTime completion)
+          [(dh/date-time->hours-minutes (:completionDate completion)) ""]
+          [0 "timepicker-empty"])]
+    [re-com/input-time
+     :class class
+     :style {:min-height "30px"
+             :min-width "45px"}
+     :model model
+     :on-change #()
+     :show-icon? true
+     :disabled? true]))
+
+(defn- format-completion-type [completion-type]
+  (when completion-type
+    [re-com/box
+     :class (styles/completion-list-ct-box)
+     :style {:border-color (:color completion-type)}
+     :child (:name completion-type)]))
+
+(defn completion-history-list-item [habit-id completion-id]
+  (let [completion @(<sub [::subs/completion-with-fixed-color completion-id])
+        completion-type @(<sub [::subs/completion-type-data completion])
+        editing? (r/atom false)]
+    [(fn []
+       [re-com/h-box
+        :class (styles/completion-list-box)
+        :style {:border-color (:color completion)}
+        :justify :between
+        :children
+        [[re-com/h-box
+          :size "330px"
+          :gap "20px"
+          :children
+          (if (:note completion) ; vertical format, more compact becaues there's note
+            [(if completion-type
+               [re-com/v-box ; if there's note place time and completion type vertically
+                :size "80px"
+                :gap "10px"
+                :justify :around
+                :children
+                [[format-completion-date completion]
+                 [format-completion-type completion-type]]] ;unless completion has no type
+               [format-completion-date completion])
+             [re-com/box :child [:p.completion-note (:note completion)]]]
+            [[format-completion-date completion] ;horizontal format
+             [re-com/box
+              :width "240px"
+              :child [format-completion-type completion-type]]])]
+         [re-com/h-box
+          :children
+          [[re-com/md-icon-button
+            :attr (tag :completion-list-delete)
+            :on-click #(>evt [::e/delete-completion habit-id completion-id])
+            :md-icon-name "zmdi-delete"]
+           [re-com/md-icon-button
+            :attr (tag :completion-list-edit)
+            :on-click #(reset! editing? true)
+            :md-icon-name "zmdi-edit"]]]
+         (when @editing?
+           [completion-change #(reset! editing? false) completion-id habit-id])]])]))
+
+(defn completion-history-list-panel [habit-id date]
+  (let [ids @(<sub [::subs/selected-habit-completion-ids-on-day @date])]
+    (when (pos? (count ids))
+      [re-com/v-box
+       :margin "5px"
+       :gap "5px"
+       :children
+       (map (fn [id] [completion-history-list-item habit-id id]) ids)])))
+
+(defn history-subpanel [habit-id]
+  (let [model (r/atom (time/today))]
+    [(fn []
+       [re-com/h-box
+        :children
+        [[history-datepicker habit-id model]
+         [completion-history-list-panel habit-id model]]])]))
+
 (defn habits-panel-right-part [id]
   (let [selected-subpanel (r/atom nil)]
     [(fn []
@@ -604,7 +684,7 @@
                     (case @selected-subpanel
                       :cts [ct-subpanel]
                       :alerts nil
-                      :completions "meow"
+                      :completions [history-subpanel id]
                       nil nil)]]))]))
 
 (defn habits-panel []

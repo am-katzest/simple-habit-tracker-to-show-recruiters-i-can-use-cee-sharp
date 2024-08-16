@@ -54,3 +54,28 @@
 (defclass habit-panel-right [] {:background-color "#eee"})
 
 (defclass habit-subpanel [] {:background-color "#fff"})
+
+(defglobal completion-note
+  [:.completion-note
+   {:min-height "10px"
+    :margin-bottom "0px"
+    :max-width "250px"}])
+
+(defclass completion-list-box []
+  {:border-width "2px"
+   :padding "5px"
+   :width "400px"
+   :border-style :solid})
+
+(defclass completion-list-ct-box []
+  {:border-width "1px"
+   :border-radius "5px"
+   :padding "2px"
+   :max-width "100%"
+   :white-space :nowrap
+   :overflow-x :scroll
+   :border-style :solid})
+
+(defglobal timepicker-empty
+  [:.timepicker-empty {:font-size "0px"
+                       :min-width "20px"}])
