@@ -12,6 +12,7 @@
   (+ (* b x) (* a (- 1 x))))
 
 (defn create-clip-path [{:keys [begin end]}]
+  ^{:key begin}
   [:clipPath {:id (name-angle begin end)}
    [:path
     {:d
@@ -29,6 +30,7 @@
    [:defs
     [:<> (map create-clip-path geoms)]]
    [:<> (map (fn [{:keys [color begin end]}]
+               ^{:key begin}
                [:rect.calendar-cell-outline {:style {:stroke color} :clip-path (str "url(#" (name-angle begin end) ")")}])
              geoms)]])
 
