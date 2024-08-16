@@ -33,9 +33,9 @@
   [:.rc-datepicker-selected {:color "#ffffff" :background-color "#6c757d"}])
 
 (defglobal calendar-cell-outline
-  (let [fraction 90
+  (let [fraction 85
         rnd 20
-        stroke (* 2 (- 100 fraction))]
+        stroke (* 2.5 (- 100 fraction))]
     [:.calendar-cell-outline
      {:x (px (- fraction))
       :y (px (- fraction))
