@@ -510,7 +510,7 @@
                 :children
                 [[re-com/button
                   :attr (tag :completion-edit-confirm)
-                  :class (str "btn btn-primary" (when-not @date " disabled"))
+                  :class (str "btn btn-primary" (when-not (second @date) " disabled"))
                   :on-click #(when @date (accept (dh/normalize-completion
                                                   {:completionTypeId @ct-id
                                                    :color (when @use-color? @color)
