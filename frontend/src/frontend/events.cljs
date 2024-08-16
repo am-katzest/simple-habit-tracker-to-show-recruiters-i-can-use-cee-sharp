@@ -264,3 +264,37 @@
  ::confirm-completion-add
  (fn [db [_ habit-id body completion-id]]
    (assoc-in db [:completions habit-id completion-id] (assoc body :id completion-id))))
+(re-frame/reg-event-fx
+ ::ensure-completion-history-month-is-downloaded
+ (fn [{:keys [db]} [_ habit-id date]]
+   (let [path [:completion-download-statuses habit-id (dh/date->month date)]
+         existing (get-in db path)]
+     (when-not existing
+       {:db (assoc-in db path :pending)
+        :dispatch [::download-month-of-completion-history habit-id date]}))))
+
+(reg-event-http
+ ::download-month-of-completion-history
+ (fn [habit-id date]
+   (println date)
+   (let [[after before] (dh/date->month-boundries date)]
+     [:get (str "/habits/" habit-id "/completions/?before=" before "&after=" after)
+      [::download-month-of-completion-history-success habit-id date]
+      [::download-month-of-completion-history-failure habit-id date]])))
+
+(re-frame/reg-event-db
+ ::download-month-of-completion-history-success
+ (fn [db [_ habit-id date completions]]
+   (let [fixed-completions
+         (->> completions
+              (map dh/unjsonify-completion)
+              (map (juxt :id identity))
+              (into {}))]
+     (-> db
+         (assoc-in [:completion-download-statuses habit-id (dh/date->month date)] :downloaded)
+         (update-in [:completions habit-id] merge fixed-completions)))))
+
+(re-frame/reg-event-db
+ ::download-month-of-completion-history-failure
+ (fn [db [_ habit-id date]]
+   (assoc-in db [:completion-download-statuses habit-id (dh/date->month date)] nil)))
