@@ -6,6 +6,7 @@
    [reagent.core :as r]
    [frontend.localization :refer [tr]]
    [frontend.styles :as styles]
+   [frontend.svg :as svg]
    [frontend.events :as e]
    [frontend.data-helpers :as dh]
    [frontend.subs :as subs]))
@@ -558,6 +559,34 @@
                  :on-click #(reset! adding? true)]]
         (when @adding?
           [completion-add #(reset! adding? false) id])])]))
+
+(defn calendar-cell [label date]
+  (let [day-ids @(<sub [::subs/selected-habit-completion-ids-on-day date])
+        colors (mapv (fn [id] (:color @(<sub [::subs/completion-with-fixed-color id]))) day-ids)]
+    [:div {:style {:display :flex :width "100%" :height "100%"}}
+     [:div {:style {:width "100%" :height "100%"}}
+      [svg/make-calendar-outline colors]]
+     [:div.position-relative {:style {:width "100%" :margin-left "-100%" :height "100%"}}
+      [:span.position-absolute.top-50.start-50.translate-middle   label]]]))
+
+(defn- history-datepicker-cell [habit-id model {:keys [label date disabled? class style attr selected focus-month]}]
+  (>evt [::e/ensure-completion-history-month-is-downloaded habit-id date])
+  (let [current-month? (= focus-month (time/month date))
+        current-day? (time/equal? date selected)
+        color (if current-month?  :black "#ccc")]
+    [:td
+     (-> {:class    class
+          :style (assoc style :padding "0px" :color color)
+          :on-click (when-not disabled? #(reset! model date))}
+         (merge attr))
+     (if (or (not current-month?) current-day?) label [calendar-cell label date])]))
+
+(defn history-datepicker [habit-id model]
+  [re-com/datepicker
+   :date-cell     #(history-datepicker-cell habit-id model %1)
+   :model model
+   :on-change #(js/alert "meow")
+   :attr (tag :advanced-datepicker-datepicker)])
 
 (defn habits-panel-right-part [id]
   (let [selected-subpanel (r/atom nil)]
