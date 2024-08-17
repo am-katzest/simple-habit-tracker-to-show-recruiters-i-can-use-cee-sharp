@@ -2,9 +2,11 @@
   (:require
    [re-frame.core :as re-frame]
    [re-com.core :as re-com :refer [at]]
+   [cljs-time.core :as time]
    [reagent.core :as r]
    [frontend.localization :refer [tr]]
    [frontend.styles :as styles]
+   [frontend.svg :as svg]
    [frontend.events :as e]
    [frontend.data-helpers :as dh]
    [frontend.subs :as subs]))
@@ -294,7 +296,7 @@
         (for [[id label data-tag] tabs]
           [:li.nav-item
            (if (= id selected)
-             [:a.nav-link.active (tag data-tag) label]
+             [:a.nav-link.active (tag data-tag :on-click #(f nil)) label]
              [:a.nav-link (tag data-tag :on-click #(f id)) label])])))
 
 (defn habit-subpanel-control [id selected-subpanel]
@@ -312,6 +314,15 @@
         [:completions (tr :habit/tab-completions) :habit-tab-completions]]
        #(reset! selected-subpanel %)]]]]])
 
+(defn completion-type-label [{:keys [name color]}]
+  [re-com/h-box
+   :justify :between
+   :children [[:label {:style {:overflow-x :hidden :width "145px"}} name]
+              [:div {:style {:background-color color
+                             :border-radius "10px"
+                             :width "25px"
+                             :height "25px"}}]]])
+
 (defn completion-type-list []
   (let [habit-id @(<sub [::subs/selected-habit])
         cts @(<sub [::subs/selected-habit-cts])
@@ -323,19 +334,13 @@
             [:button.list-group-item.list-group-item-action.list-group-item-dark
              (tag :add-new-ct :on-click #(>evt [::e/new-empty-ct habit-id]))
              (tr :ct/add-new)]]
-           (mapv (fn [[id {:keys [color name]}]]
+           (mapv (fn [[id ct]]
                    [:button.list-group-item.list-group-item-action.w-100
                     (let [select #(>evt [::e/select-ct habit-id id])]
                       (if (= id selected)
                         (tag :ct-list-item-selected :class :active :on-click select)
                         (tag :ct-list-item :on-click select)))
-                    [re-com/h-box
-                     :justify :between
-                     :children [[:label {:style {:overflow-x :hidden :width "145px"}} name]
-                                [:div {:style {:background-color color
-                                               :border-radius "10px"
-                                               :width "25px"
-                                               :height "25px"}}]]]])
+                    [completion-type-label ct]])
                  cts))]))
 
 (defn completion-type-edit-panel [ctid hid]
@@ -347,6 +352,7 @@
              valid? (dh/validate-ct normalized)]
          [re-com/v-box
           :margin "20px"
+          :gap "20px"
           :children
           [[re-com/input-text
             :attr (tag :ct-edit-name)
@@ -378,16 +384,339 @@
               (when-let [id @(<sub [::subs/selected-ct])]
                 [completion-type-edit-panel id @(<sub [::subs/selected-habit])])]])
 
+(defn advanced-datepicker [confirm cancel]
+  (let [t (dh/time-now)
+        hours-minutes (r/atom (dh/date-time->hours-minutes t))
+        date (r/atom t)
+        exact-time? (r/atom false)]
+    [(fn [] [re-com/h-box
+             :children
+             [[re-com/datepicker
+               :model date
+               :attr (tag :advanced-datepicker-datepicker)
+               :on-change #(reset! date %)]
+              [re-com/v-box
+               :margin "20px"
+               :align :center
+               :children
+               [[re-com/label :label (tr :completion/specify-hour)]
+                [re-com/gap :size "10px"]
+                [re-com/h-box
+                 :width "90px"
+                 :align :center
+                 :gap "20px"
+                 :children
+                 [[re-com/checkbox
+                   :attr (tag :advanced-datepicker-time-checkbox)
+                   :model @exact-time?
+                   :on-change #(reset! exact-time? %)]
+                  [re-com/input-time
+                   :attr (tag :advanced-datepicker-time-input)
+                   :model @hours-minutes
+                   :on-change (fn [x]
+                                (reset! exact-time? true)
+                                (reset! hours-minutes x))]]]
+                [re-com/gap :size "30px"]
+                [re-com/h-box
+                 :width "150px"
+                 :justify :between
+                 :align :center
+                 :children
+                 [[re-com/button :class "btn btn-secondary"
+                   :attr (tag :advanced-datepicker-cancel)
+                   :label (tr :completion/datepicker-cancel)
+                   :on-click cancel]
+                  [re-com/button :class "btn btn-primary"
+                   :attr (tag :advanced-datepicker-confirm)
+                   :label (tr :completion/datepicker-confirm)
+                   :on-click #(confirm [@exact-time? (dh/set-hours-minutes @date @hours-minutes)])]]]]]]])]))
+
+(defn simple-date-picker-internal [model initial options]
+  (let [current-state (r/atom initial)
+        type (fn [id] (if (= id @current-state)
+                        :button.btn.btn-secondary
+                        :button.btn.btn-light))
+        switch (fn [id date precision]
+                 (fn []
+                   (reset! current-state id)
+                   (reset! model [precision (date)])))]
+    [(fn []
+       [:<>
+        [(cond
+           (or (vector? @current-state) (= :invalid @current-state))
+           :div.input-group.form-control.is-invalid.btn-group
+           :else :div.input-group.form-control.is-valid.btn-group)
+         (map (fn [[id test-id description other]]
+                (let [f (if (coll? other)
+                          (switch id (first other) (second other)) ; collection -> two arguments to switch,
+                          other)]       ; function -> standalone
+                  ^{:key id}
+                  [(type id)
+                   (tag test-id
+                        :type :button
+                        :on-click f)
+                   description]))
+              (concat options [[:pick :simple-datepicker-pick (tr :completion/date-pick) #(swap! current-state (fn [old] [old]))]]))]
+        (when (vector? @current-state)
+          [:div.dropdown-menu.show
+           [advanced-datepicker
+            (fn [date]
+              (reset! model date)
+              (reset! current-state :pick))
+            #(swap! current-state first)]])])]))
+
+(defn simple-date-picker [model]
+  [simple-date-picker-internal
+   model
+   :invalid
+   [[0 :simple-datepicker-now (tr :completion/date-now) [dh/time-now true]]
+    [1 :simple-datepicker-today (tr :completion/date-today) [dh/time-now false]]
+    [2 :simple-datepicker-yesterday (tr :completion/date-yesterday) [#(time/minus (dh/time-now) (time/days 1)) false]]]])
+
+(defn simple-date-picker-already-present-variant [initial model]
+  [simple-date-picker-internal
+   model
+   :existing
+   [[:existing :simple-datepicker-unchanged (tr :completion/date-unchanged) [#(:completionDate initial) (:isExactTime initial)]]]])
+
+(defn color-editor [use-color? color]
+  [re-com/h-box
+   :gap "20px"
+   :align :center
+   :children
+   [[re-com/checkbox
+     :attr (tag :colorpicker-toggle)
+     :model use-color?
+     :on-change #(reset! use-color? %)]
+    [re-com/label :label (tr :completion/use-color)]
+    [:input (tag :colorpicker
+                 :type :color
+                 :value @color
+                 :on-change (fn [val]
+                              (reset! use-color? true)
+                              (reset! color (.-value (.-target val)))))]]])
+
+(defn completion-type-selection-dropbox [id]
+  [re-com/single-dropdown
+   :attr (tag :completion-edit-type-dropdown)
+   :model id
+   :width "100%"
+   :choices (into [{}] (map second @(<sub [::subs/selected-habit-cts])))
+   :label-fn #(when (:id %) (:name %))
+   :render-fn #(if (:id %) (completion-type-label %) [re-com/label :label "none" :style {:color "#666"}])
+   :on-change #(reset! id %)])
+
+(defn completion-edit [initial cancel accept title-text confirm-button-text]
+  (let [initial-date [(:isExactTime initial) (:completionDate initial)]
+        date (r/atom initial-date)
+        note (r/atom (:note initial))
+        use-color? (r/atom (some? (:color initial)))
+        color (r/atom (or (:color initial) "#ffffff"))
+        ct-id (r/atom (:completionTypeId initial))]
+    [(fn [] [re-com/modal-panel
+             :backdrop-on-click cancel
+             :child
+             [re-com/v-box
+              :min-width "300px"
+              :children
+              [[re-com/label :label title-text]
+               [re-com/gap :size "20px"]
+               (if initial
+                 [simple-date-picker-already-present-variant initial-date date]
+                 [simple-date-picker date])
+               [re-com/gap :size "20px"]
+               [re-com/label :label (tr :completion/note)]
+               [re-com/input-textarea
+                :attr (tag :completion-edit-note)
+                :model note
+                :width "100%"
+                :on-change #(reset! note %)]
+               [re-com/gap :size "20px"]
+               [color-editor use-color? color]
+               [re-com/gap :size "20px"]
+               [re-com/label :label (tr :completion/type)]
+               [completion-type-selection-dropbox ct-id]
+               [re-com/gap :size "20px"]
+               [re-com/h-box
+                :justify :between
+                :children
+                [[re-com/button
+                  :attr (tag :completion-edit-confirm)
+                  :class (str "btn btn-primary" (when-not (second @date) " disabled"))
+                  :on-click #(when @date (accept (dh/normalize-completion
+                                                  {:completionTypeId @ct-id
+                                                   :color (when @use-color? @color)
+                                                   :completionDate (second @date)
+                                                   :isExactTime (first @date)
+                                                   :note @note})))
+                  :label confirm-button-text]
+                 [re-com/button
+                  :attr (tag :completion-edit-cancel)
+                  :on-click cancel
+                  :class "btn btn-secondary"
+                  :label (tr :completion/cancel)]]]]]])]))
+
+(defn completion-add [cancel habit-id]
+  [completion-edit nil
+   cancel
+   (fn [x]
+     (cancel)
+     (>evt [::e/add-completion habit-id x]))
+   (tr :completion/new-completion)
+   (tr :completion/add-new-confirm)])
+
+(defn completion-change [cancel initial-id habit-id]
+  (let [initial @(<sub [::subs/completion initial-id])]
+    [completion-edit initial
+     cancel
+     (fn [x]
+       (cancel)
+       (>evt [::e/edit-completion habit-id (:id initial) x]))
+     (tr :completion/edit-completion)
+     (tr :completion/edit-confirm)]))
+
+(defn habit-subpanel-add-completion [id]
+  (let [adding? (r/atom false)]
+    [(fn []
+       [:<>
+        [re-com/box
+         :align :center
+         :align-self :center
+         :margin "30px"
+         :child [re-com/button
+                 :class "btn btn-primary"
+                 :label (tr :habit/add-new)
+                 :attr (tag :add-new-completion-button)
+                 :on-click #(reset! adding? true)]]
+        (when @adding?
+          [completion-add #(reset! adding? false) id])])]))
+
+(defn calendar-cell [label date]
+  (let [day-ids @(<sub [::subs/selected-habit-completion-ids-on-day date])
+        colors (mapv (fn [id] (:color @(<sub [::subs/completion-with-fixed-color id]))) day-ids)]
+    [:div {:style {:display :flex :width "100%" :height "100%"}}
+     [:div {:style {:width "100%" :height "100%"}}
+      [svg/make-calendar-outline colors]]
+     [:div.position-relative {:style {:width "100%" :margin-left "-100%" :height "100%"}}
+      [:span.position-absolute.top-50.start-50.translate-middle   label]]]))
+
+(defn- history-datepicker-cell [habit-id model {:keys [label date disabled? class style attr selected focus-month]}]
+  (>evt [::e/ensure-completion-history-month-is-downloaded habit-id date])
+  (let [current-month? (= focus-month (time/month date))
+        current-day? (time/equal? date selected)
+        color (if current-month?  :black "#ccc")]
+    [:td
+     (-> {:class    class
+          :style (assoc style :padding "0px" :color color)
+          :on-click (when-not disabled? #(reset! model date))}
+         (merge attr))
+     (if (or (not current-month?) current-day?) label [calendar-cell label date])]))
+
+(defn history-datepicker [habit-id model]
+  [re-com/datepicker
+   :date-cell     #(history-datepicker-cell habit-id model %1)
+   :model model
+   :on-change #(js/alert "meow")
+   :attr (tag :advanced-datepicker-datepicker)])
+
+(defn- format-completion-date [completion]
+  (let [[model class]
+        (if (:isExactTime completion)
+          [(dh/date-time->hours-minutes (:completionDate completion)) ""]
+          [0 "timepicker-empty"])]
+    [re-com/input-time
+     :class class
+     :style {:min-height "30px"
+             :min-width "45px"}
+     :model model
+     :on-change #()
+     :show-icon? true
+     :disabled? true]))
+
+(defn- format-completion-type [completion-type]
+  (when completion-type
+    [re-com/box
+     :class (styles/completion-list-ct-box)
+     :style {:border-color (:color completion-type)}
+     :child (:name completion-type)]))
+
+(defn completion-history-list-item [habit-id completion-id]
+  (let [completion @(<sub [::subs/completion-with-fixed-color completion-id])
+        completion-type @(<sub [::subs/completion-type-data completion])
+        editing? (r/atom false)]
+    [(fn []
+       [re-com/h-box
+        :class (styles/completion-list-box)
+        :style {:border-color (:color completion)}
+        :justify :between
+        :children
+        [[re-com/h-box
+          :size "330px"
+          :gap "20px"
+          :children
+          (if (:note completion) ; vertical format, more compact becaues there's note
+            [(if completion-type
+               [re-com/v-box ; if there's note place time and completion type vertically
+                :size "80px"
+                :gap "10px"
+                :justify :around
+                :children
+                [[format-completion-date completion]
+                 [format-completion-type completion-type]]] ;unless completion has no type
+               [format-completion-date completion])
+             [re-com/box :child [:p.completion-note (:note completion)]]]
+            [[format-completion-date completion] ;horizontal format
+             [re-com/box
+              :width "240px"
+              :child [format-completion-type completion-type]]])]
+         [re-com/h-box
+          :children
+          [[re-com/md-icon-button
+            :attr (tag :completion-list-delete)
+            :on-click #(>evt [::e/delete-completion habit-id completion-id])
+            :md-icon-name "zmdi-delete"]
+           [re-com/md-icon-button
+            :attr (tag :completion-list-edit)
+            :on-click #(reset! editing? true)
+            :md-icon-name "zmdi-edit"]]]
+         (when @editing?
+           [completion-change #(reset! editing? false) completion-id habit-id])]])]))
+
+(defn completion-history-list-panel [habit-id date]
+  (let [ids @(<sub [::subs/selected-habit-completion-ids-on-day @date])]
+    (when (pos? (count ids))
+      [re-com/v-box
+       :margin "5px"
+       :gap "5px"
+       :children
+       (map (fn [id] [completion-history-list-item habit-id id]) ids)])))
+
+(defn history-subpanel [habit-id]
+  (let [model (r/atom (time/today))]
+    [(fn []
+       [re-com/h-box
+        :children
+        [[history-datepicker habit-id model]
+         [completion-history-list-panel habit-id model]]])]))
+
 (defn habits-panel-right-part [id]
-  (let [selected-subpanel (r/atom :cts)]
-    (re-com/v-box
-     :children [(re-com/h-box
-                 :children [[single-habit-info-edit-panel id]
-                            [habit-subpanel-control id selected-subpanel]])
-                (case @selected-subpanel
-                  :cts [ct-subpanel]
-                  :alerts nil
-                  :completions nil)])))
+  (let [selected-subpanel (r/atom nil)]
+    [(fn []
+       (re-com/v-box
+        :class (styles/habit-panel-right)
+        :children [(re-com/h-box
+                    :children [[single-habit-info-edit-panel id]
+                               [re-com/v-box
+                                :justify :between
+                                :children
+                                [[habit-subpanel-add-completion id]
+                                 [habit-subpanel-control id selected-subpanel]]]])
+                   [:div {:class (styles/habit-subpanel)}
+                    (case @selected-subpanel
+                      :cts [ct-subpanel]
+                      :alerts nil
+                      :completions [history-subpanel id]
+                      nil nil)]]))]))
 
 (defn habits-panel []
   [re-com/h-box

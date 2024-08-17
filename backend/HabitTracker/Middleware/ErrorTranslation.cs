@@ -1,7 +1,7 @@
 using HabitTracker.Exceptions;
 namespace HabitTracker.Middleware;
-using Microsoft.AspNetCore.Http;
 using System.Text.Json;
+using Microsoft.AspNetCore.Http;
 
 public class ErrorTranslation(RequestDelegate next)
 {

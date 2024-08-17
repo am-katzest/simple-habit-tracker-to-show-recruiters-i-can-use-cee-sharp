@@ -30,10 +30,31 @@
             :tabs-select "select view"
             :tab-cts "categories"
             :tab-alerts "alerts"
-            :tab-completions "completions"
+            :tab-completions "history"
             :new-habit "new habit"
             :name "add name.."}
-           #:ct
+          #:completion
+           {:add-new "new completion"
+            :new-completion "create new completion"
+            :edit-completion "edit completion"
+            :specify-hour "exact time?"
+            :type "category"
+            :note "note"
+            :color "color"
+            :use-color "override color?"
+            :no-completion-types "no completion types"
+            :date-pick "pick"
+            :date-now "now"
+            :date-unchanged "without change"
+            :datepicker-cancel "cancel"
+            :datepicker-confirm "accept"
+            :add-new-confirm "confirm"
+            :edit-confirm "save"
+            :cancel "cancel"
+            :date-today "today"
+            :date-yesterday "yesterday"
+            :confirm "confirm"}
+          #:ct
            {:add-new "add new"
             :confirm-deletion "really delete this category?"
             :new-ct "category"}

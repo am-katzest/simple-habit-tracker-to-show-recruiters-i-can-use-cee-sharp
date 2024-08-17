@@ -136,4 +136,81 @@ public class HabitControllerTest(HostFixture fixture) : IClassFixture<HostFixtur
         await AssertHelpers.ReturnedError<NoSuchHabitException>(await c.DeleteAsync($"api/habits/53135/CompletionTypes/{id}"));
         await AssertHelpers.ReturnedError<NoSuchCompletionTypeException>(await c.DeleteAsync($"api/habits/{h}/CompletionTypes/531313"));
     }
+    [Fact]
+    public async Task CompletionPostGetRoundtripTest()
+    {
+        using var c = fixture.Client;
+        var h = await c.NewHabit();
+        var ct = await c.NewCompletionType(h);
+        var completion = new CompletionData(ct, DateTime.Now, true, null, null);
+        await AssertHelpers.ReturnedError<NoSuchHabitException>(await c.PostAsJsonAsync($"api/habits/1313/Completions/", completion));
+        await AssertHelpers.ReturnedError<NoSuchCompletionTypeException>(await c.PostAsJsonAsync($"api/habits/{h}/Completions/", completion with { CompletionTypeId = 13513 }));
+        var id = await c.PostAsJsonAsync($"api/habits/{h}/Completions/", completion).Id();
+        var ret = await c.GetFromJsonAsync<List<CompletionDataId>>($"api/habits/{h}/Completions/");
+        Assert.NotNull(ret);
+        Assert.Single(ret);
+        Assert.Equal(id, ret.First().Id);
+    }
+    [Fact]
+    public async Task CompletionGetFilteringTest()
+    {
+        using var c = fixture.Client;
+        var h = await c.NewHabit();
+        var d = DateTime.Now;
+        Task<int> newCompletion(int hours) => c.PostAsJsonAsync($"api/habits/{h}/Completions/", new CompletionData(null, d.AddHours(hours), true, null, null)).Id();
+
+        var id1 = await newCompletion(1);
+        var id2 = await newCompletion(2);
+        var id3 = await newCompletion(3);
+
+        string t(double x) => d.AddHours(x).ToString("o").Replace("+", "%2B");
+
+        Assert.True((await c.GetAsync($"api/habits/{h}/Completions/")).IsSuccessStatusCode);
+        Assert.True((await c.GetAsync($"api/habits/{h}/Completions/?after={t(0)}")).IsSuccessStatusCode);
+        Assert.True((await c.GetAsync($"api/habits/{h}/Completions/?before={t(0)}")).IsSuccessStatusCode);
+        Assert.True((await c.GetAsync($"api/habits/{h}/Completions/?before={t(0)}&after={t(0)}")).IsSuccessStatusCode);
+
+        {
+            var ret = await c.GetFromJsonAsync<List<CompletionDataId>>($"api/habits/{h}/Completions/");
+            Assert.NotNull(ret);
+            Assert.Equal(3, ret.Count);
+        }
+
+        {
+            var ret = await c.GetFromJsonAsync<List<CompletionDataId>>($"api/habits/{h}/Completions/?after={t(0)}");
+            Assert.NotNull(ret);
+            Assert.Equal(3, ret.Count);
+        }
+
+        {
+            var ret = await c.GetFromJsonAsync<List<CompletionDataId>>($"api/habits/{h}/Completions/?after={t(0)}&before={t(4)}");
+            Assert.NotNull(ret);
+            Assert.Equal(3, ret.Count);
+        }
+
+        {
+            var ret = await c.GetFromJsonAsync<List<CompletionDataId>>($"api/habits/{h}/Completions/?after={t(2.5)}");
+            Assert.NotNull(ret);
+            Assert.Single(ret);
+            Assert.Equal(id3, ret.First().Id);
+        }
+
+        {
+            var ret = await c.GetFromJsonAsync<List<CompletionDataId>>($"api/habits/{h}/Completions/?before={t(1.5)}");
+            Assert.NotNull(ret);
+            Assert.Single(ret);
+            Assert.Equal(id1, ret.First().Id);
+        }
+        {
+            var ret = await c.GetFromJsonAsync<List<CompletionDataId>>($"api/habits/{h}/Completions/?before={t(2.5)}&after={t(1.5)}");
+            Assert.NotNull(ret);
+            Assert.Single(ret);
+            Assert.Equal(id2, ret.First().Id);
+        }
+        {
+            var ret = await c.GetFromJsonAsync<List<CompletionDataId>>($"api/habits/{h}/Completions/?before={t(3.5)}&limit=2");
+            Assert.NotNull(ret);
+            Assert.Equal(2, ret.Count);
+        }
+    }
 }

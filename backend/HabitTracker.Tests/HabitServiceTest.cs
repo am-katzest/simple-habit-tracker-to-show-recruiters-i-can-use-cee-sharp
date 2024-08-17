@@ -7,6 +7,8 @@ namespace HabitTracker.Tests;
 public class HabitServiceTest(UserFixture fixture) : IClassFixture<UserFixture>
 {
     private IHabitService MakeService() => new HabitService(fixture.MakeContext());
+    private HabitId MakeHabit(UserId u) => MakeService().addHabit(new("name", null), u);
+    private CompletionTypeId MakeCT(HabitId h) => MakeService().AddCompletionType(h, new("#333333", "meow", "meow"));
 
     [Fact]
     public void CreatingHabit()
@@ -74,7 +76,7 @@ public class HabitServiceTest(UserFixture fixture) : IClassFixture<UserFixture>
     public void UpdatingHabit()
     {
         var u = fixture.MakeUser();
-        var hid = MakeService().addHabit(new("name", null), u);
+        var hid = MakeHabit(u);
         MakeService().UpdateHabit(hid, new("other", "meow"));
         Assert.Single(MakeService().getHabits(u));
         Assert.Equal("other", MakeService().getHabitDetails(hid).Name);
@@ -86,11 +88,175 @@ public class HabitServiceTest(UserFixture fixture) : IClassFixture<UserFixture>
     public void CompletionTypeExceptionTest()
     {
         var u = fixture.MakeUser();
-        var hid = MakeService().addHabit(new("name", null), u);
+        HabitId hid = MakeHabit(u);
         var ct = new CompletionTypeData("#333333", "name", null);
         Assert.Throws<NoSuchHabitException>(() => MakeService().AddCompletionType(hid with { Id = 131535153 }, ct));
         var ctid = MakeService().AddCompletionType(hid, ct);
         Assert.Throws<NoSuchHabitException>(() => MakeService().RemoveCompletionType(ctid with { Habit = ctid.Habit with { Id = 131333 } }));
         Assert.Throws<NoSuchCompletionTypeException>(() => MakeService().RemoveCompletionType(ctid with { Id = 1351531 }));
+    }
+
+    private static DateTime d = DateTime.Now.TrimToMinute();
+    private CompletionData baseCompletionA = new(null, d, true, null, null);
+    private CompletionData baseCompletionB = new(null, d.AddHours(-1), false, "meow", "#333333");
+
+
+    [Fact]
+    public void CompletionAddingWithoutCompletionTypeTest()
+    {
+        var u = fixture.MakeUser();
+        var h = MakeHabit(u);
+        var id = MakeService().AddCompletion(h, baseCompletionA);
+        var rets = MakeService().GetCompletions(h, null, null);
+        Assert.Single(rets);
+        var ret = rets.First();
+        Assert.Equal(id.Id, ret.Id);
+        Assert.Equal(baseCompletionA.Note, ret.Note);
+        Assert.Equal(baseCompletionA.Color, ret.Color);
+        Assert.Equal(baseCompletionA.CompletionTypeId, ret.CompletionTypeId);
+        Assert.Equal(baseCompletionA.CompletionDate, ret.CompletionDate);
+        Assert.Equal(baseCompletionA.IsExactTime, ret.IsExactTime);
+    }
+
+    [Fact]
+    public void CompletionAddingNegativeWrongHabitTest()
+    {
+        var u = fixture.MakeUser();
+        Assert.Throws<NoSuchHabitException>(() => MakeService().AddCompletion(new(1, u), baseCompletionA));
+    }
+
+    [Fact]
+    public void CompletionAddingNegativeWrongCompletionTypeTest()
+    {
+        var u = fixture.MakeUser();
+        var h = MakeHabit(u);
+        Assert.Throws<NoSuchCompletionTypeException>(() => MakeService().AddCompletion(h, baseCompletionA with { CompletionTypeId = 13 }));
+        Assert.Empty(MakeService().GetCompletions(h, null, null));
+    }
+
+    [Fact]
+    public void CompletionAddingWithCompletionTypeTest()
+    {
+        var u = fixture.MakeUser();
+        var h = MakeHabit(u);
+        var ct = MakeCT(h);
+        var id = MakeService().AddCompletion(h, baseCompletionB with { CompletionTypeId = ct.Id });
+        var rets = MakeService().GetCompletions(h, null, null);
+        Assert.Single(rets);
+        var ret = rets.First();
+        Assert.Equal(id.Id, ret.Id);
+        Assert.Equal(baseCompletionB.Note, ret.Note);
+        Assert.Equal(baseCompletionB.Color, ret.Color);
+        Assert.Equal(ct.Id, ret.CompletionTypeId);
+        Assert.Equal(baseCompletionB.CompletionDate, ret.CompletionDate);
+    }
+
+    [Fact]
+    public void CompletionUpdateTest()
+    {
+        var u = fixture.MakeUser();
+        var h = MakeHabit(u);
+        var ct = MakeCT(h);
+        var updated = baseCompletionB with { Color = null, Note = "meow", CompletionDate = d.AddMinutes(22), CompletionTypeId = ct.Id };
+        var id = MakeService().AddCompletion(h, baseCompletionA);
+        MakeService().UpdateCompletion(id, updated);
+        var rets = MakeService().GetCompletions(h, null, null);
+        Assert.Single(rets);
+        var ret = rets.First();
+        Assert.Equal(id.Id, ret.Id);
+        Assert.Equal(updated.Note, ret.Note);
+        Assert.Equal(updated.Color, ret.Color);
+        Assert.Equal(updated.CompletionTypeId, ret.CompletionTypeId);
+        Assert.Equal(updated.CompletionDate, ret.CompletionDate);
+        Assert.Equal(updated.IsExactTime, ret.IsExactTime);
+    }
+    [Fact]
+    public void CompletionRemovalTest()
+    {
+        var u = fixture.MakeUser();
+        var h = MakeHabit(u);
+        var id1 = MakeService().AddCompletion(h, baseCompletionA);
+        var id2 = MakeService().AddCompletion(h, baseCompletionB);
+        Assert.Equal(2, MakeService().GetCompletions(h, null, null).Count());
+        MakeService().RemoveCompletion(id1);
+        var rets = MakeService().GetCompletions(h, null, null);
+        Assert.Single(rets);
+        Assert.Equal(id2.Id, rets.First().Id);
+        MakeService().RemoveCompletion(id2);
+        Assert.Empty(MakeService().GetCompletions(h, null, null));
+    }
+
+    [Fact]
+    public void NonexistantCompletionRemovalTest()
+    {
+        var u = fixture.MakeUser();
+        var h = MakeHabit(u);
+        Assert.Throws<NoSuchCompletionException>(() => MakeService().RemoveCompletion(new(0, h)));
+    }
+
+    [Fact]
+    public void NonexistantCompletionUpdateTest()
+    {
+        var u = fixture.MakeUser();
+        var h = MakeHabit(u);
+        Assert.Throws<NoSuchCompletionException>(() => MakeService().UpdateCompletion(new(0, h), baseCompletionA));
+    }
+
+    [Fact]
+    public void CompletionDateBasedSelectionTest()
+    {
+        DateTime t(double x) => d.AddHours(x).TrimToMinute();
+        var u = fixture.MakeUser();
+        var h = MakeHabit(u);
+        var id1 = MakeService().AddCompletion(h, baseCompletionA with { CompletionDate = t(1) });
+        var id2 = MakeService().AddCompletion(h, baseCompletionA with { CompletionDate = t(2) });
+        var id3 = MakeService().AddCompletion(h, baseCompletionA with { CompletionDate = t(3) });
+        var id4 = MakeService().AddCompletion(h, baseCompletionA with { CompletionDate = t(4) });
+        Assert.Equal(4, MakeService().GetCompletions(h, null, null).Count());
+        Assert.Empty(MakeService().GetCompletions(h, null, t(5)));
+        Assert.Empty(MakeService().GetCompletions(h, t(-5), null));
+        Assert.Equal(4, MakeService().GetCompletions(h, t(5), t(-5)).Count());
+        {
+            var r = MakeService().GetCompletions(h, t(1.5), t(-5));
+            Assert.Single(r);
+            Assert.Equal(id1.Id, r.First().Id);
+        }
+        {
+            var r = MakeService().GetCompletions(h, t(2.5), t(1.5));
+            Assert.Single(r);
+            Assert.Equal(id2.Id, r.First().Id);
+        }
+        {
+            var r = MakeService().GetCompletions(h, t(4), t(3));
+            Assert.Single(r);
+            Assert.Equal(id3.Id, r.First().Id);
+        }
+    }
+    [Fact]
+    public void CompletinLimitSelectionTest()
+    {
+        DateTime t(double x) => d.AddHours(x).TrimToMinute();
+        var u = fixture.MakeUser();
+        var h = MakeHabit(u);
+        var id1 = MakeService().AddCompletion(h, baseCompletionA with { CompletionDate = t(1) });
+        var id2 = MakeService().AddCompletion(h, baseCompletionA with { CompletionDate = t(2) });
+        var id3 = MakeService().AddCompletion(h, baseCompletionA with { CompletionDate = t(3) });
+        var id4 = MakeService().AddCompletion(h, baseCompletionA with { CompletionDate = t(4) });
+        Assert.Equal(4, MakeService().GetCompletions(h, null, null, null).Count());
+        Assert.Equal(4, MakeService().GetCompletions(h, null, null, 6).Count());
+        Assert.Equal(4, MakeService().GetCompletions(h, null, null, 4).Count());
+        Assert.Single(MakeService().GetCompletions(h, null, null, 1));
+        {
+            var r = MakeService().GetCompletions(h, t(2.5), null, 1);
+            Assert.Single(r);
+            Assert.Equal(id2.Id, r.First().Id);
+        }
+        {
+            var r = MakeService().GetCompletions(h, t(3.5), null, 2);
+            Assert.NotNull(r);
+            Assert.Equal(2, r.Count());
+            Assert.Equal(id3.Id, r.First().Id);
+            Assert.Equal(id2.Id, r.Last().Id);
+        }
     }
 }

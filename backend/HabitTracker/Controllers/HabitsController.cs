@@ -1,4 +1,5 @@
 using HabitTracker.DTOs;
+using HabitTracker.Helpers;
 using HabitTracker.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -53,7 +54,7 @@ public class HabitsController(IHabitService service) : ControllerBase
     }
 
     [HttpDelete("{habitId:int}/CompletionTypes/{completionTypeId:int}")]
-    public IActionResult UpdateCompletionType([ModelBinder][FromHeader] UserId user, int habitId, int completionTypeId)
+    public IActionResult DeleteCompletionType([ModelBinder][FromHeader] UserId user, int habitId, int completionTypeId)
     {
         var id = new CompletionTypeId(completionTypeId, new(habitId, user));
         service.RemoveCompletionType(id);
@@ -61,8 +62,40 @@ public class HabitsController(IHabitService service) : ControllerBase
     }
 
     [HttpGet("{habitId:int}/CompletionTypes/")]
-    public ActionResult<List<CompletionTypeDataId>> UpdateCompletionType([ModelBinder][FromHeader] UserId user, int habitId)
+    public ActionResult<List<CompletionTypeDataId>> GetCompletionTypes([ModelBinder][FromHeader] UserId user, int habitId)
     {
         return new(service.GetCompletionTypes(new(habitId, user)));
+    }
+
+    [HttpPost("{habitId:int}/Completions/")]
+    public ActionResult<int> PostCompletion([ModelBinder][FromHeader] UserId user, int habitId, CompletionData data)
+    {
+        var TypedHabitId = new HabitId(habitId, user);
+        return new(service.AddCompletion(TypedHabitId, data.WithNormalizedDate()).Id);
+    }
+
+    [HttpPut("{habitId:int}/Completions/{completionId:int}")]
+    public IActionResult UpdateCompletion([ModelBinder][FromHeader] UserId user, int habitId, int completionId, CompletionData data)
+    {
+        var TypedHabitId = new HabitId(habitId, user);
+        var TypedCompletionId = new CompletionId(completionId, TypedHabitId);
+        service.UpdateCompletion(TypedCompletionId, data.WithNormalizedDate());
+        return NoContent();
+    }
+
+    [HttpDelete("{habitId:int}/Completions/{completionId:int}")]
+    public IActionResult DeleteCompletion([ModelBinder][FromHeader] UserId user, int habitId, int completionId)
+    {
+        var TypedHabitId = new HabitId(habitId, user);
+        var TypedCompletionId = new CompletionId(completionId, TypedHabitId);
+        service.RemoveCompletion(TypedCompletionId);
+        return NoContent();
+    }
+
+    [HttpGet("{habitId:int}/Completions/")]
+    public ActionResult<List<CompletionDataId>> GetCompletions([ModelBinder][FromHeader] UserId user, int habitId, [FromQuery] DateTime? after, [FromQuery] DateTime? before, [FromQuery] int? limit)
+    {
+        var TypedHabitId = new HabitId(habitId, user);
+        return new(service.GetCompletions(TypedHabitId, before?.Normalized(), after?.Normalized(), limit));
     }
 }
