@@ -132,6 +132,7 @@ public class HabitService(HabitTrackerContext context) : IHabitService
 
     void IHabitService.RemoveCompletionType(CompletionTypeId id, CompletionTypeRemovalStrategy options)
     {
+        using var t = context.Database.BeginTransaction();
         var ct = FindCompletionType(id);
         var selected = context.Completions.Where(c => c.Type == ct);
         if (options.DeleteCompletions)
@@ -159,6 +160,7 @@ public class HabitService(HabitTrackerContext context) : IHabitService
         }
         context.Remove(ct);
         context.SaveChanges();
+        t.Commit();
     }
 
     void IHabitService.UpdateCompletionType(CompletionTypeId id, CompletionTypeData replacement)
