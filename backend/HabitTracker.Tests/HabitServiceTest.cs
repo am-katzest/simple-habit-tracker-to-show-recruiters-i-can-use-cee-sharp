@@ -259,4 +259,25 @@ public class HabitServiceTest(UserFixture fixture) : IClassFixture<UserFixture>
             Assert.Equal(id2.Id, r.Last().Id);
         }
     }
+
+    [Fact]
+    public void CompletionTypeRemovalWithNoCompletion()
+    {
+        var u = fixture.MakeUser();
+        var h = MakeHabit(u);
+        var ct = MakeCT(h);
+        MakeService().RemoveCompletionType(ct);
+        Assert.Empty(MakeService().GetCompletionTypes(h));
+    }
+
+    [Fact]
+    public void CompletionTypeRemovalAttemptWithExistingCompletion()
+    {
+        var u = fixture.MakeUser();
+        var h = MakeHabit(u);
+        var ct = MakeCT(h);
+        MakeService().AddCompletion(h, baseCompletionA with { CompletionTypeId = ct.Id });
+        Assert.Throws<UnableToDeleteCompletionTypeWithExistingCompletions>(() => MakeService().RemoveCompletionType(ct));
+    }
+
 }

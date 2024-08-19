@@ -117,8 +117,16 @@ public class HabitService(HabitTrackerContext context) : IHabitService
     }
     void IHabitService.RemoveCompletionType(CompletionTypeId id)
     {
-        var c = FindCompletionType(id);
-        context.Remove(c);
+        try
+        {
+            var c = FindCompletionType(id);
+            context.Remove(c);
+            context.SaveChanges();
+        }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException)
+        {
+            throw new UnableToDeleteCompletionTypeWithExistingCompletions();
+        }
         context.SaveChanges();
     }
     void IHabitService.UpdateCompletionType(CompletionTypeId id, CompletionTypeData replacement)
