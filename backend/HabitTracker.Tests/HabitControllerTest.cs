@@ -96,7 +96,7 @@ public class HabitControllerTest(HostFixture fixture) : IClassFixture<HostFixtur
     }
 
     [Fact]
-    public async Task CompletionTypeRemove()
+    public async Task CompletionTypeRemovePositive()
     {
         using var c = fixture.Client;
         var h = await c.NewHabit();
@@ -136,13 +136,16 @@ public class HabitControllerTest(HostFixture fixture) : IClassFixture<HostFixtur
         await AssertHelpers.ReturnedError<NoSuchHabitException>(await c.DeleteAsync($"api/habits/53135/CompletionTypes/{id}"));
         await AssertHelpers.ReturnedError<NoSuchCompletionTypeException>(await c.DeleteAsync($"api/habits/{h}/CompletionTypes/531313"));
     }
+
+    private CompletionData baseCompletion = new(null, DateTime.Now, true, null, null);
+
     [Fact]
     public async Task CompletionPostGetRoundtripTest()
     {
         using var c = fixture.Client;
         var h = await c.NewHabit();
         var ct = await c.NewCompletionType(h);
-        var completion = new CompletionData(ct, DateTime.Now, true, null, null);
+        var completion = baseCompletion with { CompletionTypeId = ct };
         await AssertHelpers.ReturnedError<NoSuchHabitException>(await c.PostAsJsonAsync($"api/habits/1313/Completions/", completion));
         await AssertHelpers.ReturnedError<NoSuchCompletionTypeException>(await c.PostAsJsonAsync($"api/habits/{h}/Completions/", completion with { CompletionTypeId = 13513 }));
         var id = await c.PostAsJsonAsync($"api/habits/{h}/Completions/", completion).Id();
@@ -212,5 +215,16 @@ public class HabitControllerTest(HostFixture fixture) : IClassFixture<HostFixtur
             Assert.NotNull(ret);
             Assert.Equal(2, ret.Count);
         }
+    }
+
+    [Fact]
+    public async Task CompletionTypeRemoveNegative()
+    {
+        using var c = fixture.Client;
+        var h = await c.NewHabit();
+        var ct = new CompletionTypeData("#333333", "name", null);
+        var ctid = await c.PostAsJsonAsync($"api/habits/{h}/CompletionTypes", ct).Id();
+        await c.PostAsJsonAsync($"api/habits/{h}/Completions/", baseCompletion with { CompletionTypeId = ctid });
+        await AssertHelpers.ReturnedError<UnableToDeleteCompletionTypeWithExistingCompletions>(await c.DeleteAsync($"api/habits/{h}/CompletionTypes/{ctid}"));
     }
 }
