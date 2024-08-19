@@ -280,4 +280,93 @@ public class HabitServiceTest(UserFixture fixture) : IClassFixture<UserFixture>
         Assert.Throws<UnableToDeleteCompletionTypeWithExistingCompletions>(() => MakeService().RemoveCompletionType(ct));
     }
 
+    private CompletionDataId? CompletionAfterDeletingCompletionType(CompletionData completion, CompletionTypeRemovalStrategy strategy)
+    {
+        var u = fixture.MakeUser();
+        var h = MakeHabit(u);
+        var ct = MakeCT(h);
+        MakeService().AddCompletion(h, completion with { CompletionTypeId = ct.Id });
+        MakeService().RemoveCompletionType(ct, strategy);
+        var res = MakeService().GetCompletions(h, null, null);
+        if (res is [CompletionDataId a])
+        {
+            return a;
+        }
+        return null;
+    }
+
+    [Fact]
+    public void CompletionTypeRemovalDeleteCompletions()
+    {
+        var res = CompletionAfterDeletingCompletionType(baseCompletionA, new(null, ColorReplacementStrategy.NeverReplace, true));
+        Assert.Null(res);
+    }
+
+    [Fact]
+    public void CompletionTypeRemovalAddNoteCompletionsEmpty()
+    {
+        var res = CompletionAfterDeletingCompletionType(baseCompletionA with { Note = null }, new("note", ColorReplacementStrategy.NeverReplace, false));
+        Assert.NotNull(res);
+        Assert.Equal("note", res.Note);
+    }
+
+    [Fact]
+    public void CompletionTypeRemovalAddNoteCompletionsExistingNote()
+    {
+        var res = CompletionAfterDeletingCompletionType(baseCompletionA with { Note = "existing" }, new("note", ColorReplacementStrategy.NeverReplace, false));
+        Assert.NotNull(res);
+        Assert.Equal("existing\n\nnote", res.Note);
+    }
+
+    [Fact]
+    public void CompletionTypeRemovalWithNoOptionsDoesNotChangeNoteNorColorWhenSet()
+    {
+        var res = CompletionAfterDeletingCompletionType(baseCompletionA with { Note = "existing", Color = "#222222" }, new(null, ColorReplacementStrategy.NeverReplace, false));
+        Assert.NotNull(res);
+        Assert.Equal("existing", res.Note);
+        Assert.Equal("#222222", res.Color);
+    }
+
+    [Fact]
+    public void CompletionTypeRemovalWithNoOptionsDoesNotChangeNoteNorColorWhenUnSet()
+    {
+        var res = CompletionAfterDeletingCompletionType(baseCompletionA with { Note = null, Color = null }, new(null, ColorReplacementStrategy.NeverReplace, false));
+        Assert.NotNull(res);
+        Assert.Null(res.Note);
+        Assert.Null(res.Color);
+    }
+
+    [Fact]
+    public void CompletionTypeRemovalSetsColorProperlyWhenCompletionHasNoColorStrategyAlways()
+    {
+        var res = CompletionAfterDeletingCompletionType(baseCompletionA with { Color = null }, new(null, ColorReplacementStrategy.AlwaysReplace, false));
+        Assert.NotNull(res);
+        Assert.NotNull(res.Color);
+    }
+
+    [Fact]
+    public void CompletionTypeRemovalSetsColorProperlyWhenCompletionHasNoColorStrategyConditional()
+    {
+        var res = CompletionAfterDeletingCompletionType(baseCompletionA with { Color = null }, new(null, ColorReplacementStrategy.ReplaceOnlyIfNotSet, false));
+        Assert.NotNull(res);
+        Assert.NotNull(res.Color);
+    }
+
+    [Fact]
+    public void CompletionTypeRemovalDoesnNotSetColorWhenCompletionHasColorStrategyConditional()
+    {
+        var oldColor = "#546789";
+        var res = CompletionAfterDeletingCompletionType(baseCompletionA with { Color = oldColor }, new(null, ColorReplacementStrategy.ReplaceOnlyIfNotSet, false));
+        Assert.NotNull(res);
+        Assert.Equal(oldColor, res.Color);
+    }
+
+    [Fact]
+    public void CompletionTypeRemovalSetColorWhenCompletionHasColorStrategyAlways()
+    {
+        var oldColor = "#546789";
+        var res = CompletionAfterDeletingCompletionType(baseCompletionA with { Color = oldColor }, new(null, ColorReplacementStrategy.AlwaysReplace, false));
+        Assert.NotNull(res);
+        Assert.NotEqual(oldColor, res.Color);
+    }
 }
