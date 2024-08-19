@@ -217,14 +217,91 @@ public class HabitControllerTest(HostFixture fixture) : IClassFixture<HostFixtur
         }
     }
 
-    [Fact]
-    public async Task CompletionTypeRemoveNegative()
+
+    private async Task<(CompletionDataId?, HttpResponseMessage)> CompletionAfterDeletingCompletionType(CompletionData completion, string query)
     {
+
         using var c = fixture.Client;
         var h = await c.NewHabit();
         var ct = new CompletionTypeData("#333333", "name", null);
         var ctid = await c.PostAsJsonAsync($"api/habits/{h}/CompletionTypes", ct).Id();
-        await c.PostAsJsonAsync($"api/habits/{h}/Completions/", baseCompletion with { CompletionTypeId = ctid });
-        await AssertHelpers.ReturnedError<UnableToDeleteCompletionTypeWithExistingCompletions>(await c.DeleteAsync($"api/habits/{h}/CompletionTypes/{ctid}"));
+        await c.PostAsJsonAsync($"api/habits/{h}/Completions/", completion with { CompletionTypeId = ctid });
+        var deletionResult = await c.DeleteAsync($"api/habits/{h}/CompletionTypes/{ctid}/" + query);
+        var ret = await c.GetFromJsonAsync<List<CompletionDataId>>($"api/habits/{h}/Completions/");
+        var remainingCompletion = (ret) switch { [CompletionDataId a] => a, _ => null, };
+        return (remainingCompletion, deletionResult);
+    }
+
+    [Fact]
+    public async Task CompletionTypeRemoveNegative()
+    {
+        var (completion, response) = await CompletionAfterDeletingCompletionType(baseCompletion, "");
+        await AssertHelpers.ReturnedError<UnableToDeleteCompletionTypeWithExistingCompletions>(response);
+        Assert.NotNull(completion);
+    }
+
+    [Fact]
+    public async Task CompletionTypeRemoveDeleteCompletions()
+    {
+        var (completion, response) = await CompletionAfterDeletingCompletionType(baseCompletion, "?DeleteCompletions=true");
+        Assert.True(response.IsSuccessStatusCode);
+        Assert.Null(completion);
+    }
+
+    [Fact]
+    public async Task CompletionTypeRemoveSetColorNever()
+    {
+        var (completion, response) = await CompletionAfterDeletingCompletionType(baseCompletion with { Color = null }, "?ColorStrategy=NeverReplace&DeleteCompletions=false");
+        Assert.True(response.IsSuccessStatusCode);
+        Assert.NotNull(completion);
+        Assert.Null(completion.Color);
+    }
+
+    [Fact]
+    public async Task CompletionTypeRemoveSetColorAlways()
+    {
+        var (completion, response) = await CompletionAfterDeletingCompletionType(baseCompletion with { Color = "#444444" }, "?ColorStrategy=AlwaysReplace&DeleteCompletions=false");
+        Assert.True(response.IsSuccessStatusCode);
+        Assert.NotNull(completion);
+        Assert.NotEqual("#444444", completion.Color);
+    }
+
+    [Fact]
+    public async Task CompletionTypeRemoveSetColorConditionallyColorPresent()
+    {
+        var (completion, response) = await CompletionAfterDeletingCompletionType(baseCompletion with { Color = "#444444" }, "?ColorStrategy=ReplaceOnlyIfNotSet&DeleteCompletions=false");
+        Assert.True(response.IsSuccessStatusCode);
+        Assert.NotNull(completion);
+        Assert.Equal("#444444", completion.Color);
+    }
+    [Fact]
+    public async Task CompletionTypeRemoveSetColorConditionallyColorAbsent()
+    {
+        var (completion, response) = await CompletionAfterDeletingCompletionType(baseCompletion with { Color = null }, "?ColorStrategy=ReplaceOnlyIfNotSet&DeleteCompletions=False");
+        Assert.True(response.IsSuccessStatusCode);
+        Assert.NotNull(completion);
+        Assert.NotNull(completion.Color);
+    }
+    [Fact]
+    public async Task CompletionTypeRemoveLeaveNoteAlone()
+    {
+        var (completion, response) = await CompletionAfterDeletingCompletionType(baseCompletion with { Note = "note" }, "?DeleteCompletions=false");
+        Assert.True(response.IsSuccessStatusCode);
+        Assert.NotNull(completion);
+        Assert.Equal("note", completion.Note);
+    }
+    [Fact]
+    public async Task CompletionTypeRemoveAddNote()
+    {
+        var (completion, response) = await CompletionAfterDeletingCompletionType(baseCompletion with { Note = null }, "?Note=meow&DeleteCompletions=false");
+        Assert.True(response.IsSuccessStatusCode);
+        Assert.NotNull(completion);
+        Assert.Equal("meow", completion.Note);
+    }
+    [Fact]
+    public async Task CompletionTypeRemoveStrategyValidation()
+    {
+        var (completion, response) = await CompletionAfterDeletingCompletionType(baseCompletion with { Note = null }, "?Note=meow&DeleteCompletions=true");
+        Assert.False(response.IsSuccessStatusCode);
     }
 }
