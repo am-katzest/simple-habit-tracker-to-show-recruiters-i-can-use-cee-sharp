@@ -67,4 +67,5 @@
                    ::e/expired-token "token expired, please reload"
                    ::e/habit-not-found "habit not found, deleted?"
                    ::e/completion-type-not-found "category not found, deleted?"
-                   ::e/completion-not-found "completion not found, deleted?"}})})
+                   ::e/completion-not-found "completion not found, deleted?"
+                   ::e/unknown-error "unknown error occured :("}})})
