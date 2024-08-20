@@ -19,4 +19,6 @@ public class NoSuchHabitException() : UserVisibleException(NotFound, "habit not 
 
 public class NoSuchCompletionTypeException() : UserVisibleException(NotFound, "completion type not found");
 
+public class UnableToDeleteCompletionTypeWithExistingCompletions() : UserVisibleException(InternalServerError, "unable to delete completion type with existing completions");
+
 public class NoSuchCompletionException() : UserVisibleException(NotFound, "completion not found");

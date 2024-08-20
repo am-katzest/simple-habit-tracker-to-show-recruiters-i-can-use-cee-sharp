@@ -80,7 +80,9 @@
               :md-icon-name "zmdi-undo"]
              [re-com/md-icon-button
               :attr (tag :delete)
-              :on-click #(reset! deleting? true)
+              :on-click (if (nil? deletion-confirm-text)
+                          delete
+                          #(reset! deleting? true))
               :md-icon-name "zmdi-delete"])
            (when @deleting?
              [confirm-panel
@@ -375,7 +377,7 @@
                         #(>evt [::e/update-ct hid ctid (dh/normalize-ct @state)])
                         #(reset! state original)
                         #(>evt [::e/delete-ct hid ctid])
-                        (tr :ct/confirm-deletion)]]]]]))]))
+                        nil]]]]]))]))
 
 (defn ct-subpanel []
   [re-com/h-box
@@ -746,9 +748,106 @@
         :children (map
                    (fn [a] (apply re-com/alert-box :closeable? true :on-close #(>evt [::e/close-alert (:id a)]) (apply concat a))) @alerts))])))
 
+(defn push-to-the-right [elem]
+  [re-com/h-box
+   :children
+   [[re-com/gap :size "10px"]
+    elem]])
+
+(defn radio-group [model title items]
+  [re-com/v-box
+   :children
+   [[re-com/label :label title]
+    [re-com/gap :size "10px"]
+    [push-to-the-right
+     [re-com/v-box
+      :children
+      (mapv (fn [[id label]]
+              [re-com/radio-button
+               :model model
+               :label label
+               :on-change #(reset! model id)
+               :value id])
+            items)]]]])
+(defn ct-delete-popup [close habit-id ct-id]
+  (let [note? (r/atom false)
+        note (r/atom "")
+        color (r/atom :NeverReplace)
+        delete (r/atom false)
+        tag (make-tag :delete-popup)]
+    [(fn []
+       (let [options (cond-> {:delete @delete :color-strategy :NeverReplace}
+                       (not @delete) (assoc :color-strategy @color)
+                       (and @note? (not @delete)) (assoc :note @note))]
+         [re-com/v-box
+          :min-width "400px"
+          :children
+          [[re-com/label :label (tr :ct/delete-popup-title)]
+           [re-com/gap :size "20px"]
+           [re-com/checkbox
+            :attr (tag :delete-checkbox)
+            :model delete
+            :label (tr :ct/delete-popup-delete)
+            :on-change #(swap! delete not)]
+           [re-com/gap :size "20px"]
+           (when-not @delete
+             [:<>
+              [re-com/label :label (tr :ct/delete-popup-handle)]
+              [push-to-the-right
+               [re-com/v-box
+                :children
+                [[re-com/gap :size "20px"]
+                 [radio-group color (tr :ct/delete-popup-color)
+                  [[:NeverReplace (tr :ct/delete-popup-color-leave)]
+                   [:ReplaceOnlyIfNotSet (tr :ct/delete-popup-color-conditional)]
+                   [:AlwaysReplace (tr :ct/delete-popup-color-always)]]]
+                 [re-com/gap :size "20px"]
+                 [re-com/checkbox
+                  :attr (tag :note-checkbox)
+                  :model note?
+                  :label (tr :ct/delete-popup-note)
+                  :on-change #(swap! note? not)]
+                 [re-com/gap :size "10px"]
+                 (when @note? [push-to-the-right
+                               [re-com/input-textarea
+                                :attr (tag :note)
+                                :model note
+                                :on-change #(reset! note %)]])]]]])
+           [re-com/gap :size "20px"]
+           [re-com/h-box
+            :justify :between
+            :children
+            [[re-com/button
+              :attr (tag :confirm)
+              :class "btn btn-danger"
+              :label (tr :ct/delete-popup-confirm)
+              :on-click (fn []
+                          (>evt [::e/delete-ct habit-id ct-id options])
+                          (>evt [::e/locally-remove-habit-completions habit-id])
+                          (close))]
+             [re-com/button
+              :attr (tag :cancel)
+              :class "btn btn-secondary"
+              :label (tr :ct/delete-popup-cancel)
+              :on-click close]]]]]))]))
+
+(def popups
+  {:completion-type-delete-options-popup  ct-delete-popup})
+
+(defn popup []
+  (when-let [result @(<sub [::subs/popup])]
+    (let [[fname args] result]
+      (when-let [f (popups fname)]
+        (let [close #(>evt [::e/close-popup])]
+          [re-com/modal-panel
+           :attr (tag :modal-panel)
+           :backdrop-on-click close
+           :child (into [f close] args)])))))
+
 (defn main-panel []
   (let [current-panel @(<sub [::subs/panel])]
     [:div
      (when-not (= :login current-panel) [navbar current-panel])
      [(or (panels current-panel) error-panel)]
+     [popup]
      [alerts]]))

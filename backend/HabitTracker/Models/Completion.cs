@@ -6,6 +6,7 @@ public class Completion
 {
     public int Id { get; set; }
     public required Habit Habit { get; set; }
+    public int? TypeId { get; set; }
     public CompletionType? Type { get; set; }
     public string? Note { get; set; }
     public string? Color { get; set; }

@@ -6,6 +6,7 @@
    [ajax.core :as ajax]
    [frontend.data-helpers :as dh]
    [frontend.alert-formatting :refer [format-alert]]
+   [frontend.errors :as e]
    [frontend.persistance :as p]))
 
 (defn- wrap-if-kw [thing]
@@ -92,16 +93,25 @@
     :store-token nil
     :set-panel :login}))
 
+(def error-handlers
+  {::e/expired-token (fn [_] [::logout])
+   ::e/habit-not-found (fn [_] [::download-habits])
+   ::e/completion-type-not-found (fn [{:keys [habit-id]}] [::download-habit-cts habit-id])
+   ::e/unable-to-delete-completion-type (fn [{:keys [habit-id ct-id]}] [::display-delete-ct-popup habit-id ct-id])
+   ::e/completion-not-found (fn [{:keys [habit-id]}] [::locally-remove-habit-completions habit-id])})
+
 (re-frame/reg-event-fx
  ::http-error
  (fn [_ [_ arg1 arg2]]
    ;;  last argument is response
    ;;  second argument has context for formatting, it is optional
-   (let [[response {:keys [handler data]}] (if arg2
-                                             [arg2 arg1]
-                                             [arg1 {}])]
-     {:fx [(when handler [:dispatch handler])
-           [:dispatch [::add-alert (format-alert (:response response) data)]]]})))
+   (let [[response {:keys [data]}] (if arg2
+                                     [arg2 arg1]
+                                     [arg1 {}])
+         key (e/response->error-key response)]
+     {:fx [(when-let [handler-fn (error-handlers key)]
+             [:dispatch (handler-fn data)])
+           [:dispatch [::add-alert (format-alert key data)]]]})))
 
 (re-frame/reg-event-fx
  ::account-panel
@@ -163,7 +173,7 @@
 (reg-event-http
  ::download-habit-details
  (fn [id]
-   [:get (str "/habits/" id) [::receive-habit-details id] [::http-error {:handler [::download-habits]}]]))
+   [:get (str "/habits/" id) [::receive-habit-details id] [::http-error {:data {:habit-id id}}]]))
 
 (re-frame/reg-event-db
  ::receive-habit-details
@@ -173,13 +183,13 @@
 (reg-event-http
  ::update-habit
  (fn [habit]
-   [:put (str "/habits/" (:id habit)) [::receive-habit-details (:id habit) habit] [::http-error {:handler [::download-habits]}]
+   [:put (str "/habits/" (:id habit)) [::receive-habit-details (:id habit) habit] [::http-error {:data {:habit-id (:id habit)}}]
     :params (dissoc habit :id)]))
 
 (reg-event-http
  ::delete-habit
  (fn [id]
-   [:delete (str "/habits/" id) [::delete-habit-receive id] [::http-error {:handler [::download-habits]}]]))
+   [:delete (str "/habits/" id) [::delete-habit-receive id] [::http-error {:handler {:data {:habit-id id}}}]]))
 
 (re-frame/reg-event-fx
  ::delete-habit-receive
@@ -201,7 +211,7 @@
 (reg-event-http
  ::download-habit-cts
  (fn [id]
-   [:get (str "/habits/" id "/completionTypes/") [::receive-habit-cts id] [::http-error {:handler [::download-habits]}]]))
+   [:get (str "/habits/" id "/completionTypes/") [::receive-habit-cts id] [::http-error {:data {:habit-id id}}]]))
 
 (re-frame/reg-event-db
  ::receive-habit-cts
@@ -217,7 +227,7 @@
    (let [color "#555555"
          name (tr :ct/new-ct)
          new-ct (dh/normalize-ct {:name name :color color})]
-     [:post (str "/habits/" id "/completionTypes/") [::receive-newly-created-ct id new-ct] [::http-error {:handler [::download-habits]}] :params new-ct])))
+     [:post (str "/habits/" id "/completionTypes/") [::receive-newly-created-ct id new-ct] [::http-error {:data {:habit-id id}}] :params new-ct])))
 
 (re-frame/reg-event-db
  ::receive-newly-created-ct
@@ -233,8 +243,12 @@
 
 (reg-event-http
  ::delete-ct
- (fn [hid ctid]
-   [:delete (str "/habits/" hid "/completionTypes/" ctid) [::delete-ct-receive hid ctid] [::http-error {:handler [::download-habit-cts hid]}]]))
+ (fn [hid ctid options]
+   (let [query (when options
+                 (str "?DeleteCompletions=" (:delete options)
+                      "&ColorStrategy=" (name (:color-strategy options))
+                      (when (:note options) (str "&Note=" (js/encodeURIComponent (:note options))))))]
+     [:delete (str "/habits/" hid "/completionTypes/" ctid "/" query) [::delete-ct-receive hid ctid] [::http-error {:data {:habit-id hid :ct-id ctid}}]])))
 
 (re-frame/reg-event-db
  ::delete-ct-receive
@@ -247,7 +261,7 @@
 (reg-event-http
  ::update-ct
  (fn [hid ctid ct]
-   [:put (str "/habits/" hid "/CompletionTypes/" ctid) [::confirm-ct-update hid ctid ct] [::http-error {:handler [::download-habit-cts hid]}]
+   [:put (str "/habits/" hid "/CompletionTypes/" ctid) [::confirm-ct-update hid ctid ct] [::http-error {:data {:habit-id hid}}]
     :params (dissoc ct :id)]))
 
 (re-frame/reg-event-db
@@ -258,7 +272,7 @@
 (reg-event-http
  ::add-completion
  (fn [id body]
-   [:post (str "/habits/" id "/Completions/") [::confirm-completion-add id body] [::http-error] :params (dh/jsonify-completion body)]))
+   [:post (str "/habits/" id "/Completions/") [::confirm-completion-add id body] [::http-error {:data {:habit-id id}}] :params (dh/jsonify-completion body)]))
 
 (re-frame/reg-event-db
  ::confirm-completion-add
@@ -268,12 +282,12 @@
 (reg-event-http
  ::edit-completion
  (fn [habit-id completion-id body]
-   [:put (str "/habits/" habit-id "/Completions/" completion-id) [::confirm-completion-add habit-id body completion-id] [::http-error] :params (dh/jsonify-completion body)]))
+   [:put (str "/habits/" habit-id "/Completions/" completion-id) [::confirm-completion-add habit-id body completion-id] [::http-error {:data {:habit-id habit-id}}] :params (dh/jsonify-completion body)]))
 
 (reg-event-http
  ::delete-completion
  (fn [habit-id completion-id]
-   [:delete (str "/habits/" habit-id "/Completions/" completion-id) [::confirm-completion-delete habit-id completion-id] [::http-error]]))
+   [:delete (str "/habits/" habit-id "/Completions/" completion-id) [::confirm-completion-delete habit-id completion-id] [::http-error {:data {:habit-id habit-id}}]]))
 
 (re-frame/reg-event-db
  ::confirm-completion-delete
@@ -314,3 +328,13 @@
  ::download-month-of-completion-history-failure
  (fn [db [_ habit-id date]]
    (assoc-in db [:completion-download-statuses habit-id (dh/date->month date)] nil)))
+
+(re-frame/reg-event-db
+ ::display-delete-ct-popup
+ (fn [db [_ habit-id ct-id]]
+   (assoc db :popup [:completion-type-delete-options-popup [habit-id ct-id]])))
+
+(re-frame/reg-event-db
+ ::close-popup
+ (fn [db _]
+   (dissoc db :popup)))

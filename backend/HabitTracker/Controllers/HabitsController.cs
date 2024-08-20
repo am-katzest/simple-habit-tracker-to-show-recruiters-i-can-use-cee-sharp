@@ -54,10 +54,17 @@ public class HabitsController(IHabitService service) : ControllerBase
     }
 
     [HttpDelete("{habitId:int}/CompletionTypes/{completionTypeId:int}")]
-    public IActionResult DeleteCompletionType([ModelBinder][FromHeader] UserId user, int habitId, int completionTypeId)
+    public IActionResult DeleteCompletionType([ModelBinder][FromHeader] UserId user, int habitId, int completionTypeId, [FromQuery] CompletionTypeRemovalStrategy s, [FromQuery] bool? deleteCompletions = null)
     {
         var id = new CompletionTypeId(completionTypeId, new(habitId, user));
-        service.RemoveCompletionType(id);
+        if (deleteCompletions is null) //should be (s is null), but complex types are always bound to default values
+        {
+            service.RemoveCompletionType(id);
+        }
+        else
+        {
+            service.RemoveCompletionType(id, s);
+        }
         return NoContent();
     }
 

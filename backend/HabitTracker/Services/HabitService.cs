@@ -14,6 +14,7 @@ public interface IHabitService
 
     CompletionTypeId AddCompletionType(HabitId habit, CompletionTypeData type);
     void RemoveCompletionType(CompletionTypeId id);
+    void RemoveCompletionType(CompletionTypeId id, CompletionTypeRemovalStrategy options);
     void UpdateCompletionType(CompletionTypeId id, CompletionTypeData replacement);
     List<CompletionTypeDataId> GetCompletionTypes(HabitId id);
 
@@ -117,10 +118,51 @@ public class HabitService(HabitTrackerContext context) : IHabitService
     }
     void IHabitService.RemoveCompletionType(CompletionTypeId id)
     {
-        var c = FindCompletionType(id);
-        context.Remove(c);
-        context.SaveChanges();
+        try
+        {
+            var c = FindCompletionType(id);
+            context.Remove(c);
+            context.SaveChanges();
+        }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException)
+        {
+            throw new UnableToDeleteCompletionTypeWithExistingCompletions();
+        }
     }
+
+    void IHabitService.RemoveCompletionType(CompletionTypeId id, CompletionTypeRemovalStrategy options)
+    {
+        using var t = context.Database.BeginTransaction();
+        var ct = FindCompletionType(id);
+        var selected = context.Completions.Where(c => c.Type == ct);
+        if (options.DeleteCompletions)
+        {
+            selected.ExecuteDelete();
+        }
+        else
+        {
+            if (options.Note is string note)
+            {
+                selected.ExecuteUpdate(setters => setters.SetProperty(c => c.Note, c => c.Note == null ? note : c.Note + "\n\n" + note));
+            }
+            switch (options.ColorStrategy)
+            {
+                case ColorReplacementStrategy.AlwaysReplace:
+                    selected.ExecuteUpdate(setters => setters.SetProperty(c => c.Color, ct.Color));
+                    break;
+                case ColorReplacementStrategy.ReplaceOnlyIfNotSet:
+                    selected.ExecuteUpdate(setters => setters.SetProperty(c => c.Color, c => c.Color == null ? ct.Color : c.Color));
+                    break;
+                case ColorReplacementStrategy.NeverReplace:
+                    break;
+            };
+            selected.ExecuteUpdate(setters => setters.SetProperty(c => c.TypeId, c => null));
+        }
+        context.Remove(ct);
+        context.SaveChanges();
+        t.Commit();
+    }
+
     void IHabitService.UpdateCompletionType(CompletionTypeId id, CompletionTypeData replacement)
     {
         var c = FindCompletionType(id);

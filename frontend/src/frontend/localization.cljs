@@ -1,5 +1,7 @@
 (ns frontend.localization
-  (:require [re-frame.core :as re-frame]))
+  (:require
+   [frontend.errors :as e]
+   [re-frame.core :as re-frame]))
 
 (defn tr [kw]
   (or (get @(re-frame/subscribe [:locale/map]) kw) (str "translate(:" kw ")")))
@@ -56,12 +58,23 @@
             :confirm "confirm"}
           #:ct
            {:add-new "add new"
-            :confirm-deletion "really delete this category?"
+            :delete-popup-title "specify how to handle completions with this category"
+            :delete-popup-confirm "delete category"
+            :delete-popup-cancel "cancel"
+            :delete-popup-handle "how to modify affected completions"
+            :delete-popup-delete "delete completions with this category"
+            :delete-popup-color "how to modify completions colors"
+            :delete-popup-color-leave "don't change completion colors"
+            :delete-popup-color-conditional "change only when completion has no color set"
+            :delete-popup-color-always "change completion color even if it already has one"
+            :delete-popup-note "leave/append note?"
             :new-ct "category"}
            #:prompt{:confirm "confirm"
                     :cancel "cancel"}
-          {:error {"duplicate username" {:part1 "username" :part2 "taken, pick another"}
-                   "invalid username or password" "invalid username or password"
-                   "invalid token" "token expired, please reload"
-                   "habit not found" "habit not found, deleted?"
-                   "completion type not found" "category not found, deleted?"}})})
+          {:error {::e/duplicate-username {:part1 "username" :part2 "taken, pick another"}
+                   ::e/invalid-username-or-password "invalid username or password"
+                   ::e/expired-token "token expired, please reload"
+                   ::e/habit-not-found "habit not found, deleted?"
+                   ::e/completion-type-not-found "category not found, deleted?"
+                   ::e/completion-not-found "completion not found, deleted?"
+                   ::e/unknown-error "unknown error occured :("}})})
