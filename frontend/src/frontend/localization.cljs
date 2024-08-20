@@ -58,7 +58,6 @@
             :confirm "confirm"}
           #:ct
            {:add-new "add new"
-            :confirm-deletion "really delete this category?"
             :new-ct "category"}
            #:prompt{:confirm "confirm"
                     :cancel "cancel"}

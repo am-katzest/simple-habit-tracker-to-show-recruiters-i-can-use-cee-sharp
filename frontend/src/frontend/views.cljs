@@ -377,7 +377,7 @@
                         #(>evt [::e/update-ct hid ctid (dh/normalize-ct @state)])
                         #(reset! state original)
                         #(>evt [::e/delete-ct hid ctid])
-                        (tr :ct/confirm-deletion)]]]]]))]))
+                        nil]]]]]))]))
 
 (defn ct-subpanel []
   [re-com/h-box
