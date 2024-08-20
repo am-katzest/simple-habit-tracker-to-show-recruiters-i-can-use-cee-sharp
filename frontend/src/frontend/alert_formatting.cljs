@@ -24,6 +24,5 @@
 (defn format-alert [key data]
   (let [formatter (formatters key)
         translated (tr-error key)]
-    (if (and formatter translated)
-      (formatter translated data)
-      (info (str "unknown error: " key)))))
+    (when (and formatter translated)
+      (formatter translated data))))
