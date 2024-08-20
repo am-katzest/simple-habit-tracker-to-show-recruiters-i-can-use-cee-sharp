@@ -830,9 +830,24 @@
               :class "btn btn-secondary"
               :label (tr :ct/delete-popup-cancel)
               :on-click close]]]]]))]))
+
+(def popups
+  {:completion-type-delete-options-popup  ct-delete-popup})
+
+(defn popup []
+  (when-let [result @(<sub [::subs/popup])]
+    (let [[fname args] result]
+      (when-let [f (popups fname)]
+        (let [close #(>evt [::e/close-popup])]
+          [re-com/modal-panel
+           :attr (tag :modal-panel)
+           :backdrop-on-click close
+           :child (into [f close] args)])))))
+
 (defn main-panel []
   (let [current-panel @(<sub [::subs/panel])]
     [:div
      (when-not (= :login current-panel) [navbar current-panel])
      [(or (panels current-panel) error-panel)]
+     [popup]
      [alerts]]))

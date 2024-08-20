@@ -323,3 +323,7 @@
  ::download-month-of-completion-history-failure
  (fn [db [_ habit-id date]]
    (assoc-in db [:completion-download-statuses habit-id (dh/date->month date)] nil)))
+(re-frame/reg-event-db
+ ::close-popup
+ (fn [db _]
+   (dissoc db :popup)))

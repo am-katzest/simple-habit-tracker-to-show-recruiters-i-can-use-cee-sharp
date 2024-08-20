@@ -15,6 +15,11 @@
    (:panel db)))
 
 (re-frame/reg-sub
+ ::popup
+ (fn [db]
+   (:popup db)))
+
+(re-frame/reg-sub
  :locale/map
  (fn [{:keys [locale locales]}]
    (locale locales)))
