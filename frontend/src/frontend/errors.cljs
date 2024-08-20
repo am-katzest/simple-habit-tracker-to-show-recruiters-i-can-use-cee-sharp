@@ -6,7 +6,8 @@
    "invalid token" ::expired-token
    "habit not found" ::habit-not-found
    "completion type not found" ::completion-type-not-found
-   "completion not found" ::completion-not-found})
+   "completion not found" ::completion-not-found
+   "unable to delete completion type with existing completions" ::unable-to-delete-completion-type})
 
 (def error-translation-code-map
   {403 ::expired-token
