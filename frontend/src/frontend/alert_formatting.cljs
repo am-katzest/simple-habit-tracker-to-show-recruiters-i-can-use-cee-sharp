@@ -1,5 +1,6 @@
 (ns frontend.alert-formatting
-  (:require [frontend.localization :refer [tr-error]]))
+  (:require [frontend.localization :refer [tr-error]]
+            [frontend.errors :as e]))
 
 (defn error-maker [type]
   (fn [body & _ignored]
@@ -10,13 +11,15 @@
 (def danger (error-maker :danger))
 
 (def formatters
-  {"duplicate username"
+  {::e/duplicate-username
    (fn [{:keys [part1 part2]} {:keys [login]}]
      (warning [:div part1 " " [:q login] " " part2]))
-   "invalid username or password" warning
-   "invalid token" danger
-   "habit not found" danger
-   "completion type not found" danger})
+   ::e/invalid-username-or-password warning
+   ::e/expired-token danger
+   ::e/habit-not-found danger
+   ::e/completion-type-not-found danger
+   ::e/completion-not-found danger
+   ::e/unknown-error danger})
 
 (defn format-alert [key data]
   (let [formatter (formatters key)

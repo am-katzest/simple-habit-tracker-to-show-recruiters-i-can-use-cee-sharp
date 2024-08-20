@@ -1,5 +1,7 @@
 (ns frontend.localization
-  (:require [re-frame.core :as re-frame]))
+  (:require
+   [frontend.errors :as e]
+   [re-frame.core :as re-frame]))
 
 (defn tr [kw]
   (or (get @(re-frame/subscribe [:locale/map]) kw) (str "translate(:" kw ")")))
@@ -60,8 +62,10 @@
             :new-ct "category"}
            #:prompt{:confirm "confirm"
                     :cancel "cancel"}
-          {:error {"duplicate username" {:part1 "username" :part2 "taken, pick another"}
-                   "invalid username or password" "invalid username or password"
-                   "invalid token" "token expired, please reload"
-                   "habit not found" "habit not found, deleted?"
-                   "completion type not found" "category not found, deleted?"}})})
+          {:error {::e/duplicate-username {:part1 "username" :part2 "taken, pick another"}
+                   ::e/invalid-username-or-password "invalid username or password"
+                   ::e/expired-token "token expired, please reload"
+                   ::e/habit-not-found "habit not found, deleted?"
+                   ::e/completion-type-not-found "category not found, deleted?"
+                   ::e/completion-not-found "completion not found, deleted?"
+                   ::e/unknown-error "unknown error occured :("}})})
