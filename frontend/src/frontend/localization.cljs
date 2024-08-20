@@ -58,6 +58,16 @@
             :confirm "confirm"}
           #:ct
            {:add-new "add new"
+            :delete-popup-title "specify how to handle completions with this category"
+            :delete-popup-confirm "delete category"
+            :delete-popup-cancel "cancel"
+            :delete-popup-handle "how to modify affected completions"
+            :delete-popup-delete "delete completions with this category"
+            :delete-popup-color "how to modify completions colors"
+            :delete-popup-color-leave "don't change completion colors"
+            :delete-popup-color-conditional "change only when completion has no color set"
+            :delete-popup-color-always "change completion color even if it already has one"
+            :delete-popup-note "leave/append note?"
             :new-ct "category"}
            #:prompt{:confirm "confirm"
                     :cancel "cancel"}
