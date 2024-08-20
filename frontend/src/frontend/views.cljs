@@ -748,6 +748,27 @@
         :children (map
                    (fn [a] (apply re-com/alert-box :closeable? true :on-close #(>evt [::e/close-alert (:id a)]) (apply concat a))) @alerts))])))
 
+(defn push-to-the-right [elem]
+  [re-com/h-box
+   :children
+   [[re-com/gap :size "10px"]
+    elem]])
+
+(defn radio-group [model title items]
+  [re-com/v-box
+   :children
+   [[re-com/label :label title]
+    [re-com/gap :size "10px"]
+    [push-to-the-right
+     [re-com/v-box
+      :children
+      (mapv (fn [[id label]]
+              [re-com/radio-button
+               :model model
+               :label label
+               :on-change #(reset! model id)
+               :value id])
+            items)]]]])
 (defn main-panel []
   (let [current-panel @(<sub [::subs/panel])]
     [:div
