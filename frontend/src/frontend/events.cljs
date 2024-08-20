@@ -243,8 +243,12 @@
 
 (reg-event-http
  ::delete-ct
- (fn [hid ctid]
-   [:delete (str "/habits/" hid "/completionTypes/" ctid) [::delete-ct-receive hid ctid] [::http-error {:data {:habit-id hid :ct-id ctid}}]]))
+ (fn [hid ctid options]
+   (let [query (when options
+                 (str "?DeleteCompletions=" (:delete options)
+                      "&ColorStrategy=" (name (:color-strategy options))
+                      (when (:note options) (str "&Note=" (js/encodeURIComponent (:note options))))))]
+     [:delete (str "/habits/" hid "/completionTypes/" ctid "/" query) [::delete-ct-receive hid ctid] [::http-error {:data {:habit-id hid :ct-id ctid}}]])))
 
 (re-frame/reg-event-db
  ::delete-ct-receive
