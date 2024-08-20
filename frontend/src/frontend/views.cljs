@@ -80,7 +80,9 @@
               :md-icon-name "zmdi-undo"]
              [re-com/md-icon-button
               :attr (tag :delete)
-              :on-click #(reset! deleting? true)
+              :on-click (if (nil? deletion-confirm-text)
+                          delete
+                          #(reset! deleting? true))
               :md-icon-name "zmdi-delete"])
            (when @deleting?
              [confirm-panel
