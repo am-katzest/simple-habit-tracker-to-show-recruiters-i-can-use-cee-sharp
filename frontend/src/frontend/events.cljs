@@ -6,6 +6,7 @@
    [ajax.core :as ajax]
    [frontend.data-helpers :as dh]
    [frontend.alert-formatting :refer [format-alert]]
+   [frontend.errors :as e]
    [frontend.persistance :as p]))
 
 (defn- wrap-if-kw [thing]
@@ -92,16 +93,24 @@
     :store-token nil
     :set-panel :login}))
 
+(def error-handlers
+  {::e/expired-token (fn [_] [::logout])
+   ::e/habit-not-found (fn [_] [::download-habits])
+   ::e/completion-type-not-found (fn [{:keys [habit-id]}] [::download-habit-cts habit-id])
+   ::e/completion-not-found (fn [{:keys [habit-id]}] [::locally-remove-habit-completions habit-id])})
+
 (re-frame/reg-event-fx
  ::http-error
  (fn [_ [_ arg1 arg2]]
    ;;  last argument is response
    ;;  second argument has context for formatting, it is optional
-   (let [[response {:keys [handler data]}] (if arg2
-                                             [arg2 arg1]
-                                             [arg1 {}])]
-     {:fx [(when handler [:dispatch handler])
-           [:dispatch [::add-alert (format-alert (:response response) data)]]]})))
+   (let [[response {:keys [data]}] (if arg2
+                                     [arg2 arg1]
+                                     [arg1 {}])
+         key (e/response->error-key response)]
+     {:fx [(when-let [handler-fn (error-handlers key)]
+             [:dispatch (handler-fn data)])
+           [:dispatch [::add-alert (format-alert key data)]]]})))
 
 (re-frame/reg-event-fx
  ::account-panel
