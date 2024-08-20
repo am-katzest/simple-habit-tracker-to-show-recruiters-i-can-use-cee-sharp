@@ -97,6 +97,7 @@
   {::e/expired-token (fn [_] [::logout])
    ::e/habit-not-found (fn [_] [::download-habits])
    ::e/completion-type-not-found (fn [{:keys [habit-id]}] [::download-habit-cts habit-id])
+   ::e/unable-to-delete-completion-type (fn [{:keys [habit-id ct-id]}] [::display-delete-ct-popup habit-id ct-id])
    ::e/completion-not-found (fn [{:keys [habit-id]}] [::locally-remove-habit-completions habit-id])})
 
 (re-frame/reg-event-fx
@@ -323,6 +324,12 @@
  ::download-month-of-completion-history-failure
  (fn [db [_ habit-id date]]
    (assoc-in db [:completion-download-statuses habit-id (dh/date->month date)] nil)))
+
+(re-frame/reg-event-db
+ ::display-delete-ct-popup
+ (fn [db [_ habit-id ct-id]]
+   (assoc db :popup [:completion-type-delete-options-popup [habit-id ct-id]])))
+
 (re-frame/reg-event-db
  ::close-popup
  (fn [db _]
