@@ -71,3 +71,17 @@
    e/go
    (e/click (btn nav))
    (wait-exists (assoc (btn nav) :fn/has-class :nav-disabled))))
+
+(defn add-completion [[note time category f]]
+  (s/use-driver
+   e/go
+   (click :add-new-completion-button)
+   (click (btn (str "simple-datepicker-" (or time "now"))))
+   (when note
+     (fill (h/textarea :completion-edit-note) note))
+   (when category
+     (click (h/any :completion-edit-type-dropdown))
+     (click [(h/any :completion-edit-type-dropdown) {:fn/text category}]))
+   (when f
+     (f))
+   (click :completion-edit-confirm)))

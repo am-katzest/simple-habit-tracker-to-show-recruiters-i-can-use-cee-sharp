@@ -27,39 +27,28 @@
            (exists? (btn :completion-edit-confirm false) "button disabled before selecting date"))
          (f/click :completion-edit-cancel))
        (testing "adding now no category"
-         (f/click :add-new-completion-button)
-         (f/click (btn :simple-datepicker-now))
-         (f/fill (textarea :completion-edit-note) "item1")
-         (f/click :completion-edit-confirm))
+         (f/add-completion ["item1" "now"]))
        (testing "adding today with category"
-         (f/click :add-new-completion-button)
-         (f/click (btn :simple-datepicker-now))
-         (f/fill (textarea :completion-edit-note) "item2")
-         (f/click (any :completion-edit-type-dropdown))
-         (f/click [(any :completion-edit-type-dropdown) {:fn/text "category1"}])
-         (f/click :completion-edit-confirm))
+         (f/add-completion ["item2" "today" "category1"]))
        (testing "adding yesterday"
-         (f/click :add-new-completion-button)
-         (f/click (btn :simple-datepicker-yesterday))
-         (f/fill (textarea :completion-edit-note) "item3")
-         (f/click :completion-edit-confirm))
+         (f/add-completion ["item3" "yesterday"]))
        ;; i don't want to mess with dates too much (beyond today / not today)
        ;; because calendar seems like a pain to use programmatically
        ;; and having tests fail on 1st of the month for no particular reason sounds like a nightmare
        ;; now only midnight is problematic
        (testing "adding date pick no time"
-         (f/click :add-new-completion-button)
-         (f/click (btn :simple-datepicker-pick))
-         (f/click (btn :advanced-datepicker-confirm))
-         (f/fill (textarea :completion-edit-note) "item4")
-         (f/click :completion-edit-confirm))
+         (f/add-completion
+          ["item4" nil nil
+           (fn []
+             (f/click (btn :simple-datepicker-pick))
+             (f/click (btn :advanced-datepicker-confirm)))]))
        (testing "adding date pick time"
-         (f/click :add-new-completion-button)
-         (f/click (btn :simple-datepicker-pick))
-         (f/fill (any :advanced-datepicker-time-input) "11:11")
-         (f/click (btn :advanced-datepicker-confirm))
-         (f/fill (textarea :completion-edit-note) "item5")
-         (f/click :completion-edit-confirm)))
+         (f/add-completion
+          ["item5" nil nil
+           (fn []
+             (f/click (btn :simple-datepicker-pick))
+             (f/fill (any :advanced-datepicker-time-input) "11:11")
+             (f/click (btn :advanced-datepicker-confirm)))])))
      (testing "seeing what was added"
        (f/click :habit-tab-completions)
        (testing "todays are shown, yesterdays arent"
@@ -72,10 +61,10 @@
          (e/has-text? (h/completion-list-item "item2") "category1"))
        (testing "item1 does not have it (just to make sure selector is working"
          (e/has-text? (h/completion-list-item "item1") "category1"))
-       (testing "item 4 has empty hour display"
-         (exists? (str (h/completion-list-item "item4") (h/descendant-with-class :timepicker-empty)))
+       (testing "items 2, 4 has empty hour display"
          (absent? (str (h/completion-list-item "item1") (h/descendant-with-class :timepicker-empty)))
-         (absent? (str (h/completion-list-item "item2") (h/descendant-with-class :timepicker-empty)))
+         (exists? (str (h/completion-list-item "item2") (h/descendant-with-class :timepicker-empty)))
+         (exists? (str (h/completion-list-item "item4") (h/descendant-with-class :timepicker-empty)))
          (absent? (str (h/completion-list-item "item5") (h/descendant-with-class :timepicker-empty))))))))
 
 (deftest ^:parallel  completion-editing-deletion-test
@@ -91,15 +80,9 @@
        (f/fill :ct-edit-name "category1")
        (f/click :ct-edit-save)
        (testing "adding item to edit"
-         (f/click :add-new-completion-button)
-         (f/click (btn :simple-datepicker-now))
-         (f/fill (textarea :completion-edit-note) "item-to-edit")
-         (f/click :completion-edit-confirm))
+         (f/add-completion ["item-to-edit"]))
        (testing "adding item to delete"
-         (f/click :add-new-completion-button)
-         (f/click (btn :simple-datepicker-now))
-         (f/fill (textarea :completion-edit-note) "item-to-delete")
-         (f/click :completion-edit-confirm))
+         (f/add-completion ["item-to-delete"]))
        (f/click :habit-tab-completions))
      (exists? (h/completion-list-item "item-to-delete") "item-to-delete shows up")
      (exists? (h/completion-list-item "item-to-edit") "item-to-edit shows up")
