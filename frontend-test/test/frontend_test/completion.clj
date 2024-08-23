@@ -1,4 +1,4 @@
-(ns frontend-test.completion-adding
+(ns frontend-test.completion
   (:require [clojure.test :refer [deftest testing is are]]
             [frontend-test.setup :as s :refer-macros true]
             [frontend-test.helpers :refer [btn input exists? absent? lazy-is any textarea] :as h  :refer-macros true]
@@ -77,3 +77,50 @@
          (absent? (str (h/completion-list-item "item1") (h/descendant-with-class :timepicker-empty)))
          (absent? (str (h/completion-list-item "item2") (h/descendant-with-class :timepicker-empty)))
          (absent? (str (h/completion-list-item "item5") (h/descendant-with-class :timepicker-empty))))))))
+
+(deftest ^:parallel  completion-editing-deletion-test
+  (s/use-new-driver
+   e/go
+   (h/with-wait h/short-wait
+     (testing "setup"
+       (is (some? (f/new-user)))
+       (f/goto-panel :nav-habits)
+       (f/click (btn :add-new-habit))
+       (f/click :habit-tab-cts)
+       (f/click :add-new-ct)
+       (f/fill :ct-edit-name "category1")
+       (f/click :ct-edit-save)
+       (testing "adding item to edit"
+         (f/click :add-new-completion-button)
+         (f/click (btn :simple-datepicker-now))
+         (f/fill (textarea :completion-edit-note) "item-to-edit")
+         (f/click :completion-edit-confirm))
+       (testing "adding item to delete"
+         (f/click :add-new-completion-button)
+         (f/click (btn :simple-datepicker-now))
+         (f/fill (textarea :completion-edit-note) "item-to-delete")
+         (f/click :completion-edit-confirm))
+       (f/click :habit-tab-completions))
+     (exists? (h/completion-list-item "item-to-delete") "item-to-delete shows up")
+     (exists? (h/completion-list-item "item-to-edit") "item-to-edit shows up")
+     (testing "deleting"
+       (f/click (str (h/completion-list-item "item-to-delete") (h/descendant-with-tag :completion-list-delete)))
+       (absent? (h/completion-list-item "item-to-delete") "deleted")
+       (exists? (h/completion-list-item "item-to-edit")) "other still there")
+     (testing "editing"
+       (f/click (str (h/completion-list-item "item-to-edit") (h/descendant-with-tag :completion-list-edit)))
+       (f/fill (textarea :completion-edit-note) "item-after-edit")
+       (f/click (any :completion-edit-type-dropdown))
+       (f/click [(any :completion-edit-type-dropdown) {:fn/text "category1"}])
+       (f/click (btn :simple-datepicker-pick))
+       (f/click (btn :advanced-datepicker-confirm))
+       (f/click :completion-edit-confirm)
+       (testing "name category and timer changed"
+         (e/has-text? (h/completion-list-item "item-after-edit") "category1")
+         (exists? (str (h/completion-list-item "item-after-edit") (h/descendant-with-class :timepicker-empty)))))
+     (testing "persistance"
+       (e/refresh)
+       (f/click :habit-tab-completions)
+       (exists? (h/completion-list-item "item-after-edit")) ;; waiting until it loads
+       (e/has-text? (h/completion-list-item "item-after-edit") "category1")
+       (absent? (h/completion-list-item "item-to-delete"))))))
