@@ -44,10 +44,15 @@
          (f/click (h/list-item "cat4"))
          (f/click :ct-edit-delete)
          (f/click :delete-popup-confirm))
+
        (testing "looking at results"
-         (e/refresh)
-         (f/click :habit-tab-completions)
-         (lazy-is (e/has-text? (h/completion-list-item "c1") "cat1") "c1 unchanged")
-         (absent? (h/completion-list-item "c2") "c2 deleted")
-         (lazy-is (e/has-text? (h/completion-list-item "c3") "meow") "c3 has added note")
-         (exists? (h/completion-list-item "c4") "c4 exists"))))))
+         (let [check
+               (fn []
+                 (f/click :habit-tab-completions)
+                 (lazy-is (e/has-text? (h/completion-list-item "c1") "cat1") "c1 unchanged")
+                 (absent? (h/completion-list-item "c2") "c2 deleted")
+                 (lazy-is (e/has-text? (h/completion-list-item "c3") "meow") "c3 has added note")
+                 (exists? (h/completion-list-item "c4") "c4 exists"))]
+           (testing "before refresh" (check))
+           (e/refresh)
+           (testing "after refresh" (check))))))))
