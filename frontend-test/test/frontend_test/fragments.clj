@@ -85,3 +85,16 @@
    (when f
      (f))
    (click :completion-edit-confirm)))
+
+(defn add-category [[name description]]
+  (s/use-driver
+   e/go
+   (when (not (e/exists? (h/any :add-new-ct)))
+     (click :habit-tab-cts))
+   (click :add-new-ct)
+   (when name
+     (fill :ct-edit-name name))
+   (when description
+     (fill :ct-edit-description description))
+   (when (or name description)
+     (click :ct-edit-save))))

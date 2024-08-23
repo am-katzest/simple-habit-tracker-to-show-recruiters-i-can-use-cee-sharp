@@ -13,10 +13,7 @@
        (is (some? (f/new-user)))
        (f/goto-panel :nav-habits)
        (f/click (btn :add-new-habit))
-       (f/click :habit-tab-cts)
-       (f/click :add-new-ct)
-       (f/fill :ct-edit-name "category1")
-       (f/click :ct-edit-save))
+       (f/add-category ["category1"]))
      (testing "adding"
        (testing "adding fail"
          (f/click :add-new-completion-button)
@@ -75,10 +72,7 @@
        (is (some? (f/new-user)))
        (f/goto-panel :nav-habits)
        (f/click (btn :add-new-habit))
-       (f/click :habit-tab-cts)
-       (f/click :add-new-ct)
-       (f/fill :ct-edit-name "category1")
-       (f/click :ct-edit-save)
+       (f/add-category ["category1"])
        (testing "adding item to edit"
          (f/add-completion ["item-to-edit"]))
        (testing "adding item to delete"
