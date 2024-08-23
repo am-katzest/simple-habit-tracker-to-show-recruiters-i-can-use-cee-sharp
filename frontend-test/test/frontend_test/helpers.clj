@@ -20,6 +20,11 @@
 (defn list-item [text]
   (format "//div[contains(@class, 'list-group')]//descendant::*[text()='%s']" text))
 
+(defn completion-list-item [text]
+  (format "//p[contains(text(),'%s')]/../../.." text))
+(defn descendant-with-class [c] (format "/descendant::*[contains(@class,'%s')]" (name c)))
+(defn descendant-with-tag [t] (format "/descendant::*[(@data-testid='%s')]" (name t)))
+
 (defn wrap-waiter-into-test [f]
   (fn [& args]
     (is (any? (apply f s/*driver* args)) args)))
