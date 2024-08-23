@@ -55,9 +55,9 @@
          (exists? {:fn/text "item4"})
          (exists? {:fn/text "item5"}))
        (testing "item2 has category"
-         (e/has-text? (h/completion-list-item "item2") "category1"))
+         (lazy-is (e/has-text? (h/completion-list-item "item2") "category1")))
        (testing "item1 does not have it (just to make sure selector is working"
-         (e/has-text? (h/completion-list-item "item1") "category1"))
+         (lazy-is (e/has-text? (h/completion-list-item "item1") "category1")))
        (testing "items 2, 4 has empty hour display"
          (absent? (str (h/completion-list-item "item1") (h/descendant-with-class :timepicker-empty)))
          (exists? (str (h/completion-list-item "item2") (h/descendant-with-class :timepicker-empty)))
@@ -93,11 +93,11 @@
        (f/click (btn :advanced-datepicker-confirm))
        (f/click :completion-edit-confirm)
        (testing "name category and timer changed"
-         (e/has-text? (h/completion-list-item "item-after-edit") "category1")
+         (lazy-is (e/has-text? (h/completion-list-item "item-after-edit") "category1"))
          (exists? (str (h/completion-list-item "item-after-edit") (h/descendant-with-class :timepicker-empty)))))
      (testing "persistance"
        (e/refresh)
        (f/click :habit-tab-completions)
        (exists? (h/completion-list-item "item-after-edit")) ;; waiting until it loads
-       (e/has-text? (h/completion-list-item "item-after-edit") "category1")
+       (lazy-is (e/has-text? (h/completion-list-item "item-after-edit") "category1"))
        (absent? (h/completion-list-item "item-to-delete"))))))
