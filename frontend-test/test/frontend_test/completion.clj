@@ -57,7 +57,7 @@
        (testing "item2 has category"
          (lazy-is (e/has-text? (h/completion-list-item "item2") "category1")))
        (testing "item1 does not have it (just to make sure selector is working"
-         (lazy-is (e/has-text? (h/completion-list-item "item1") "category1")))
+         (lazy-is (not (e/has-text? (h/completion-list-item "item1") "category1"))))
        (testing "items 2, 4 has empty hour display"
          (absent? (str (h/completion-list-item "item1") (h/descendant-with-class :timepicker-empty)))
          (exists? (str (h/completion-list-item "item2") (h/descendant-with-class :timepicker-empty)))
