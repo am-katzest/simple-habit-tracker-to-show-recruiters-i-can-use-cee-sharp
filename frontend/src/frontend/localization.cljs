@@ -32,69 +32,76 @@
 
 (def one-big-dictionary
   {:eng
-   (merge #:login
-           {:create-new-account "create new account"
-            :login "login"
-            :go-back "return"
-            :password "password"
-            :repeat "repeat password"
-            :username "username"
-            :register-new-account "new account"
-            :login-old-account "login"}
-          #:nav
-           {:logout "logout"
-            :account "account"
-            :habits "habits"}
-           #:habit
-           {:add-new "add new"
-            :description "add description.."
-            :confirm-deletion "really delete this habit?"
-            :tabs-select "select view"
-            :tab-cts "categories"
-            :tab-alerts "alerts"
-            :tab-completions "history"
-            :new-habit "new habit"
-            :name "add name.."}
-          #:completion
-           {:add-new "new completion"
-            :new-completion "create new completion"
-            :edit-completion "edit completion"
-            :specify-hour "exact time?"
-            :type "category"
-            :note "note"
-            :color "color"
-            :use-color "override color?"
-            :no-completion-types "no completion types"
-            :date-pick "pick"
-            :date-now "now"
-            :date-unchanged "without change"
-            :datepicker-cancel "cancel"
-            :datepicker-confirm "accept"
-            :add-new-confirm "confirm"
-            :edit-confirm "save"
-            :cancel "cancel"
-            :date-today "today"
-            :date-yesterday "yesterday"
-            :confirm "confirm"}
-          #:ct
-           {:add-new "add new"
-            :delete-popup-title "specify how to handle completions with this category"
-            :delete-popup-confirm "delete category"
-            :delete-popup-cancel "cancel"
-            :delete-popup-handle "how to modify affected completions"
-            :delete-popup-delete "delete completions with this category"
-            :delete-popup-color "how to modify completions colors"
-            :delete-popup-color-leave "don't change completion colors"
-            :delete-popup-color-conditional "change only when completion has no color set"
-            :delete-popup-color-always "change completion color even if it already has one"
-            :delete-popup-note "leave/append note?"
-            :new-ct "category"}
-           #:prompt{:confirm "confirm"
-                    :cancel "cancel"}
-          {:error {::e/duplicate-username {:part1 "username" :part2 "taken, pick another"}
-                   ::e/invalid-username-or-password "invalid username or password"
-                   ::e/expired-token "token expired, please reload"
-                   ::e/habit-not-found "habit not found, deleted?"
-                   ::e/completion-type-not-found "category not found, deleted?"
-                   ::e/completion-not-found "completion not found, deleted?"
-                   ::e/unknown-error "unknown error occured :("}})})
+   {:login
+    {:select
+     {:register-new-account "new account"
+      :go-back "return"
+      :login-old-account "login"}
+     :create-new-account "create new account"
+     :login "login"
+     :password "password"
+     :repeat "repeat password"
+     :username "username"}
+    :nav
+    {:logout "logout"
+     :account "account"
+     :habits "habits"}
+    :habit
+    {:tab {:cts "categories"
+           :alerts "alerts"
+           :completions "history"}
+     :add-new "add new"
+     :description "add description.."
+     :confirm-deletion "really delete this habit?"
+     :tabs-select "select view"
+     :new-habit "new habit"
+     :name "add name.."}
+    :completion
+    {:date {:picker-buttons
+            {:cancel "cancel"
+             :confirm "accept"}
+            :pick "pick"
+            :now "now"
+            :unchanged "without change"
+            :today "today"
+            :yesterday "yesterday"}
+     :editor {:type "category"
+              :note "note"
+              :color "color"
+              :use-color "override color?"
+              :cancel "cancel"
+              :advanced-datepicker
+              {:specify-hour "exact time?"
+               :cancel "cancel"
+               :confirm "confirm"}}
+     :add-new "new completion"
+     :new-completion "create new completion"
+     :edit-completion "edit completion"
+
+     :no-completion-types "no completion types"
+     :add-new-confirm "confirm"
+     :edit-confirm "save"}
+    :ct
+    {:delete-popup
+     {:title "specify how to handle completions with this category"
+      :confirm "delete category"
+      :cancel "cancel"
+      :handle "how to modify affected completions"
+      :delete "delete completions with this category"
+      :color {:label "how to modify completions colors"
+              :leave "don't change completion colors"
+              :conditional "change only when completion has no color set"
+              :always "change completion color even if it already has one"}
+      :note "leave/append note?"}
+     :add-new "add new"
+     :new "category"}
+    :prompt
+    {:confirm "confirm"
+     :cancel "cancel"}
+    :error {::e/duplicate-username {:part1 "username" :part2 "taken, pick another"}
+            ::e/invalid-username-or-password "invalid username or password"
+            ::e/expired-token "token expired, please reload"
+            ::e/habit-not-found "habit not found, deleted?"
+            ::e/completion-type-not-found "category not found, deleted?"
+            ::e/completion-not-found "completion not found, deleted?"
+            ::e/unknown-error "unknown error occured :("}}})
