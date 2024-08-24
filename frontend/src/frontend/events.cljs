@@ -2,7 +2,7 @@
   (:require
    [re-frame.core :as re-frame]
    [frontend.db :as db]
-   [frontend.localization :refer [tr]]
+   [frontend.localization :refer [tr add-prefix]]
    [ajax.core :as ajax]
    [frontend.data-helpers :as dh]
    [frontend.alert-formatting :refer [format-alert]]
@@ -225,7 +225,7 @@
  ::new-empty-ct
  (fn [id]
    (let [color "#555555"
-         name (tr :ct/new-ct)
+         name (tr :ct/add-new)
          new-ct (dh/normalize-ct {:name name :color color})]
      [:post (str "/habits/" id "/completionTypes/") [::receive-newly-created-ct id new-ct] [::http-error {:data {:habit-id id}}] :params new-ct])))
 

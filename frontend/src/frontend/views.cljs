@@ -4,7 +4,7 @@
    [re-com.core :as re-com :refer [at]]
    [cljs-time.core :as time]
    [reagent.core :as r]
-   [frontend.localization :refer [tr]]
+   [frontend.localization :refer [tr add-prefix]]
    [frontend.styles :as styles]
    [frontend.svg :as svg]
    [frontend.events :as e]
@@ -142,7 +142,7 @@
              :disabled? (not ready?)]
             [re-com/button
              :attr (tag :register-go-back-button)
-             :label (tr :login/go-back)
+             :label (tr :login.select/go-back)
              :on-click go-back
              :class "btn btn-secondary"]]]]]))))
 
@@ -186,7 +186,7 @@
              :disabled? (not ready?)]
             [re-com/button
              :attr (tag :login-go-back-button)
-             :label (tr :login/go-back)
+             :label (tr :login.select/go-back)
              :on-click go-back
              :class "btn btn-secondary"]]]]]))))
 
@@ -210,12 +210,12 @@
              [re-com/h-box
               :children [[re-com/button
                           :attr (tag :new-account)
-                          :label (tr :login/register-new-account)
+                          :label (tr :login.select/register-new-account)
                           :class "btn-white"
                           :on-click (reset :register)]
                          [re-com/button
                           :attr (tag :login)
-                          :label (tr :login/login-old-account)
+                          :label (tr :login.select/login-old-account)
                           :class "btn-white"
                           :on-click (reset :login)]]]
              :login
@@ -310,11 +310,12 @@
      [[re-com/box
        :align :center
        :child [re-com/label :label (tr :habit/tabs-select)]]
-      [tabs @selected-subpanel
-       [[:cts (tr :habit/tab-cts) :habit-tab-cts]
-        [:alerts (tr :habit/tab-alerts) :habit-tab-alerts]
-        [:completions (tr :habit/tab-completions) :habit-tab-completions]]
-       #(reset! selected-subpanel %)]]]]])
+      (let [tr-tab (add-prefix [:habit :tab])]
+        [tabs @selected-subpanel
+         [[:cts (tr-tab :cts) :habit-tab-cts]
+          [:alerts (tr-tab :alerts) :habit-tab-alerts]
+          [:completions (tr-tab :completions) :habit-tab-completions]]
+         #(reset! selected-subpanel %)])]]]])
 
 (defn completion-type-label [{:keys [name color]}]
   [re-com/h-box
@@ -390,7 +391,8 @@
   (let [t (dh/time-now)
         hours-minutes (r/atom (dh/date-time->hours-minutes t))
         date (r/atom t)
-        exact-time? (r/atom false)]
+        exact-time? (r/atom false)
+        tr (add-prefix [:completion :editor :advanced-datepicker])]
     [(fn [] [re-com/h-box
              :children
              [[re-com/datepicker
@@ -401,7 +403,7 @@
                :margin "20px"
                :align :center
                :children
-               [[re-com/label :label (tr :completion/specify-hour)]
+               [[re-com/label :label (tr :specify-hour)]
                 [re-com/gap :size "10px"]
                 [re-com/h-box
                  :width "90px"
@@ -426,11 +428,11 @@
                  :children
                  [[re-com/button :class "btn btn-secondary"
                    :attr (tag :advanced-datepicker-cancel)
-                   :label (tr :completion/datepicker-cancel)
+                   :label (tr :cancel)
                    :on-click cancel]
                   [re-com/button :class "btn btn-primary"
                    :attr (tag :advanced-datepicker-confirm)
-                   :label (tr :completion/datepicker-confirm)
+                   :label (tr :confirm)
                    :on-click #(confirm [@exact-time? (dh/set-hours-minutes @date @hours-minutes)])]]]]]]])]))
 
 (defn simple-date-picker-internal [model initial options]
@@ -458,7 +460,7 @@
                         :type :button
                         :on-click f)
                    description]))
-              (concat options [[:pick :simple-datepicker-pick (tr :completion/date-pick) #(swap! current-state (fn [old] [old]))]]))]
+              (concat options [[:pick :simple-datepicker-pick (tr :completion.date/pick) #(swap! current-state (fn [old] [old]))]]))]
         (when (vector? @current-state)
           [:div.dropdown-menu.show
            [advanced-datepicker
@@ -471,15 +473,16 @@
   [simple-date-picker-internal
    model
    :invalid
-   [[0 :simple-datepicker-now (tr :completion/date-now) [dh/time-now true]]
-    [1 :simple-datepicker-today (tr :completion/date-today) [dh/time-now false]]
-    [2 :simple-datepicker-yesterday (tr :completion/date-yesterday) [#(time/minus (dh/time-now) (time/days 1)) false]]]])
+   (let [tr-date (add-prefix [:completion :date])]
+     [[0 :simple-datepicker-now (tr-date :now) [dh/time-now true]]
+      [1 :simple-datepicker-today (tr-date :today) [dh/time-now false]]
+      [2 :simple-datepicker-yesterday (tr-date :yesterday) [#(time/minus (dh/time-now) (time/days 1)) false]]])])
 
 (defn simple-date-picker-already-present-variant [initial model]
   [simple-date-picker-internal
    model
    :existing
-   [[:existing :simple-datepicker-unchanged (tr :completion/date-unchanged) [#(:completionDate initial) (:isExactTime initial)]]]])
+   [[:existing :simple-datepicker-unchanged (tr :completion.date/unchanged) [#(:completionDate initial) (:isExactTime initial)]]]])
 
 (defn color-editor [use-color? color]
   [re-com/h-box
@@ -490,7 +493,7 @@
      :attr (tag :colorpicker-toggle)
      :model use-color?
      :on-change #(reset! use-color? %)]
-    [re-com/label :label (tr :completion/use-color)]
+    [re-com/label :label (tr :completion.editor/use-color)]
     [:input (tag :colorpicker
                  :type :color
                  :value @color
@@ -514,7 +517,8 @@
         note (r/atom (:note initial))
         use-color? (r/atom (some? (:color initial)))
         color (r/atom (or (:color initial) "#ffffff"))
-        ct-id (r/atom (:completionTypeId initial))]
+        ct-id (r/atom (:completionTypeId initial))
+        tr (add-prefix [:completion :editor])]
     [(fn [] [re-com/modal-panel
              :backdrop-on-click cancel
              :child
@@ -527,7 +531,7 @@
                  [simple-date-picker-already-present-variant initial-date date]
                  [simple-date-picker date])
                [re-com/gap :size "20px"]
-               [re-com/label :label (tr :completion/note)]
+               [re-com/label :label (tr :note)]
                [re-com/input-textarea
                 :attr (tag :completion-edit-note)
                 :model note
@@ -536,7 +540,7 @@
                [re-com/gap :size "20px"]
                [color-editor use-color? color]
                [re-com/gap :size "20px"]
-               [re-com/label :label (tr :completion/type)]
+               [re-com/label :label (tr :type)]
                [completion-type-selection-dropbox ct-id]
                [re-com/gap :size "20px"]
                [re-com/h-box
@@ -556,7 +560,7 @@
                   :attr (tag :completion-edit-cancel)
                   :on-click cancel
                   :class "btn btn-secondary"
-                  :label (tr :completion/cancel)]]]]]])]))
+                  :label (tr :cancel)]]]]]])]))
 
 (defn completion-add [cancel habit-id]
   [completion-edit nil
@@ -734,7 +738,6 @@
      :level :level1
      :class (styles/level1)]))
 
-
 (def panels {:login login-register-panel
              :habits habits-panel
              :account account-panel})
@@ -769,12 +772,14 @@
                :on-change #(reset! model id)
                :value id])
             items)]]]])
+
 (defn ct-delete-popup [close habit-id ct-id]
   (let [note? (r/atom false)
         note (r/atom "")
         color (r/atom :NeverReplace)
         delete (r/atom false)
-        tag (make-tag :delete-popup)]
+        tag (make-tag :delete-popup)
+        tr (add-prefix [:ct :delete-popup])]
     [(fn []
        (let [options (cond-> {:delete @delete :color-strategy :NeverReplace}
                        (not @delete) (assoc :color-strategy @color)
@@ -782,30 +787,30 @@
          [re-com/v-box
           :min-width "400px"
           :children
-          [[re-com/label :label (tr :ct/delete-popup-title)]
+          [[re-com/label :label (tr :title)]
            [re-com/gap :size "20px"]
            [re-com/checkbox
             :attr (tag :delete-checkbox)
             :model delete
-            :label (tr :ct/delete-popup-delete)
+            :label (tr :delete)
             :on-change #(swap! delete not)]
            [re-com/gap :size "20px"]
            (when-not @delete
              [:<>
-              [re-com/label :label (tr :ct/delete-popup-handle)]
+              [re-com/label :label (tr :handle)]
               [push-to-the-right
                [re-com/v-box
                 :children
                 [[re-com/gap :size "20px"]
-                 [radio-group color (tr :ct/delete-popup-color)
-                  [[:NeverReplace (tr :ct/delete-popup-color-leave)]
-                   [:ReplaceOnlyIfNotSet (tr :ct/delete-popup-color-conditional)]
-                   [:AlwaysReplace (tr :ct/delete-popup-color-always)]]]
+                 [radio-group color (tr :color/label)
+                  [[:NeverReplace (tr :color/leave)]
+                   [:ReplaceOnlyIfNotSet (tr :color/conditional)]
+                   [:AlwaysReplace (tr :color/always)]]]
                  [re-com/gap :size "20px"]
                  [re-com/checkbox
                   :attr (tag :note-checkbox)
                   :model note?
-                  :label (tr :ct/delete-popup-note)
+                  :label (tr :note)
                   :on-change #(swap! note? not)]
                  [re-com/gap :size "10px"]
                  (when @note? [push-to-the-right
@@ -820,7 +825,7 @@
             [[re-com/button
               :attr (tag :confirm)
               :class "btn btn-danger"
-              :label (tr :ct/delete-popup-confirm)
+              :label (tr :confirm)
               :on-click (fn []
                           (>evt [::e/delete-ct habit-id ct-id options])
                           (>evt [::e/locally-remove-habit-completions habit-id])
@@ -828,7 +833,7 @@
              [re-com/button
               :attr (tag :cancel)
               :class "btn btn-secondary"
-              :label (tr :ct/delete-popup-cancel)
+              :label (tr :cancel)
               :on-click close]]]]]))]))
 
 (def popups
