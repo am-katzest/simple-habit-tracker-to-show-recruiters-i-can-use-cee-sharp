@@ -338,3 +338,10 @@
  ::close-popup
  (fn [db _]
    (dissoc db :popup)))
+
+(re-frame/reg-event-db
+ ::locally-remove-habit-completions
+ (fn [db [_ habit-id]]
+   (-> db
+       (assoc-in  [:completion-download-statuses habit-id] {})
+       (assoc-in [:completions habit-id] {}))))

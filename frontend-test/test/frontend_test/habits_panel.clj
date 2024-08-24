@@ -168,12 +168,10 @@
        (f/click (h/list-item "meow"))
        (f/click :ct-list-item) ;;select the other one
        (f/click :ct-edit-delete)
-       (f/click :confirm-panel-confirm)
        ;; (f/click {:fn/text "meow" :tag :label})
        (absent? :ct-list-item)
        (exists? :ct-list-item-selected)
        (lazy-is (= "meow" (e/get-element-value (input :ct-edit-name))))
        (f/click :ct-edit-delete)
-       (f/click :confirm-panel-confirm)
        (absent? :ct-list-item)
        (absent? :ct-list-item-selected)))))
