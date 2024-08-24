@@ -18,10 +18,18 @@
 (defn tr [kw]
   (get-translation (split-kw kw)))
 
-; there's definitely room for improvement
+(defn add-prefix
+  ([kw]
+   (add-prefix (fn [] []) kw))
+  ([existing kws]
+   (let [path (concat (existing) (if (keyword? kws) (split-kw kws) kws))]
+     (fn ([] path)
+       ([last]
+        (get-translation (concat path (split-kw last))))))))
+
 (defn tr-error [str]
   (get-in @(re-frame/subscribe [:locale/map]) [:error str]))
-                                        ; there's definitely room for improvement
+
 (def one-big-dictionary
   {:eng
    (merge #:login
