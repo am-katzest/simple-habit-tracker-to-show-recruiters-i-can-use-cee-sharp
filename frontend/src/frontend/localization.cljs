@@ -1,10 +1,22 @@
 (ns frontend.localization
   (:require
    [frontend.errors :as e]
+   [clojure.string :as str]
    [re-frame.core :as re-frame]))
 
+(defn get-translation [path]
+  (let [map @(re-frame/subscribe [:locale/map])
+        result (get-in map path)]
+    (if (and result (string? result)) result
+        (str "translate(" path ")"))))
+
+(defn split-kw [kw]
+  (if-let [ns (namespace kw)]
+    (conj (mapv keyword (str/split ns ".")) (keyword (name kw)))
+    [kw]))
+
 (defn tr [kw]
-  (or (get @(re-frame/subscribe [:locale/map]) kw) (str "translate(:" kw ")")))
+  (get-translation (split-kw kw)))
 
 ; there's definitely room for improvement
 (defn tr-error [str]
