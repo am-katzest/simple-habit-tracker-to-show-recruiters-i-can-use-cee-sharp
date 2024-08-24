@@ -247,7 +247,7 @@
      :child
      (into [:div.list-group.w-100
             [:button.list-group-item.list-group-item-action.list-group-item-dark
-             (tag :add-new-habit :on-click #(>evt [::e/new-empty-habit]))
+             (tag :add-new-habit :on-click #(>evt [::e/new-empty-habit (tr :habit/new-habit)]))
              (tr :habit/add-new)]]
            (mapv (fn [[id name]]
                    [:button.list-group-item.list-group-item-action.w-100
@@ -335,7 +335,7 @@
      :child
      (into [:div.list-group.w-100
             [:button.list-group-item.list-group-item-action.list-group-item-dark
-             (tag :add-new-ct :on-click #(>evt [::e/new-empty-ct habit-id]))
+             (tag :add-new-ct :on-click #(>evt [::e/new-empty-ct habit-id (tr :ct/add-new)]))
              (tr :ct/add-new)]]
            (mapv (fn [[id ct]]
                    [:button.list-group-item.list-group-item-action.w-100
