@@ -77,32 +77,32 @@ public class HabitsController(IHabitService service) : ControllerBase
     [HttpPost("{habitId:int}/Completions/")]
     public async Task<ActionResult<int>> PostCompletion([ModelBinder][FromHeader] UserId user, int habitId, CompletionData data)
     {
-        var TypedHabitId = new HabitId(habitId, user);
-        return new((await service.AddCompletion(TypedHabitId, data.WithNormalizedDate())).Id);
+        var typedHabitId = new HabitId(habitId, user);
+        return new((await service.AddCompletion(typedHabitId, data.WithNormalizedDate())).Id);
     }
 
     [HttpPut("{habitId:int}/Completions/{completionId:int}")]
     public async Task<IActionResult> UpdateCompletion([ModelBinder][FromHeader] UserId user, int habitId, int completionId, CompletionData data)
     {
-        var TypedHabitId = new HabitId(habitId, user);
-        var TypedCompletionId = new CompletionId(completionId, TypedHabitId);
-        await service.UpdateCompletion(TypedCompletionId, data.WithNormalizedDate());
+        var typedHabitId = new HabitId(habitId, user);
+        var typedCompletionId = new CompletionId(completionId, typedHabitId);
+        await service.UpdateCompletion(typedCompletionId, data.WithNormalizedDate());
         return NoContent();
     }
 
     [HttpDelete("{habitId:int}/Completions/{completionId:int}")]
     public async Task<IActionResult> DeleteCompletion([ModelBinder][FromHeader] UserId user, int habitId, int completionId)
     {
-        var TypedHabitId = new HabitId(habitId, user);
-        var TypedCompletionId = new CompletionId(completionId, TypedHabitId);
-        await service.RemoveCompletion(TypedCompletionId);
+        var typedHabitId = new HabitId(habitId, user);
+        var typedCompletionId = new CompletionId(completionId, typedHabitId);
+        await service.RemoveCompletion(typedCompletionId);
         return NoContent();
     }
 
     [HttpGet("{habitId:int}/Completions/")]
     public async Task<ActionResult<List<CompletionDataId>>> GetCompletions([ModelBinder][FromHeader] UserId user, int habitId, [FromQuery] DateTime? after, [FromQuery] DateTime? before, [FromQuery] int? limit)
     {
-        var TypedHabitId = new HabitId(habitId, user);
-        return new(await service.GetCompletions(TypedHabitId, before?.Normalized(), after?.Normalized(), limit));
+        var typedHabitId = new HabitId(habitId, user);
+        return new(await service.GetCompletions(typedHabitId, before?.Normalized(), after?.Normalized(), limit));
     }
 }
