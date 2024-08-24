@@ -10,28 +10,28 @@ namespace HabitTracker.Controllers.UsersController;
 public class UsersController(IUserService service) : ControllerBase
 {
     [HttpPost("")]
-    public ActionResult<int> CreateUserLoginPassword(Credentials cred)
+    public async Task<ActionResult<int>> CreateUserLoginPassword(Credentials cred)
     {
-        return new(service.createPasswordUser(cred).Id);
+        return new((await service.createPasswordUser(cred)).Id);
     }
 
     [HttpPost("CreateToken")]
-    public ActionResult<string> GetAuthToken(Credentials cred)
+    public async Task<ActionResult<string>> GetAuthToken(Credentials cred)
     {
-        return new(service.createToken(cred));
+        return new(await service.createToken(cred));
     }
 
     [Authorize]
     [HttpGet("me")]
-    public ActionResult<AccountDetails> GetUserData([ModelBinder] UserId user)
+    public async Task<ActionResult<AccountDetails>> GetUserData([ModelBinder] UserId user)
     {
-        return new(service.GetAccountDetails(user));
+        return new(await service.GetAccountDetails(user));
     }
     [Authorize]
     [HttpDelete("me")]
-    public ActionResult<bool> DeleteUser([ModelBinder] UserId user)
+    public async Task<ActionResult<bool>> DeleteUser([ModelBinder] UserId user)
     {
-        service.deleteUser(user);
+        await service.deleteUser(user);
         return new(true);
     }
 }
