@@ -3,7 +3,7 @@ using HabitTracker.Exceptions;
 using static System.Net.HttpStatusCode;
 
 namespace HabitTracker.Tests;
-public class HabitControllerTest(HostFixture fixture) : IClassFixture<HostFixture>
+public class HabitsControllerTest(HostFixture fixture) : IClassFixture<HostFixture>
 {
     [Fact]
     public async Task HabitCreationAndGetting()

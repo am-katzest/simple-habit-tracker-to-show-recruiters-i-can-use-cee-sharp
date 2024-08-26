@@ -10,9 +10,9 @@ public class UserServiceTest(CreatedDatabaseFixture fixture) : IClassFixture<Cre
     private IUserService MakeService(IClock clock) => new UserService(fixture.MakeContext(), clock);
 
     [Fact]
-    public void UserCreationWorks()
+    public async Task UserCreationWorks()
     {
-        MakeService().createPasswordUser(new("kitty", "password"));
+        await MakeService().createPasswordUser(new("kitty", "password"));
         var u = fixture.MakeContext().Users.Include(u => u.Auth).Single(u => u.DisplayName == "kitty");
         Assert.NotNull(u);
         Assert.Equal("kitty", u.DisplayName);
@@ -29,90 +29,90 @@ public class UserServiceTest(CreatedDatabaseFixture fixture) : IClassFixture<Cre
     }
 
     [Fact]
-    public void InsertingDuplicateUser()
+    public async Task InsertingDuplicateUser()
     {
-        MakeService().createPasswordUser(new("awawa", "passwd"));
+        await MakeService().createPasswordUser(new("awawa", "passwd"));
         var count = fixture.MakeContext().Users.Count();
-        Assert.Throws<DuplicateUsernameException>(() => MakeService().createPasswordUser(new("awawa", "passwd")));
+        await Assert.ThrowsAsync<DuplicateUsernameException>(async () => await MakeService().createPasswordUser(new("awawa", "passwd")));
         var after = fixture.MakeContext().Users.Count();
         Assert.Equal(count, after);
     }
 
     [Fact]
-    public void TokenCreationTest()
+    public async Task TokenCreationTest()
     {
-        MakeService().createPasswordUser(new("e", "f"));
-        var t1 = MakeService().createToken(new("e", "f"));
-        var t2 = MakeService().createToken(new("e", "f"));
+        await MakeService().createPasswordUser(new("e", "f"));
+        var t1 = await MakeService().createToken(new("e", "f"));
+        var t2 = await MakeService().createToken(new("e", "f"));
         Assert.NotEqual(t1, t2);
     }
 
     [Fact]
-    public void TokenCreationInvalid()
+    public async Task TokenCreationInvalid()
     {
-        MakeService().createPasswordUser(new("f", "g"));
-        Assert.Throws<InvalidUsernameOrPasswordException>(() => MakeService().createToken(new("f", "blah")));
-        Assert.Throws<InvalidUsernameOrPasswordException>(() => MakeService().createToken(new("not", "blah")));
+        await MakeService().createPasswordUser(new("f", "g"));
+        await Assert.ThrowsAsync<InvalidUsernameOrPasswordException>(async () => await MakeService().createToken(new("f", "blah")));
+        await Assert.ThrowsAsync<InvalidUsernameOrPasswordException>(async () => await MakeService().createToken(new("not", "blah")));
     }
 
     [Fact]
-    public void TokenValidationPositive()
+    public async Task TokenValidationPositive()
     {
 
-        MakeService().createPasswordUser(new("d", "e"));
-        var t1 = MakeService().createToken(new("d", "e"));
-        var u = MakeService().validateToken(t1);
-        Assert.Equal("d", MakeService().GetAccountDetails(u).DisplayName);
+        await MakeService().createPasswordUser(new("d", "e"));
+        var t1 = await MakeService().createToken(new("d", "e"));
+        var u = await MakeService().validateToken(t1);
+        Assert.Equal("d", (await MakeService().GetAccountDetails(u)).DisplayName);
     }
 
     [Fact]
-    public void TokenValidationNegative()
+    public async Task TokenValidationNegative()
     {
-        MakeService().createPasswordUser(new("c", "d"));
-        var t1 = MakeService().createToken(new("c", "d"));
-        Assert.Throws<InvalidTokenException>(() => MakeService().validateToken(""));
-        Assert.Throws<InvalidTokenException>(() => MakeService().validateToken(t1 + "a"));
-        Assert.Throws<InvalidTokenException>(() => MakeService(new ConstantClock(DateTime.Now.AddYears(1))).validateToken(t1));
+        await MakeService().createPasswordUser(new("c", "d"));
+        var t1 = await MakeService().createToken(new("c", "d"));
+        await Assert.ThrowsAsync<InvalidTokenException>(async () => await MakeService().validateToken(""));
+        await Assert.ThrowsAsync<InvalidTokenException>(async () => await MakeService().validateToken(t1 + "a"));
+        await Assert.ThrowsAsync<InvalidTokenException>(async () => await MakeService(new ConstantClock(DateTime.Now.AddYears(1))).validateToken(t1));
     }
 
     [Fact]
-    public void TokenDeletionTest()
+    public async Task TokenDeletionTest()
     {
-        MakeService().createPasswordUser(new("kittyy", "password"));
-        var t1 = MakeService().createToken(new("kittyy", "password"));
-        var t2 = MakeService().createToken(new("kittyy", "password"));
-        MakeService().removeToken(t2);
-        Assert.NotNull(MakeService().validateToken(t1));
-        Assert.Throws<InvalidTokenException>(() => MakeService().validateToken(t2));
+        await MakeService().createPasswordUser(new("kittyy", "password"));
+        var t1 = await MakeService().createToken(new("kittyy", "password"));
+        var t2 = await MakeService().createToken(new("kittyy", "password"));
+        await MakeService().removeToken(t2);
+        Assert.NotNull(await MakeService().validateToken(t1));
+        await Assert.ThrowsAsync<InvalidTokenException>(async () => await MakeService().validateToken(t2));
     }
 
     [Fact]
-    public void UserDeletionTest()
+    public async Task UserDeletionTest()
     {
         var s = MakeService();
-        s.createPasswordUser(new("a", "b"));
-        var t = s.createToken(new("a", "b"));
-        var t2 = s.createToken(new("a", "b"));
-        s.deleteUser(s.validateToken(t));
-        Assert.Throws<InvalidTokenException>(() => s.validateToken(t));
-        Assert.Throws<InvalidTokenException>(() => s.validateToken(t2));
+        await s.createPasswordUser(new("a", "b"));
+        var t = await s.createToken(new("a", "b"));
+        var t2 = await s.createToken(new("a", "b"));
+        await s.deleteUser(await s.validateToken(t));
+        await Assert.ThrowsAsync<InvalidTokenException>(async () => await s.validateToken(t));
+        await Assert.ThrowsAsync<InvalidTokenException>(async () => await s.validateToken(t2));
     }
 
     [Fact]
-    public void TokenClearingTest()
+    public async Task TokenClearingTest()
     {
         var time1 = new ConstantClock(DateTime.Now.AddDays(531));
         var time11 = new ConstantClock(DateTime.Now.AddMinutes(5));
         var time2 = new ConstantClock(DateTime.Now.AddDays(535));
 
-        MakeService(time1).clearExpiredTokens();
+        await MakeService(time1).clearExpiredTokens();
         // from other tests
-        var leftovers = fixture.MakeContext().Tokens.Count();
-        MakeService(time1).createPasswordUser(new("b", "c"));
-        var t1 = MakeService(time1).createToken(new("b", "c"));
-        var t11 = MakeService(time11).createToken(new("b", "c"));
-        var t2 = MakeService(time2).createToken(new("b", "c"));
-        MakeService(time2).clearExpiredTokens();
-        Assert.Equal(2, fixture.MakeContext().Tokens.Count() - leftovers);
+        var leftovers = await fixture.MakeContext().Tokens.CountAsync();
+        await MakeService(time1).createPasswordUser(new("b", "c"));
+        var t1 = await MakeService(time1).createToken(new("b", "c"));
+        var t11 = await MakeService(time11).createToken(new("b", "c"));
+        var t2 = await MakeService(time2).createToken(new("b", "c"));
+        await MakeService(time2).clearExpiredTokens();
+        Assert.Equal(2, (await fixture.MakeContext().Tokens.CountAsync()) - leftovers);
     }
 }
