@@ -2,7 +2,6 @@
   (:require
    [re-frame.core :as re-frame]
    [frontend.db :as db]
-   [frontend.localization :refer [tr]]
    [ajax.core :as ajax]
    [frontend.data-helpers :as dh]
    [frontend.alert-formatting :refer [format-alert]]
@@ -158,8 +157,8 @@
 
 (reg-event-http
  ::new-empty-habit
- (fn []
-   (let [data (dh/normalize-habit {:name (tr :habit/new-habit)})]
+ (fn [name]
+   (let [data (dh/normalize-habit {:name name})]
      [:post "/habits/" [::empty-habit-created data] ::http-error :params data])))
 
 (re-frame/reg-event-db
@@ -223,11 +222,10 @@
 
 (reg-event-http
  ::new-empty-ct
- (fn [id]
+ (fn [habit-id name]
    (let [color "#555555"
-         name (tr :ct/new-ct)
          new-ct (dh/normalize-ct {:name name :color color})]
-     [:post (str "/habits/" id "/completionTypes/") [::receive-newly-created-ct id new-ct] [::http-error {:data {:habit-id id}}] :params new-ct])))
+     [:post (str "/habits/" habit-id "/completionTypes/") [::receive-newly-created-ct habit-id new-ct] [::http-error {:data {:habit-id habit-id}}] :params new-ct])))
 
 (re-frame/reg-event-db
  ::receive-newly-created-ct
