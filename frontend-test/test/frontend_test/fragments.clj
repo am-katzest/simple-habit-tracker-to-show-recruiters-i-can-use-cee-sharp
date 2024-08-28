@@ -8,14 +8,18 @@
   (s/use-driver
    e/go
    (wait-enabled (h/fix p))
-   (e/click (h/fix p))))
+   (try (e/click (h/fix p))
+        (catch Throwable _
+          (is false (str "can't click " p))))))
 
 (defn fill [p text]
   (s/use-driver
    e/go
-   (wait-enabled (h/fix p))
-   (e/clear (h/fix p))
-   (e/fill (h/fix p) text)))
+   (try
+     (e/clear (h/fix p))
+     (e/fill (h/fix p) text)
+     (catch Throwable _
+       (is false (str "can't fill " p))))))
 
 (defn goto-login []
   (s/use-driver
