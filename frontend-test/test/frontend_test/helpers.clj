@@ -65,8 +65,8 @@
   (reduce str (drop-while (complement #{\?}) s)))
 
 (def short-wait
-  {:timeout 0.5
-   :interval 0.01})
+  {:timeout 2
+   :interval 0.03})
 (defmacro with-wait [params & exprs]
   `(binding [e/*wait-timeout* (:timeout ~params)
              e/*wait-interval* (:interval ~params)]
