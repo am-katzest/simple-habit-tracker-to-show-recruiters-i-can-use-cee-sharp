@@ -18,6 +18,9 @@
    (try
      (e/clear (h/fix p))
      (e/fill (h/fix p) text)
+     ;; i don't see any way to guarantee that
+     ;; input will'll get processed before what happens next
+     (e/wait 0.1)
      (catch Throwable _
        (is false (str "can't fill " p))))))
 
