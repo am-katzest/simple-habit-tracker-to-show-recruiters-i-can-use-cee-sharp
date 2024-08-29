@@ -33,7 +33,7 @@
 (defn tag [tag & kvs]
   (apply assoc {} :data-testid (join-keyword-ns tag) kvs))
 
-(defn make-tag [part1]
+(defn add-prefix-tag [part1]
   (fn [part2 & rest]
     (apply tag (join-keywords part1 part2) rest)))
 
@@ -63,7 +63,7 @@
 (defn save-undo-delete [base modified? valid? save undo delete deletion-confirm-text]
   (let [deleting? (r/atom false)]
     [(fn []
-       (let [tag (make-tag base)]
+       (let [tag (add-prefix-tag base)]
          [re-com/h-box
           :gap "5px"
           :align :center
@@ -225,7 +225,7 @@
 
 (defn navbar [panel]
   (let [tr-nav (add-prefix :nav)
-        tag-nav (make-tag :nav)]
+        tag-nav (add-prefix-tag :nav)]
     [:nav.navbar.navbar-light.bg-light
      [:div.container-fluid
       [:a.navbar-brand "habit tracker"]
@@ -780,7 +780,7 @@
         note (r/atom "")
         color (r/atom :NeverReplace)
         delete (r/atom false)
-        tag (make-tag :delete-popup)
+        tag (add-prefix-tag :delete-popup)
         tr (add-prefix [:ct :delete-popup])]
     [(fn []
        (let [options (cond-> {:delete @delete :color-strategy :NeverReplace}
