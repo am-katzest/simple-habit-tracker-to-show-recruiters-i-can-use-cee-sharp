@@ -233,6 +233,7 @@
        :gap "20px"
        :children (->> [[:account ::e/account-panel]
                        [:habits ::e/habits-panel]
+                       [:about ::e/display-about-popup]
                        [:logout ::e/logout]]
                       (map (fn [[id evt]]
                              [re-com/button
@@ -859,8 +860,10 @@
                   :attr (tag :about-close)
                   :label (tr :close)
                   :on-click close]]]]))
+
 (def popups
-  {:completion-type-delete-options-popup  ct-delete-popup})
+  {:completion-type-delete-options-popup  ct-delete-popup
+   :about-popup about-popup})
 
 (defn popup []
   (when-let [result @(<sub [::subs/popup])]
