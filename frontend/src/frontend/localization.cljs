@@ -42,8 +42,17 @@
      :password "password"
      :repeat "repeat password"
      :username "username"}
+    :about
+    {:title "about this app"
+     :body "simple habit tracker was created mostly out of boredom, feel free to use this instance, run your own or modify source"
+     :license-pre "this software is published under the "
+     :license-post " license"
+     :source-at "source code avialable at "
+     :source-at-github-clickable "github"
+     :close "close"}
     :nav
     {:logout "logout"
+     :about "about"
      :account "account"
      :habits "habits"}
     :habit

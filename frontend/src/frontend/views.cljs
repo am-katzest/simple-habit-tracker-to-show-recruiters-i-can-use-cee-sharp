@@ -838,6 +838,27 @@
               :label (tr :cancel)
               :on-click close]]]]]))]))
 
+(defn about-popup [close]
+  (let [tr (add-prefix :about)]
+    [re-com/v-box
+     :width "400px"
+     :gap "20px"
+     :children [[:h4 (tr :title)]
+                [:span (tr :body)]
+                [:span (tr :license-pre)
+                 [:a {:href "https://www.gnu.org/licenses/agpl-3.0.en.html"} "AGPLv3"]
+                 (tr :license-post)]
+                [:span (tr :source-at)
+                 [:a {:href "https://github.com/am-katzest/simple-habit-tracker-to-show-recruiters-i-can-use-cee-sharp"}
+                  (tr :source-at-github-clickable)]]
+                [re-com/box
+                 :align-self :end
+                 :child
+                 [re-com/button
+                  :class "btn btn-secondary"
+                  :attr (tag :about-close)
+                  :label (tr :close)
+                  :on-click close]]]]))
 (def popups
   {:completion-type-delete-options-popup  ct-delete-popup})
 
