@@ -343,3 +343,8 @@
    (-> db
        (assoc-in  [:completion-download-statuses habit-id] {})
        (assoc-in [:completions habit-id] {}))))
+
+(re-frame/reg-event-db
+ ::display-about-popup
+ (fn [db _]
+   (assoc db :popup [:about-popup])))
