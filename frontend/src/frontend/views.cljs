@@ -224,20 +224,22 @@
              [register-form (reset :select)]))])]]]])
 
 (defn navbar [panel]
-  [:nav.navbar.navbar-light.bg-light
-   [:div.container-fluid
-    [:a.navbar-brand "habit tracker"]
-    [re-com/h-box
-     :gap "20px"
-     :children (->> [[:account :nav-account :nav/account ::e/account-panel]
-                     [:habits :nav-habits :nav/habits ::e/habits-panel]
-                     [nil :nav-logout :nav/logout ::e/logout]]
-                    (map (fn [[id nav trans evt]]
-                           [re-com/button
-                            :label (tr trans)
-                            :class (if (= id panel) "btn-white nav-disabled" "btn-white")
-                            :attr (tag nav)
-                            :on-click #(>evt [evt])])))]]])
+  (let [tr-nav (add-prefix :nav)
+        tag-nav (make-tag :nav)]
+    [:nav.navbar.navbar-light.bg-light
+     [:div.container-fluid
+      [:a.navbar-brand "habit tracker"]
+      [re-com/h-box
+       :gap "20px"
+       :children (->> [[:account ::e/account-panel]
+                       [:habits ::e/habits-panel]
+                       [:logout ::e/logout]]
+                      (map (fn [[id evt]]
+                             [re-com/button
+                              :label (tr-nav id)
+                              :class (if (= id panel) "btn-white nav-disabled" "btn-white")
+                              :attr (tag-nav id)
+                              :on-click #(>evt [evt])])))]]]))
 
 (defn habit-list []
   (let [habits @(<sub [::subs/habit-names])
