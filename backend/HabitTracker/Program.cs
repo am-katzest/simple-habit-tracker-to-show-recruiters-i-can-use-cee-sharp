@@ -10,6 +10,7 @@ builder.Services.AddAuth();
 var app = builder.Build();
 {
     var ctx = app.Services.GetRequiredService<HabitTrackerContext>();
+    ctx.Database.EnsureDeleted();
     ctx.Database.EnsureCreated(); // temporary
 }
 app.UseAuthentication();

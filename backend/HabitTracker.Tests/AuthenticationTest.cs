@@ -7,11 +7,11 @@ using Microsoft.AspNetCore.TestHost;
 
 namespace HabitTracker.Tests;
 
-public class AuthenticationTest(CreatedDatabaseFixture Fixture) : IClassFixture<CreatedDatabaseFixture>
+public class AuthenticationTest(CreatedDatabaseFixture fixture) : IClassFixture<CreatedDatabaseFixture>
 {
 
     private IUserService MakeService() => MakeService(new RealClock());
-    private IUserService MakeService(IClock clock) => new UserService(Fixture.MakeContext(), clock);
+    private IUserService MakeService(IClock clock) => new UserService(fixture.MakeContext(), clock);
 
     private IHost makeHost()
     {
@@ -55,8 +55,8 @@ public class AuthenticationTest(CreatedDatabaseFixture Fixture) : IClassFixture<
     [Fact]
     public async Task Negative()
     {
-        MakeService().createPasswordUser(new("a", "b"));
-        var t = MakeService().createToken(new("a", "b"));
+        await MakeService().createPasswordUser(new("a", "b"));
+        var t = await MakeService().createToken(new("a", "b"));
         Assert.NotNull(MakeService().validateToken(t));
         using var h = makeHost();
         var c = h.GetTestClient();
@@ -71,9 +71,9 @@ public class AuthenticationTest(CreatedDatabaseFixture Fixture) : IClassFixture<
     [Fact]
     public async Task Positive()
     {
-        MakeService().createPasswordUser(new("meow", "b"));
-        var t = MakeService().createToken(new("meow", "b"));
-        Assert.NotNull(MakeService().validateToken(t));
+        await MakeService().createPasswordUser(new("meow", "b"));
+        var t = await MakeService().createToken(new("meow", "b"));
+        Assert.NotNull(await MakeService().validateToken(t));
         using var h = makeHost();
         var c = h.GetTestClient();
         c.UseToken(t);

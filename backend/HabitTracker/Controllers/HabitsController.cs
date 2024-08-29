@@ -1,4 +1,5 @@
 using HabitTracker.DTOs;
+using HabitTracker.Helpers;
 using HabitTracker.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,57 +9,100 @@ namespace HabitTracker.Controllers.HabitsController;
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
-public class HabitsController(IHabitService Service) : ControllerBase
+public class HabitsController(IHabitService service) : ControllerBase
 {
     [HttpPost("")]
-    public ActionResult<int> CreateHabit([FromHeader][ModelBinder] UserId user, HabitNameDescription habit)
+    public async Task<ActionResult<int>> CreateHabit([FromHeader][ModelBinder] UserId user, HabitNameDescription habit)
     {
-        return new(Service.addHabit(habit, user).Id);
+        return new((await service.addHabit(habit, user)).Id);
     }
     [HttpGet("")]
-    public ActionResult<List<HabitNameId>> getHabits([ModelBinder] UserId user)
+    public async Task<ActionResult<List<HabitNameId>>> getHabits([ModelBinder] UserId user)
     {
-        return new(Service.getHabits(user));
+        return new(await service.getHabits(user));
     }
     [HttpGet("{Id:int}")]
-    public ActionResult<HabitNameDescriptionId> getHabitDetails([ModelBinder] UserId user, int id)
+    public async Task<ActionResult<HabitNameDescriptionId>> getHabitDetails([ModelBinder] UserId user, int id)
     {
-        return new(Service.getHabitDetails(new(id, user)));
+        return new(await service.getHabitDetails(new(id, user)));
     }
     [HttpDelete("{Id:int}")]
-    public void deleteHabit([ModelBinder] UserId user, int id)
+    public async Task<IActionResult> deleteHabit([ModelBinder] UserId user, int id)
     {
-        Service.RemoveHabit(new(id, user));
+        await service.RemoveHabit(new(id, user));
+        return NoContent();
     }
     [HttpPut("{Id:int}")]
-    public void updateHabit([ModelBinder][FromHeader] UserId user, int id, HabitNameDescription habit)
+    public async Task<IActionResult> updateHabit([ModelBinder][FromHeader] UserId user, int id, HabitNameDescription habit)
     {
-        Service.UpdateHabit(new(id, user), habit);
+        await service.UpdateHabit(new(id, user), habit);
+        return NoContent();
     }
 
-    [HttpPost("{Hid:int}/CompletionTypes")]
-    public ActionResult<int> CreateCompletionType([ModelBinder][FromHeader] UserId user, int Hid, CompletionTypeData ct)
+    [HttpPost("{habitId:int}/CompletionTypes")]
+    public async Task<ActionResult<int>> CreateCompletionType([ModelBinder][FromHeader] UserId user, int habitId, CompletionTypeData ct)
     {
-        return new(Service.AddCompletionType(new(Hid, user), ct).Id);
+        return new((await service.AddCompletionType(new(habitId, user), ct)).Id);
     }
 
-    [HttpPut("{Hid:int}/CompletionTypes/{Ctid:int}")]
-    public void UpdateCompletionType([ModelBinder][FromHeader] UserId user, int Hid, int Ctid, CompletionTypeData ct)
+    [HttpPut("{habitId:int}/CompletionTypes/{completionTypeId:int}")]
+    public async Task<IActionResult> UpdateCompletionType([ModelBinder][FromHeader] UserId user, int habitId, int completionTypeId, CompletionTypeData ct)
     {
-        var id = new CompletionTypeId(Ctid, new(Hid, user));
-        Service.UpdateCompletionType(id, ct);
+        var id = new CompletionTypeId(completionTypeId, new(habitId, user));
+        await service.UpdateCompletionType(id, ct);
+        return NoContent();
     }
 
-    [HttpDelete("{Hid:int}/CompletionTypes/{Ctid:int}")]
-    public void UpdateCompletionType([ModelBinder][FromHeader] UserId user, int Hid, int Ctid)
+    [HttpDelete("{habitId:int}/CompletionTypes/{completionTypeId:int}")]
+    public async Task<IActionResult> DeleteCompletionType([ModelBinder][FromHeader] UserId user, int habitId, int completionTypeId, [FromQuery] CompletionTypeRemovalStrategy s, [FromQuery] bool? deleteCompletions = null)
     {
-        var id = new CompletionTypeId(Ctid, new(Hid, user));
-        Service.RemoveCompletionType(id);
+        var id = new CompletionTypeId(completionTypeId, new(habitId, user));
+        if (deleteCompletions is null) //should be (s is null), but complex types are always bound to default values
+        {
+            await service.RemoveCompletionType(id);
+        }
+        else
+        {
+            await service.RemoveCompletionType(id, s);
+        }
+        return NoContent();
     }
 
-    [HttpGet("{Hid:int}/CompletionTypes/")]
-    public ActionResult<List<CompletionTypeDataId>> UpdateCompletionType([ModelBinder][FromHeader] UserId user, int Hid)
+    [HttpGet("{habitId:int}/CompletionTypes/")]
+    public async Task<ActionResult<List<CompletionTypeDataId>>> GetCompletionTypes([ModelBinder][FromHeader] UserId user, int habitId)
     {
-        return new(Service.GetCompletionTypes(new(Hid, user)));
+        return new(await service.GetCompletionTypes(new(habitId, user)));
+    }
+
+    [HttpPost("{habitId:int}/Completions/")]
+    public async Task<ActionResult<int>> PostCompletion([ModelBinder][FromHeader] UserId user, int habitId, CompletionData data)
+    {
+        var typedHabitId = new HabitId(habitId, user);
+        return new((await service.AddCompletion(typedHabitId, data.WithNormalizedDate())).Id);
+    }
+
+    [HttpPut("{habitId:int}/Completions/{completionId:int}")]
+    public async Task<IActionResult> UpdateCompletion([ModelBinder][FromHeader] UserId user, int habitId, int completionId, CompletionData data)
+    {
+        var typedHabitId = new HabitId(habitId, user);
+        var typedCompletionId = new CompletionId(completionId, typedHabitId);
+        await service.UpdateCompletion(typedCompletionId, data.WithNormalizedDate());
+        return NoContent();
+    }
+
+    [HttpDelete("{habitId:int}/Completions/{completionId:int}")]
+    public async Task<IActionResult> DeleteCompletion([ModelBinder][FromHeader] UserId user, int habitId, int completionId)
+    {
+        var typedHabitId = new HabitId(habitId, user);
+        var typedCompletionId = new CompletionId(completionId, typedHabitId);
+        await service.RemoveCompletion(typedCompletionId);
+        return NoContent();
+    }
+
+    [HttpGet("{habitId:int}/Completions/")]
+    public async Task<ActionResult<List<CompletionDataId>>> GetCompletions([ModelBinder][FromHeader] UserId user, int habitId, [FromQuery] DateTime? after, [FromQuery] DateTime? before, [FromQuery] int? limit)
+    {
+        var typedHabitId = new HabitId(habitId, user);
+        return new(await service.GetCompletions(typedHabitId, before?.Normalized(), after?.Normalized(), limit));
     }
 }

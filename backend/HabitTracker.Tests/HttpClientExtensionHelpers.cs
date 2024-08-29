@@ -38,11 +38,18 @@ public static class HttpClientExtensionMethods
         var u = Interlocked.Increment(ref idseq);
         return await c.RegisterUser(new($"unique_user_{u}", "password123"));
     }
+
     public static async Task<int> NewHabit(this HttpClient c)
     {
         await c.RegisterNewUniqueUser();
         return await c.PostAsJsonAsync("api/habits/", new HabitNameDescription("test_habit", null)).Id();
     }
+
+    public static async Task<int> NewCompletionType(this HttpClient c, int habit)
+    {
+        return await c.PostAsJsonAsync($"api/habits/{habit}/completionTypes/", new CompletionTypeData("#333333", "name", null)).Id();
+    }
+
     public static async Task<int> Id(this Task<HttpResponseMessage> r)
     {
         var m = await r;

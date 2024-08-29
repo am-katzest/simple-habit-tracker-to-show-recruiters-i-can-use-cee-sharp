@@ -1,71 +1,26 @@
 (ns frontend-test.login
   (:require [clojure.test :refer [deftest testing is are]]
             [frontend-test.setup :as s :refer-macros true]
-            [frontend-test.helpers :refer [btn input wait-enabled wait-disabled wait-exists wait-predicate query] :as h  :refer-macros true]
+            [frontend-test.helpers :refer [btn input wait-enabled wait-disabled wait-exists wait-predicate query random-str lazy-is exists? absent?] :as h  :refer-macros true]
+            [frontend-test.fragments :as f]
             [etaoin.api :as e]))
 
-(defn goto-login []
-  (s/use-driver
-   e/go
-   (e/go s/ROOT)
-   (wait-exists (btn :login))
-   (e/click (btn :login))
-   (wait-exists (btn :login-button))
-   (is (e/exists? (btn :login-button false)))))
-
-(defn goto-register []
-  (s/use-driver
-   e/go
-   (e/go s/ROOT)
-   (wait-exists (btn :new-account))
-   (e/click (btn :new-account))
-   (wait-exists (btn :register-button))
-   (is (e/exists? (btn :register-button false)))))
-
-(defn login-as [username password]
-  (s/use-driver
-   e/go
-   (goto-login)
-   (is (e/exists? (btn :login-button false)))
-   (e/fill (input :login-password) password)
-   (wait-disabled (btn :login-button))
-   (e/fill (input :login-username) username)
-   (wait-enabled (btn :login-button))
-   (e/wait 0.1)
-   (e/click (btn :login-button))
-   (wait-predicate #(or (e/exists? (btn :nav-logout))
-                        (e/has-text? "invalid username or password"))) ; placeholder (only english)
-   (e/exists? (btn :nav-logout))))
-
-(defn- create-user [username password]
-  (s/use-driver
-   e/go
-   (goto-register)
-   (e/fill (input :register-username) username)
-   (e/fill (input :register-password) password)
-   (e/fill (input :register-password2) password)
-   (wait-enabled (btn :register-button))
-   (e/click (btn :register-button))))
-
-(defn random-str []
-  (reduce str (take 15 (str (random-uuid)))))
-
-(deftest login-test
+(deftest ^:parallel login-test
   (s/use-new-driver
    e/go
    (h/with-wait h/short-wait
      (e/go s/ROOT)
      (wait-exists {:tag :button})
      (testing "changes url"
-       (is (= "?panel=login" (query (e/get-url)))))
+       (lazy-is (= "?panel=login" (query (e/get-url)))))
      (testing "option screen is shown"
-       (is (e/has-text? (btn :login) "login"))
+       (lazy-is (e/has-text? (btn :login) "login"))
        (is (e/has-text? (btn :new-account) "new account")))
      (testing "logging in negative wrong cred"
-       (is (not (login-as (random-str) (random-str)))))
+       (is (not (f/login-as (random-str) (random-str)))))
      (testing "user creation negative, checking works"
-       (goto-register)
-       (is (e/exists? (btn :register-button false)))
+       (f/goto-register)
+       (lazy-is (e/exists? (btn :register-button false)))
        (e/fill (input :register-username) "meow")
        (e/fill (input :register-password) "awawa")
        (e/fill (input :register-password2) "awawa")
@@ -83,26 +38,55 @@
      (let [username (random-str)
            password (random-str)]
        (testing "user creation positive"
-         (create-user username password)
-         (testing "username visible"
-           (e/has-text? username))
-         (wait-exists (btn :nav-logout))
+         (f/create-user username password)
+         (f/wait-logged-in)
          (testing "query changed"
-           (is (= "?panel=home" (query (e/get-url))))))
+           (is (= "?panel=habits" (query (e/get-url)))))
+         (testing "username visible"
+           (f/goto-panel :nav-account)
+           (lazy-is (e/has-text? username))))
        (testing "url sets correctly when token exits"
          (e/go s/ROOT)
-         (wait-exists (btn :nav-logout))
-         (is (= "?panel=home" (query (e/get-url)))))
+         (f/wait-logged-in)
+         (is (= "?panel=habits" (query (e/get-url)))))
        (testing "logging out"
          (e/click (btn :nav-logout))
          (wait-exists (btn :login))
          (is (= "?panel=login" (query (e/get-url)))))
        (testing "logging in"
-         (is (login-as username password))
+         (is (f/login-as username password))
          (testing "url changed"
-           (is (= "?panel=home" (query (e/get-url)))))
+           (lazy-is (= "?panel=habits" (query (e/get-url)))))
          (testing "username visible"
-           (e/has-text? username)))))))
+           (f/goto-panel :nav-account)
+           (lazy-is (e/has-text? username))))))))
+
+(deftest ^:parallel login-navigation-buttons-test
+  (s/use-new-driver
+   e/go
+   (h/with-wait h/short-wait
+     (e/go s/ROOT)
+     (testing "initial"
+       (exists? (btn :login))
+       (exists? (btn :new-account)))
+     (testing "go-back button exists on register form"
+       (f/click (btn :new-account))
+       (exists? (btn :register-button))
+       (exists? (btn :register-go-back-button)))
+     (testing "go-back button on register form works"
+       (f/click (btn :register-go-back-button))
+       (exists? (btn :login))
+       (exists? (btn :new-account))
+       (absent? (btn :register-button)))
+     (testing "go-back button exists on login form"
+       (f/click (btn :login))
+       (exists? (btn :login-button))
+       (exists? (btn :login-go-back-button)))
+     (testing "go-back button on login form works"
+       (f/click (btn :login-go-back-button))
+       (exists? (btn :login))
+       (exists? (btn :new-account))
+       (absent? (btn :login-button))))))
 
 (comment
   (def d (e/firefox))

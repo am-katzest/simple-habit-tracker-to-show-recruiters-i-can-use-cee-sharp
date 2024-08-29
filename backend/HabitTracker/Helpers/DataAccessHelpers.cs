@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore;
 namespace HabitTracker.Helpers;
 public static class DataAccessExtensionMethods
 {
-    public static User? GetUserByUsername(this HabitTrackerContext ctx, String username)
+    public static async Task<User?> GetUserByUsername(this HabitTrackerContext ctx, String username)
     {
         try
         {
-            return ctx.Users.Include(u => u.Auth).Single(u => (u.Auth is LoginPassword) && ((LoginPassword)u.Auth).Username == username);
+            return await ctx.Users.Include(u => u.Auth).SingleAsync(u => (u.Auth is LoginPassword) && ((LoginPassword)u.Auth).Username == username);
         }
         catch (InvalidOperationException)
         {

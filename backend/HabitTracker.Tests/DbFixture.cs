@@ -5,7 +5,7 @@ namespace HabitTracker.Tests;
 
 public class ContainerHolder
 {
-    private static Lazy<DbContainer> _instance = new(() => new());
+    private static readonly Lazy<DbContainer> _instance = new(() => new());
 
     public static DbContainer Container { get => _instance.Value; }
 }
