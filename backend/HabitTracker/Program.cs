@@ -1,4 +1,5 @@
 using HabitTracker.Helpers;
+using Microsoft.EntityFrameworkCore;
 using HabitTracker.Models;
 
 
@@ -10,8 +11,7 @@ builder.Services.AddAuth();
 var app = builder.Build();
 {
     var ctx = app.Services.GetRequiredService<HabitTrackerContext>();
-    ctx.Database.EnsureDeleted();
-    ctx.Database.EnsureCreated(); // temporary
+    ctx.Database.Migrate();
 }
 app.UseAuthentication();
 app.UseRouting();
