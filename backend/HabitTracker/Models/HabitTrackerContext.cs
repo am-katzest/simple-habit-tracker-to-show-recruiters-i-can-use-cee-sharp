@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HabitTracker.Models;
 
-public class HabitTrackerContext(String connectionString) : DbContext
+public class HabitTrackerContext(String connectionString = null!) : DbContext
 {
     public DbSet<User> Users { get; set; } = null!;
 
