@@ -1,12 +1,6 @@
 # simple habit tracker
 
 
-# backend tests
-
-``` sh
-cd backend
-dotnet test
-```
 
 # gui developement
 

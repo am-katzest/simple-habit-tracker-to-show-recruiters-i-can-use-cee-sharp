@@ -23,3 +23,10 @@ To prevent users from accessing others' data despite "sharing" id "namespace" ea
 Most tests depend on postgresql docker container (see `backend/HabitTracker.Tests/DbContainer`) to run.
 
 A lot of tests are duplicated between controller and service layers, should probably fix that with a spy mock...
+
+to run backend tests:
+
+``` sh
+cd backend
+dotnet test
+```
