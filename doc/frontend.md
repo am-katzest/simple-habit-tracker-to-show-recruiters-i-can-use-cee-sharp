@@ -2,6 +2,10 @@
 
 Frontend is a simple, reactive `re-frame` app
 
+## Error Handling
+
+when api call returns error it displays appropriate message and tries its best to reload stale data without failing.
+
 ## Developement
 
 1. start backend (and frontend that's going to be replaced)

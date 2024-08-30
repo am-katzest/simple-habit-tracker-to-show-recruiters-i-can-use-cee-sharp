@@ -6,6 +6,11 @@ Backend is an asp.net app of fairly standard architecture.
 
 IDs used for communication between services and controllers are typed to reduce chance of certain mistakes and because a lot of them are composite (eg. `HabitId` contains `UserId`).
 
+## Errors
+
+when service layer encounters error it throws `UserVisibleException`, containing http error code and error code in a form of descriptive string. 
+These Exceptions are caught by `backend/HabitTracker/Middleware/ErrorTranslation.cs` and appropriate http response is sent to client.
+
 ## Authentication/Authorization
 
 In endpoints requiring authorization (all except creating new user) `backend/HabitTracker/Auth/Auth.cs` is used to determine if request's `Authorization` Header contains a valid session token matching some user, if it does `UserId` is attached to `HttpContext`.
