@@ -17,12 +17,14 @@ services:
     networks:
       - inner
       - outer
-  db: # without persistance for now
+  db:
     image: "postgres:16.2"
     environment:
       - "POSTGRES_PASSWORD=pgpassword"
     networks:
       - inner
+    volumes:
+      - ./sht-postgres-data:/var/lib/postgresql/data
 
 networks:
   outer:
