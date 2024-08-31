@@ -1,5 +1,7 @@
 # simple habit tracker
 
+hosted [here](https://sht.am-katzest.duckdns.org).
+
 ## Documentation
 
 * [frontend](doc/frontend.md)
