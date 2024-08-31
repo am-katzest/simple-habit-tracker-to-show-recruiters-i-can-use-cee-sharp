@@ -70,8 +70,9 @@
  :< [::all-cts]
  :< [::selected-habit]
  (fn [[all selected]]
-   (when (and all selected)
-     (all selected))))
+   (if (and all selected)
+     (all selected)
+     {})))
 
 (re-frame/reg-sub
  ::selected-ct
