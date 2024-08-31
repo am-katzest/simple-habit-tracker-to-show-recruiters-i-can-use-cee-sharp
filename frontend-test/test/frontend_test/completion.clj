@@ -101,3 +101,21 @@
        (exists? (h/completion-list-item "item-after-edit")) ;; waiting until it loads
        (lazy-is (e/has-text? (h/completion-list-item "item-after-edit") "category1"))
        (absent? (h/completion-list-item "item-to-delete"))))))
+
+(deftest ^:parallel  history-does-not-crash-without-completion-types
+  (s/use-new-driver
+   e/go
+   (h/with-wait h/short-wait
+     (testing "setup"
+       (is (some? (f/new-user)))
+       (f/goto-panel :nav-habits)
+       (f/click (btn :add-new-habit)))
+     (testing "works without completions"
+       (f/click :habit-tab-completions)
+       (exists? :advanced-datepicker-datepicker "tab shows"))
+     (f/click :habit-tab-completions)
+     (testing "adding completion"
+       (f/add-completion nil))
+     (f/click :habit-tab-completions)
+     (testing "works with completions"
+       (exists? :advanced-datepicker-datepicker "tab shows")))))
